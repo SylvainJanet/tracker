@@ -1,0 +1,234 @@
+:host {
+  display: contents;
+}
+
+.application-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr);
+  min-block-size: 4.25rem;
+  background: var(--color-surface);
+  border-block-end: 1px solid var(--color-border);
+  box-shadow: var(--shadow-navigation);
+}
+
+.menu-button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-inline-end: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.menu-button:hover,
+.menu-close-button:hover {
+  background: var(--color-background);
+}
+
+.primary-navigation {
+  padding-inline: 1rem;
+}
+
+:is(
+  .navigation-sections,
+  .primary-navigation-submenu,
+  .side-navigation-sections,
+  .side-navigation-submenu
+) {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.navigation-sections {
+  display: flex;
+  align-items: stretch;
+  min-block-size: 100%;
+  gap: 0.25rem;
+}
+
+:is(.primary-navigation-section, .side-navigation-section) {
+  position: relative;
+}
+
+.navigation-section-trigger {
+  display: flex;
+  align-items: stretch;
+}
+
+.navigation-section-trigger:is(:hover, :focus-within) {
+  background: var(--color-background);
+}
+
+.navigation-section-trigger:is(:hover, :focus-within) > :is(a, .submenu-disclosure) {
+  color: var(--color-action);
+}
+
+.primary-navigation-section > .navigation-section-trigger {
+  block-size: 100%;
+}
+
+.primary-navigation-section > .navigation-section-trigger > a {
+  display: grid;
+  place-items: center;
+  padding-inline: 1.25rem 0.5rem;
+  border-block-end: 0.1875rem solid transparent;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.primary-navigation-section.active > .navigation-section-trigger > a {
+  border-block-end-color: var(--color-action);
+  color: var(--color-action);
+}
+
+.submenu-disclosure {
+  min-inline-size: 2.5rem;
+  border: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+:is(.primary-navigation-submenu, .side-navigation-submenu) {
+  min-inline-size: 12rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-surface);
+}
+
+.primary-navigation-submenu {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 0;
+  z-index: 30;
+}
+
+:is(.primary-navigation-submenu, .side-navigation-submenu) a,
+.side-navigation-section > .navigation-section-trigger > a {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+:is(.primary-navigation-submenu, .side-navigation-submenu) a:is(:hover, .active),
+.side-navigation-section > .navigation-section-trigger > a:hover,
+.side-navigation-section.active > .navigation-section-trigger > a {
+  color: var(--color-action);
+  background: var(--color-background);
+}
+
+.menu-panel {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  overflow: visible;
+  inline-size: min(20rem, 88vw);
+  block-size: 100dvh;
+  max-block-size: none;
+  padding: 1rem;
+  margin: 0;
+  border: 0;
+  color: var(--color-text);
+  background: var(--color-surface);
+  inset-inline-end: auto;
+}
+
+.menu-panel[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-panel::backdrop {
+  background: var(--color-backdrop);
+}
+
+.menu-close-button {
+  align-self: end;
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  color: var(--color-text);
+  background: transparent;
+  font-size: 1.75rem;
+  cursor: pointer;
+}
+
+.menu-panel nav {
+  margin-block-start: 1.5rem;
+}
+
+.side-navigation-sections {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.side-navigation-section > .navigation-section-trigger > a {
+  flex: 1;
+}
+
+.side-navigation-submenu-inline {
+  position: static;
+  min-inline-size: 0;
+  margin-inline-start: 1.5rem;
+  padding: 0.25rem 0 0;
+  border: 0;
+  box-shadow: none;
+}
+
+[hidden] {
+  display: none;
+}
+
+:is(button, a):focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+@media (width > 48rem) {
+  .side-navigation-submenu-region-flyout {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 100%;
+    padding-inline-start: 1rem;
+  }
+}
+
+@media (width <= 48rem) {
+  .side-navigation-submenu {
+    position: static;
+    min-inline-size: 0;
+    margin-inline-start: 1.5rem;
+    padding: 0.25rem 0 0;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+@media (width <= 32rem) {
+  .application-header {
+    grid-template-columns: 3.75rem minmax(0, 1fr);
+  }
+
+  .primary-navigation {
+    padding-inline: 0.25rem;
+  }
+
+  .primary-navigation-section > .navigation-section-trigger > a {
+    padding-inline: 0.75rem 0.25rem;
+  }
+}

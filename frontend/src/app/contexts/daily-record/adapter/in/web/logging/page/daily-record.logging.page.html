@@ -1,0 +1,102 @@
+<section class="tracker-page">
+  <header class="tracker-page-header">
+    <h1>Daily logging</h1>
+    <p>Select a calendar date to create its daily record.</p>
+  </header>
+
+  <div class="tracker-form">
+    <label class="tracker-control-label" for="record-date">Date</label>
+
+    <input
+      #dateInput
+      id="record-date"
+      class="tracker-input"
+      data-testid="date"
+      type="date"
+      required
+      [value]="presenter.model().selectedDate"
+      [disabled]="presenter.model().loading"
+      (input)="selectDate(dateInput.value)"
+    />
+
+    <div class="tracker-actions">
+      <button
+        class="tracker-button"
+        data-testid="create"
+        type="button"
+        [disabled]="!presenter.model().canCreate"
+        (click)="requestCreation()"
+      >
+        Create daily record
+      </button>
+    </div>
+  </div>
+
+  @if (presenter.model().state; as state) {
+    @switch (state.kind) {
+      @case ('loading') {
+        <p aria-live="polite">Loading…</p>
+      }
+
+      @case ('view') {
+        <article class="tracker-panel tracker-panel--neutral">
+          <h2>Record</h2>
+
+          <dl class="tracker-details">
+            <div>
+              <dt>Date</dt>
+              <dd>{{ state.view.date }}</dd>
+            </div>
+
+            <div>
+              <dt>Status</dt>
+              <dd>{{ state.view.status }}</dd>
+            </div>
+          </dl>
+        </article>
+      }
+
+      @case ('problem') {
+        <div class="tracker-panel tracker-panel--danger" role="alert">
+          <h2>{{ state.title }}</h2>
+          <p>{{ state.message }}</p>
+        </div>
+      }
+    }
+  }
+</section>
+
+<dialog
+  #confirmationDialog
+  class="confirmation-dialog"
+  aria-labelledby="confirmation-title"
+  closedby="any"
+>
+  <h2 id="confirmation-title">Log this day?</h2>
+
+  <p>
+    Selected date:
+    <time [attr.datetime]="presenter.model().selectedDate">
+      {{ presenter.model().selectedDate }}
+    </time>
+  </p>
+
+  <div class="tracker-actions confirmation-actions">
+    <button
+      class="tracker-button tracker-button--secondary"
+      type="button"
+      (click)="cancelCreation()"
+    >
+      Cancel
+    </button>
+
+    <button
+      class="tracker-button"
+      data-testid="confirm-create"
+      type="button"
+      (click)="confirmCreation()"
+    >
+      Log day
+    </button>
+  </div>
+</dialog>

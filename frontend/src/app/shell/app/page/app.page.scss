@@ -1,0 +1,15 @@
+:host {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-block-size: 100dvh;
+  color: var(--color-text);
+  background: var(--color-background);
+  font-family: var(--font-family-base);
+}
+
+main {
+  min-inline-size: 0;
+  min-block-size: 0;
+  inline-size: 100%;
+  margin-inline: auto;
+}

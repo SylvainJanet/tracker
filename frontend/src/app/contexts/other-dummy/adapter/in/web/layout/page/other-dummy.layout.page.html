@@ -1,0 +1,16 @@
+<nav class="tracker-context-navigation" aria-label="OtherDummy">
+  @for (destination of navigation.destinations; track destination.path) {
+    <a
+      [routerLink]="destination.path"
+      [queryParamsHandling]="destination.preserveQueryParameters ? 'preserve' : null"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+    >
+      {{ destination.label }}
+    </a>
+  }
+</nav>
+
+<div class="tracker-content">
+  <router-outlet />
+</div>

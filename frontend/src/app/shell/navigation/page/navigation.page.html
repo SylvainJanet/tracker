@@ -1,0 +1,179 @@
+<header class="application-header">
+  <button
+    class="menu-button"
+    type="button"
+    aria-label="Open navigation menu"
+    aria-controls="navigation-menu"
+    [attr.aria-expanded]="presenter.model().menuOpen"
+    (click)="openMenu()"
+  >
+    <span aria-hidden="true">☰</span>
+  </button>
+
+  <nav class="primary-navigation" aria-label="Primary sections">
+    <ul class="navigation-sections">
+      @for (section of presenter.model().sections; track section.id) {
+        <li
+          class="primary-navigation-section"
+          tabindex="-1"
+          [attr.data-testid]="'primary-navigation-section-' + section.id"
+          routerLinkActive="active"
+          #primarySectionActive="routerLinkActive"
+          [routerLinkActiveOptions]="{ exact: false }"
+          (mouseenter)="openPrimarySubmenu(section.id)"
+          (mouseleave)="closePrimarySubmenu(section.id)"
+          (focusout)="closePrimarySubmenuAfterFocusLeaves(section.id, $event)"
+          (keydown.escape)="closePrimarySubmenuFromKeyboard(section.id, $event)"
+        >
+          <div class="navigation-section-trigger">
+            <a
+              [routerLink]="section.path"
+              [queryParamsHandling]="
+                primarySectionActive.isActive && section.preserveQueryParameters ? 'preserve' : null
+              "
+              (focus)="openPrimarySubmenu(section.id)"
+              (click)="closePrimarySubmenu(section.id)"
+            >
+              {{ section.label }}
+            </a>
+
+            @if (section.destinations.length > 0) {
+              <button
+                class="submenu-disclosure"
+                type="button"
+                [attr.aria-label]="'Show ' + section.label + ' pages'"
+                [attr.aria-controls]="'primary-' + section.id + '-submenu'"
+                [attr.aria-expanded]="presenter.model().primarySubmenuOpen(section.id)"
+                (click)="togglePrimarySubmenu(section.id)"
+              >
+                <span aria-hidden="true">⌄</span>
+              </button>
+            }
+          </div>
+
+          @if (section.destinations.length > 0) {
+            <ul
+              class="primary-navigation-submenu"
+              [id]="'primary-' + section.id + '-submenu'"
+              [hidden]="!presenter.model().primarySubmenuOpen(section.id)"
+              (focusin)="openPrimarySubmenu(section.id)"
+            >
+              @for (destination of section.destinations; track destination.path) {
+                <li>
+                  <a
+                    [routerLink]="destination.path"
+                    [queryParamsHandling]="
+                      primarySectionActive.isActive && destination.preserveQueryParameters
+                        ? 'preserve'
+                        : null
+                    "
+                    routerLinkActive="active"
+                    ariaCurrentWhenActive="page"
+                    (click)="closePrimarySubmenu(section.id)"
+                  >
+                    {{ destination.label }}
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  </nav>
+</header>
+
+<dialog
+  #navigationMenu
+  id="navigation-menu"
+  class="menu-panel"
+  aria-label="Navigation menu"
+  closedby="any"
+  (close)="handleMenuClosed()"
+>
+  <button
+    class="menu-close-button"
+    type="button"
+    aria-label="Close navigation menu"
+    (click)="closeMenu()"
+  >
+    <span aria-hidden="true">×</span>
+  </button>
+
+  <nav aria-label="Menu">
+    <ul class="side-navigation-sections">
+      @for (section of presenter.model().sections; track section.id) {
+        <li
+          class="side-navigation-section"
+          tabindex="-1"
+          [attr.data-testid]="'side-navigation-section-' + section.id"
+          routerLinkActive="active"
+          #sideSectionActive="routerLinkActive"
+          [routerLinkActiveOptions]="{ exact: false }"
+          (mouseenter)="openSideSubmenu(section.id)"
+          (mouseleave)="closeSideSubmenu(section.id)"
+          (focusout)="closeSideSubmenuAfterFocusLeaves(section.id, $event)"
+        >
+          <div class="navigation-section-trigger">
+            <a
+              [routerLink]="section.path"
+              [queryParamsHandling]="
+                sideSectionActive.isActive && section.preserveQueryParameters ? 'preserve' : null
+              "
+              (focus)="openSideSubmenu(section.id)"
+              (click)="closeMenu()"
+            >
+              {{ section.label }}
+            </a>
+
+            @if (section.destinations.length > 0 && !sideSectionActive.isActive) {
+              <button
+                class="submenu-disclosure"
+                type="button"
+                [attr.aria-label]="'Show ' + section.label + ' pages'"
+                [attr.aria-controls]="'side-' + section.id + '-submenu'"
+                [attr.aria-expanded]="presenter.model().sideSubmenuOpen(section.id, false)"
+                (click)="toggleSideSubmenu(section.id)"
+              >
+                <span aria-hidden="true">›</span>
+              </button>
+            }
+          </div>
+
+          @if (section.destinations.length > 0) {
+            <div
+              class="side-navigation-submenu-region"
+              [class.side-navigation-submenu-region-flyout]="!sideSectionActive.isActive"
+              [hidden]="!presenter.model().sideSubmenuOpen(section.id, sideSectionActive.isActive)"
+            >
+              <ul
+                class="side-navigation-submenu"
+                [class.side-navigation-submenu-inline]="sideSectionActive.isActive"
+                [id]="'side-' + section.id + '-submenu'"
+                (focusin)="openSideSubmenu(section.id)"
+              >
+                @for (destination of section.destinations; track destination.path) {
+                  <li>
+                    <a
+                      [routerLink]="destination.path"
+                      [queryParamsHandling]="
+                        sideSectionActive.isActive && destination.preserveQueryParameters
+                          ? 'preserve'
+                          : null
+                      "
+                      routerLinkActive="active"
+                      ariaCurrentWhenActive="page"
+                      (click)="closeMenu()"
+                    >
+                      {{ destination.label }}
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  </nav>
+</dialog>
