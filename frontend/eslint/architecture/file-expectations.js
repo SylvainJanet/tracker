@@ -109,12 +109,12 @@ const fileExpectations = {
     ],
     httpContracts: [
       expectedFile(
-        ['<scope>-http-contract'],
+        ['<scope>-http-contract', '<scope>-<responsibility>-http-contract'],
         TYPESCRIPT_EXTENSIONS,
         declarations.contextHttpContract,
       ),
       expectedFile(
-        ['<scope>-http-contract.mapper'],
+        ['<scope>-http-contract.mapper', '<scope>-<responsibility>-http-contract.mapper'],
         TYPESCRIPT_EXTENSIONS,
         declarations.singleClass,
       ),
