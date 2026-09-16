@@ -4,7 +4,6 @@ import fr.sylvainjanet.tracker.tracking.application.port.in.exceptions.DailyReco
 import fr.sylvainjanet.tracker.tracking.application.port.in.usecase.CreateDailyRecordUseCase;
 import fr.sylvainjanet.tracker.tracking.application.port.out.gateway.store.DailyRecordStore;
 import fr.sylvainjanet.tracker.tracking.domain.DailyRecord;
-import java.time.LocalDate;
 import java.util.Objects;
 
 public final class CreateDailyRecordService implements CreateDailyRecordUseCase {
@@ -16,12 +15,12 @@ public final class CreateDailyRecordService implements CreateDailyRecordUseCase 
     }
 
     @Override
-    public DailyRecord execute(LocalDate command) throws DailyRecordAlreadyExistsException {
-        DailyRecord instruction = DailyRecord.create(command);
+    public DailyRecord execute(DailyRecord command) throws DailyRecordAlreadyExistsException {
+        Objects.requireNonNull(command, "command must not be null");
 
-        return switch (store.create(instruction)) {
-            case CREATED -> instruction;
-            case ALREADY_EXISTS -> throw new DailyRecordAlreadyExistsException(command);
+        return switch (store.create(command)) {
+            case CREATED -> command;
+            case ALREADY_EXISTS -> throw new DailyRecordAlreadyExistsException(command.date());
         };
     }
 }

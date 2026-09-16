@@ -1,5 +1,6 @@
 package fr.sylvainjanet.tracker.tracking.domain;
 
+import static fr.sylvainjanet.tracker.tracking.domain.builders.DailyRecordTestBuilder.aDailyRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -10,62 +11,51 @@ import org.junit.jupiter.api.Test;
 class DailyRecordTest {
 
     @Test
-    void newRecordHasTheProvidedDate() {
+    void newRecordHasTheProvidedDateAndWeight() {
         LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
+        Weight weight = Weight.of(123.0f);
 
-        DailyRecord dailyRecord = DailyRecord.create(date);
+        DailyRecord dailyRecord = DailyRecord.create(date, weight);
 
         assertThat(dailyRecord.date()).isEqualTo(date);
-    }
-
-    @Test
-    void newRecordStartsInProgress() {
-        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-
-        DailyRecord dailyRecord = DailyRecord.create(date);
-
-        assertThat(dailyRecord.status()).isEqualTo(CompletionStatus.IN_PROGRESS);
+        assertThat(dailyRecord.weight()).isEqualTo(weight);
     }
 
     @Test
     void recordCannotBeCreatedWithoutDate() {
-        assertThatThrownBy(() -> DailyRecord.create(null))
+        Weight weight = Weight.of(123.0f);
+        assertThatThrownBy(() -> DailyRecord.create(null, weight))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("date must not be null");
     }
 
     @Test
-    void reconstitutedRecordRetainsItsStatus() {
+    void recordCannotBeCreatedWithoutWeight() {
         LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-
-        DailyRecord dailyRecord = DailyRecord.reconstitute(date, CompletionStatus.COMPLETED);
-
-        assertThat(dailyRecord.date()).isEqualTo(date);
-        assertThat(dailyRecord.status()).isEqualTo(CompletionStatus.COMPLETED);
-    }
-
-    @Test
-    void recordCannotBeReconstitutedWithoutStatus() {
-        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-
-        assertThatThrownBy(() -> DailyRecord.reconstitute(date, null))
+        assertThatThrownBy(() -> DailyRecord.create(date, null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("status must not be null");
+                .hasMessage("weight must not be null");
     }
 
     @Test
-    void recordsWithTheSameDateAreEqualRegardlessOfStatus() {
+    void recordsWithTheSameDateAreEqualRegardlessOfWeight() {
         LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        DailyRecord inProgress = DailyRecord.reconstitute(date, CompletionStatus.IN_PROGRESS);
-        DailyRecord completed = DailyRecord.reconstitute(date, CompletionStatus.COMPLETED);
+        Float firstWeight = 123.0f;
+        Float secondWeight = 124.0f;
 
-        assertThat(inProgress).isEqualTo(completed);
+        DailyRecord first = aDailyRecord().withDate(date).withWeightInKg(firstWeight).build();
+        DailyRecord second = aDailyRecord().withDate(date).withWeightInKg(secondWeight).build();
+
+        assertThat(first).isEqualTo(second);
     }
 
     @Test
     void recordsWithDifferentDatesAreNotEqual() {
-        DailyRecord first = DailyRecord.create(LocalDate.of(2026, Month.AUGUST, 25));
-        DailyRecord second = DailyRecord.create(LocalDate.of(2026, Month.AUGUST, 26));
+        LocalDate firstDate = LocalDate.of(2026, Month.AUGUST, 25);
+        LocalDate secondDate = LocalDate.of(2026, Month.AUGUST, 26);
+        Float weight = 123.0f;
+        DailyRecord first = aDailyRecord().withDate(firstDate).withWeightInKg(weight).build();
+        DailyRecord second = aDailyRecord().withDate(secondDate).withWeightInKg(weight).build();
 
         assertThat(first).isNotEqualTo(second);
     }
@@ -73,8 +63,9 @@ class DailyRecordTest {
     @Test
     void equalRecordsHaveTheSameHashCode() {
         LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        DailyRecord inProgress = DailyRecord.reconstitute(date, CompletionStatus.IN_PROGRESS);
-        DailyRecord completed = DailyRecord.reconstitute(date, CompletionStatus.COMPLETED);
+        Float weight = 123.0f;
+        DailyRecord inProgress = aDailyRecord().withDate(date).withWeightInKg(weight).build();
+        DailyRecord completed = aDailyRecord().withDate(date).withWeightInKg(weight).build();
 
         assertThat(inProgress).hasSameHashCodeAs(completed);
     }

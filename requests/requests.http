@@ -1,0 +1,9 @@
+POST {{host}}/api/daily-records
+Content-Type: application/json
+
+{
+  "date": "2026-09-16",
+  "weight": 75.5
+}
+
+

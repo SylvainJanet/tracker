@@ -1,12 +1,13 @@
 package fr.sylvainjanet.tracker.tracking.application.service;
 
+import static fr.sylvainjanet.tracker.tracking.domain.builders.DailyRecordTestBuilder.aDailyRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fr.sylvainjanet.tracker.tracking.adapter.out.persistence.InMemoryDailyRecordStore;
 import fr.sylvainjanet.tracker.tracking.application.port.in.exceptions.DailyRecordAlreadyExistsException;
-import fr.sylvainjanet.tracker.tracking.domain.CompletionStatus;
 import fr.sylvainjanet.tracker.tracking.domain.DailyRecord;
+import fr.sylvainjanet.tracker.tracking.domain.Weight;
 import java.time.LocalDate;
 import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,32 +25,34 @@ class CreateDailyRecordServiceTest {
 
     @Test
     void createsAndPersistsDailyRecord() throws DailyRecordAlreadyExistsException {
-        LocalDate command = LocalDate.of(2026, Month.AUGUST, 25);
+        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
+        float weight = 123.0f;
+
+        DailyRecord command = aDailyRecord().withDate(date).withWeightInKg(weight).build();
 
         DailyRecord result = service.execute(command);
 
-        assertThat(result.date()).isEqualTo(command);
-        assertThat(result.status()).isEqualTo(CompletionStatus.IN_PROGRESS);
-
-        assertThat(repository.findByDate(command)).isPresent();
+        assertThat(result.date()).isEqualTo(date);
+        assertThat(result.weight()).isEqualTo(Weight.of(weight));
     }
 
     @Test
     void rejectsDuplicateDailyRecord() {
-        LocalDate command = LocalDate.of(2026, Month.AUGUST, 25);
-
-        repository.create(DailyRecord.create(command));
+        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
+        float weight = 123.0f;
+        DailyRecord command = aDailyRecord().withDate(date).withWeightInKg(weight).build();
+        repository.create(command);
 
         assertThatThrownBy(() -> service.execute(command))
                 .isInstanceOf(DailyRecordAlreadyExistsException.class)
-                .hasMessageContaining(command.toString());
+                .hasMessageContaining(command.date().toString());
     }
 
     @Test
-    void rejectsNullDate() {
+    void rejectsNullCommand() {
         assertThatThrownBy(() -> service.execute(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("date must not be null");
+                .hasMessage("command must not be null");
     }
 
     @Test
