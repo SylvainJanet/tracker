@@ -178,7 +178,9 @@ describe('declarations', () => {
     assert.equal(
       message.message,
       `${filePath} does not follow its architectural declaration convention; ` +
-        'expected exported declarations are [interface FoodEntryGateway].',
+        'expected exported declarations are [interface FoodEntryGateway, interface or type ' +
+        '<PascalName>Criteria, interface or type <PascalName>Instruction, interface or type ' +
+        '<PascalName>Outcome exposing required properties [outcomeData]].',
     );
   });
   it('validates outbound adapter declarations from their filename parts', async () => {
@@ -341,7 +343,7 @@ describe('declarations', () => {
     assert.equal(
       message.message,
       `${filePath} does not follow its architectural declaration convention; ` +
-        'expected exported declarations are [interface ProblemDetailResponseDto].',
+        'expected exported declarations are [interface ProblemDetailResponseDto, function isProblemDetailResponseDto].',
     );
   });
   it('validates exact and shared presentation model declarations', async () => {
@@ -648,7 +650,7 @@ describe('declarations', () => {
       `${filePath} does not follow its architectural declaration convention; ` +
         'expected exported declarations are ' +
         '[interface or type CreateFoodEntryResult exposing required properties ' +
-        '[resultData], interface CreateFoodEntryUseCase].',
+        '[resultData], interface CreateFoodEntryUseCase, interface or type CreateFoodEntryCommand, interface or type CreateFoodEntryQuery].',
     );
   });
   it('validates outbound port data contracts', async () => {
