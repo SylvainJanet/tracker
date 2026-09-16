@@ -89,10 +89,18 @@ module.exports = {
       return [];
     }
 
+    /*
     const describedExports =
       declarations.requiredExports.length === 0
         ? (declarations.optionalExports ?? [])
         : declarations.requiredExports;
+
+     */
+
+    const describedExports = [
+      ...(declarations.requiredExports ?? []),
+      ...(declarations.optionalExports ?? []),
+    ];
 
     const expectedExports = [
       ...describedExports.map((declaration) =>
