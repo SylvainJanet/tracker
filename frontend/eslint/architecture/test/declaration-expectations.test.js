@@ -65,7 +65,7 @@ describe('architecture declaration expectations', () => {
       requiredExports: [
         {
           name: '<PascalFileStem>',
-          types: ['interface', 'type'],
+          types: ['interface', 'type', 'class'],
         },
       ],
       optionalExports: [
