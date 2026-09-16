@@ -202,6 +202,10 @@ const declarations = /** @satisfies {Record<string, import('./types').Declaratio
         types: ['class'],
       },
       {
+        name: '<PascalResponsibility>Url',
+        types: ['class'],
+      },
+      {
         name: '<OptionalPascalName><PascalScope>RequestParameters',
         types: ['interface'],
       },
@@ -211,6 +215,18 @@ const declarations = /** @satisfies {Record<string, import('./types').Declaratio
       },
       {
         name: '<OptionalPascalName><PascalScope>ResponseDto',
+        types: ['interface'],
+      },
+      {
+        name: '<OptionalPascalName><PascalResponsibility>RequestParameters',
+        types: ['interface'],
+      },
+      {
+        name: '<OptionalPascalName><PascalResponsibility>RequestBodyDto',
+        types: ['interface'],
+      },
+      {
+        name: '<OptionalPascalName><PascalResponsibility>ResponseDto',
         types: ['interface'],
       },
     ],
