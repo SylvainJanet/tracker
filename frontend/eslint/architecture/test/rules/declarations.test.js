@@ -414,10 +414,8 @@ describe('declarations', () => {
       message.message,
       `${filePath} does not follow its architectural declaration convention; ` +
         'expected exported declarations are ' +
-        '[class DailyRecordUrl, ' +
-        'interface <OptionalPascalName>DailyRecordRequestParameters, ' +
-        'interface <OptionalPascalName>DailyRecordRequestBodyDto, ' +
-        'interface <OptionalPascalName>DailyRecordResponseDto].',
+        '[class DailyRecordUrl, class Url, interface <OptionalPascalName>DailyRecordRequestParameters, ' +
+        'interface <OptionalPascalName>DailyRecordRequestBodyDto, interface <OptionalPascalName>DailyRecordResponseDto, interface <OptionalPascalName>RequestParameters, interface <OptionalPascalName>RequestBodyDto, interface <OptionalPascalName>ResponseDto].',
     );
   });
   it('validates HTTP error translator functions', async () => {
