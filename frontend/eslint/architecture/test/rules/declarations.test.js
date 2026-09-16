@@ -115,7 +115,7 @@ describe('declarations', () => {
       [],
     );
 
-    const [message] = await lint('export class FoodEntry {}', filePath);
+    const [message] = await lint('export const FoodEntry = true;', filePath);
 
     assert.equal(message?.messageId, 'invalidExports');
   });
