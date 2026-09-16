@@ -7,7 +7,7 @@ public final class DailyRecordAlreadyExistsException extends DailyRecordApplicat
     private final LocalDate date;
 
     public DailyRecordAlreadyExistsException(LocalDate date) {
-        super("A daily record already exists for :" + date);
+        super("A daily record already exists for: " + date);
         this.date = date;
     }
 

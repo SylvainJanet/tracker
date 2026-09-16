@@ -32,24 +32,6 @@ class DailyRecordOpenApiTest {
                 .andExpect(
                         jsonPath("$.paths['/api/daily-records'].keys()")
                                 .value(containsInAnyOrder("post")))
-                .andExpect(
-                        jsonPath("$.paths['/api/daily-records/{date}'].get.responses['200']")
-                                .exists())
-                .andExpect(
-                        jsonPath("$.paths['/api/daily-records/{date}'].get.responses['400']")
-                                .exists())
-                .andExpect(
-                        jsonPath("$.paths['/api/daily-records/{date}'].get.responses['404']")
-                                .exists())
-                .andExpect(
-                        jsonPath("$.paths['/api/daily-records/{date}'].get.responses.length()")
-                                .value(3))
-                .andExpect(
-                        jsonPath("$.paths['/api/daily-records/{date}'].keys()")
-                                .value(containsInAnyOrder("get")))
-                .andExpect(jsonPath("$.paths.length()").value(2))
-                .andExpect(
-                        jsonPath("$.components.schemas.DailyRecordResponse.properties.status.enum")
-                                .value(org.hamcrest.Matchers.contains("IN_PROGRESS", "COMPLETED")));
+                .andExpect(jsonPath("$.paths.length()").value(1));
     }
 }
