@@ -1,0 +1,44 @@
+package fr.sylvainjanet.tracker.journal.application.service;
+
+import fr.sylvainjanet.tracker.journal.application.port.in.dtos.command.LogWeightMeasurementCommand;
+import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.LogWeightMeasurementResult;
+import fr.sylvainjanet.tracker.journal.application.port.in.usecase.LogWeightMeasurementUseCase;
+import fr.sylvainjanet.tracker.journal.application.port.out.dtos.instruction.LogWeightMeasurementInstruction;
+import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.LogWeightMeasurementStore;
+import fr.sylvainjanet.tracker.journal.domain.Weight;
+import fr.sylvainjanet.tracker.journal.domain.WeightMeasurement;
+import java.util.Objects;
+
+public final class LogWeightMeasurementService implements LogWeightMeasurementUseCase {
+
+    private final LogWeightMeasurementStore store;
+
+    public LogWeightMeasurementService(LogWeightMeasurementStore store) {
+        this.store = Objects.requireNonNull(store, "store must not be null");
+    }
+
+    @Override
+    public LogWeightMeasurementResult log(LogWeightMeasurementCommand command) {
+        Objects.requireNonNull(command, "command must not be null");
+
+        WeightMeasurement weightMeasurement = toDomain(command);
+
+        store.log(toInstruction(weightMeasurement));
+
+        return toResult(weightMeasurement);
+    }
+
+    private WeightMeasurement toDomain(LogWeightMeasurementCommand command) {
+        return WeightMeasurement.create(command.date(), Weight.of(command.weightInKg()));
+    }
+
+    private LogWeightMeasurementInstruction toInstruction(WeightMeasurement weightMeasurement) {
+        return new LogWeightMeasurementInstruction(
+                weightMeasurement.date(), weightMeasurement.weightInKilograms());
+    }
+
+    private LogWeightMeasurementResult toResult(WeightMeasurement weightMeasurement) {
+        return new LogWeightMeasurementResult(
+                weightMeasurement.date(), weightMeasurement.weightInKilograms());
+    }
+}
