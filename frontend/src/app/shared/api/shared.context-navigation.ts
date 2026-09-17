@@ -6,4 +6,4 @@ export {
 export {
   defineContextNavigation,
   type SharedConfigurationNavigation,
-} from '../configuration/navigation/shared.configuration.navigation';
+} from '../configuration/shared.configuration.navigation';

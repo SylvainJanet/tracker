@@ -3,9 +3,9 @@ import {
   provideDailyRecordLoggingPresenter,
   provideDailyRecordContext,
   provideDailyRecordSummaryPresenter,
-} from '../providers/daily-record.providers';
-import { DAILY_RECORD_NAVIGATION, DAILY_RECORD_PATHS } from '../navigation/daily-record.navigation';
-import { ContextNavigationModel } from '../../../../shared/api/shared.context-navigation';
+} from './daily-record.providers';
+import { DAILY_RECORD_NAVIGATION, DAILY_RECORD_PATHS } from './daily-record.navigation';
+import { ContextNavigationModel } from '../../../shared/api/shared.context-navigation';
 
 export const DAILY_RECORD_ROUTES: Routes = [
   {
@@ -18,7 +18,7 @@ export const DAILY_RECORD_ROUTES: Routes = [
       },
     ],
     loadComponent: () =>
-      import('../../adapter/in/web/layout/page/daily-record.layout.page').then(
+      import('../adapter/in/web/layout/page/daily-record.layout.page').then(
         (module) => module.DailyRecordLayoutPage,
       ),
     children: [
@@ -31,7 +31,7 @@ export const DAILY_RECORD_ROUTES: Routes = [
         path: DAILY_RECORD_PATHS.logging,
         providers: [provideDailyRecordLoggingPresenter()],
         loadComponent: () =>
-          import('../../adapter/in/web/logging/page/daily-record.logging.page').then(
+          import('../adapter/in/web/logging/page/daily-record.logging.page').then(
             (module) => module.DailyRecordLoggingPage,
           ),
       },
@@ -39,7 +39,7 @@ export const DAILY_RECORD_ROUTES: Routes = [
         path: DAILY_RECORD_PATHS.summary,
         providers: [provideDailyRecordSummaryPresenter()],
         loadComponent: () =>
-          import('../../adapter/in/web/summary/page/daily-record.summary.page').then(
+          import('../adapter/in/web/summary/page/daily-record.summary.page').then(
             (module) => module.DailyRecordSummaryPage,
           ),
       },

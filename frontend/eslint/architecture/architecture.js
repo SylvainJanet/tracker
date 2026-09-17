@@ -133,11 +133,7 @@ function createHttpAdapter(contractFiles) {
  * @param {{
  *   apiFiles: import('./types').ExpectedFile[],
  *   contractFiles: import('./types').ExpectedFile[],
- *   configurationFiles: {
- *     navigation: import('./types').ExpectedFile[],
- *     providers: import('./types').ExpectedFile[],
- *     routes: import('./types').ExpectedFile[]
- *   },
+ *   configurationFiles: import('./types').ExpectedFile[],
  *   inboundWeb: import('./types').ArchitectureFolder,
  *   apiDependencyLayers: string[],
  *   metadata?: import('./types').FolderMetadata
@@ -236,23 +232,12 @@ function createBoundedModule({
         },
       },
       configuration: {
-        files: [],
+        files: configurationFiles,
         metadata: {
           layer: 'configuration',
           allowedDependencyLayers: CONFIGURATION_DEPENDENCY_LAYERS,
           allowedApplicationRootDependencyLayers:
             MODULE_CONFIGURATION_APPLICATION_ROOT_DEPENDENCY_LAYERS,
-        },
-        folders: {
-          navigation: {
-            files: configurationFiles.navigation,
-          },
-          providers: {
-            files: configurationFiles.providers,
-          },
-          routes: {
-            files: configurationFiles.routes,
-          },
         },
       },
     },
@@ -305,23 +290,12 @@ const shellModule = {
       },
     },
     configuration: {
-      files: [],
+      files: fileExpectations.shell.configuration,
       metadata: {
         layer: 'configuration',
         allowedDependencyLayers: SHELL_CONFIGURATION_DEPENDENCY_LAYERS,
         allowedApplicationRootDependencyLayers:
           MODULE_CONFIGURATION_APPLICATION_ROOT_DEPENDENCY_LAYERS,
-      },
-      folders: {
-        providers: {
-          files: fileExpectations.shell.configuration.providers,
-        },
-        routes: {
-          files: fileExpectations.shell.configuration.routes,
-        },
-        sections: {
-          files: fileExpectations.shell.configuration.sections,
-        },
       },
     },
     model: {

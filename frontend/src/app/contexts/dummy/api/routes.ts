@@ -1,1 +1,1 @@
-export { DUMMY_ROUTES } from '../configuration/routes/dummy.routes';
+export { DUMMY_ROUTES } from '../configuration/dummy.routes';

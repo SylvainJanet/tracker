@@ -250,8 +250,7 @@ describe('declarations', () => {
     );
 
     const filePath =
-      'src/app/contexts/nutrition/reporting/configuration/routes/' +
-      'nutrition.reporting.routes.ts';
+      'src/app/contexts/nutrition/reporting/configuration/' + 'nutrition.reporting.routes.ts';
 
     assert.deepEqual(await lint('export const NUTRITION_REPORTING_ROUTES = [];', filePath), []);
 
@@ -265,8 +264,7 @@ describe('declarations', () => {
     );
   });
   it('validates the shared navigation configuration contract', async () => {
-    const filePath =
-      'src/app/shared/configuration/navigation/' + 'shared.configuration.navigation.ts';
+    const filePath = 'src/app/shared/configuration/' + 'shared.configuration.navigation.ts';
 
     assert.deepEqual(
       await lint(
@@ -291,16 +289,12 @@ describe('declarations', () => {
   });
   it('validates shell route and section exports', async () => {
     assert.deepEqual(
-      await lint(
-        'export const routes = [];',
-        'src/app/shell/app/configuration/routes/app.routes.ts',
-      ),
+      await lint('export const routes = [];', 'src/app/shell/app/configuration/app.routes.ts'),
       [],
     );
 
     const filePath =
-      'src/app/shell/administration/users/configuration/sections/' +
-      'administration.users.sections.ts';
+      'src/app/shell/administration/users/configuration/' + 'administration.users.sections.ts';
 
     assert.deepEqual(await lint('export const ADMINISTRATION_USERS_SECTIONS = [];', filePath), []);
 
@@ -453,14 +447,13 @@ describe('declarations', () => {
     assert.deepEqual(
       await lint(
         'export const appProviders = [];',
-        'src/app/shell/app/configuration/providers/app.providers.ts',
+        'src/app/shell/app/configuration/app.providers.ts',
       ),
       [],
     );
 
     const filePath =
-      'src/app/shell/administration/users/configuration/providers/' +
-      'administration.users.providers.ts';
+      'src/app/shell/administration/users/configuration/' + 'administration.users.providers.ts';
 
     assert.deepEqual(
       await lint('export function provideApplicationAdministrationUsers() {}', filePath),
@@ -479,8 +472,7 @@ describe('declarations', () => {
     );
   });
   it('validates context provider tokens and factories', async () => {
-    const filePath =
-      'src/app/contexts/daily-record/configuration/providers/' + 'daily-record.providers.ts';
+    const filePath = 'src/app/contexts/daily-record/configuration/' + 'daily-record.providers.ts';
 
     assert.deepEqual(
       await lint(
@@ -508,7 +500,7 @@ describe('declarations', () => {
   });
   it('validates exact context public API re-exports', async () => {
     const filePath = 'src/app/contexts/daily-record/reporting/api/routes.ts';
-    const source = '../configuration/routes/daily-record.reporting.routes';
+    const source = '../configuration/daily-record.reporting.routes';
 
     assert.deepEqual(
       await lint(
@@ -536,7 +528,7 @@ describe('declarations', () => {
       `${filePath} does not follow its architectural public API convention; ` +
         'expected one named, unaliased re-export of ' +
         '[DAILY_RECORD_REPORTING_ROUTES] from ' +
-        '../configuration/routes/daily-record.reporting.routes.',
+        '../configuration/daily-record.reporting.routes.',
     );
   });
   it('validates shell public API re-exports', async () => {

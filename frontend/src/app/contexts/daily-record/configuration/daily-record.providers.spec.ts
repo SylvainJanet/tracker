@@ -4,12 +4,12 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DailyRecordLoggingPage } from '../../adapter/in/web/logging/page/daily-record.logging.page';
-import { DailyRecordSummaryPage } from '../../adapter/in/web/summary/page/daily-record.summary.page';
-import { type CreateDailyRecordUseCase } from '../../application/port/in/create-daily-record.use-case';
-import { type GetDailyRecordUseCase } from '../../application/port/in/get-daily-record.use-case';
-import { calendarDate } from '../../domain/calendar-date';
-import { type DailyRecord } from '../../domain/daily-record';
+import { DailyRecordLoggingPage } from '../adapter/in/web/logging/page/daily-record.logging.page';
+import { DailyRecordSummaryPage } from '../adapter/in/web/summary/page/daily-record.summary.page';
+import { type CreateDailyRecordUseCase } from '../application/port/in/create-daily-record.use-case';
+import { type GetDailyRecordUseCase } from '../application/port/in/get-daily-record.use-case';
+import { calendarDate } from '../domain/calendar-date';
+import { type DailyRecord } from '../domain/daily-record';
 import {
   CREATE_DAILY_RECORD_USE_CASE,
   GET_DAILY_RECORD_USE_CASE,
@@ -18,7 +18,7 @@ import {
   provideDailyRecordLoggingPresenter,
   provideDailyRecordSummaryPresenter,
 } from './daily-record.providers';
-import type { GetDefaultDailyRecordDateUseCase } from '../../application/port/in/get-default-daily-record-date.use-case';
+import type { GetDefaultDailyRecordDateUseCase } from '../application/port/in/get-default-daily-record-date.use-case';
 
 const date = calendarDate('2026-08-27');
 

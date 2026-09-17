@@ -4,7 +4,7 @@ import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { describe, expect, it } from 'vitest';
 
-import { APPLICATION_CONTEXTS } from '../../../../configuration/contexts.config';
+import { APPLICATION_CONTEXTS } from '../../../configuration/contexts.config';
 import { routes } from './app.routes';
 
 describe('application routes', () => {

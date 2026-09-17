@@ -1,1 +1,1 @@
-export { OTHER_DUMMY_NAVIGATION } from '../configuration/navigation/other-dummy.navigation';
+export { OTHER_DUMMY_NAVIGATION } from '../configuration/other-dummy.navigation';

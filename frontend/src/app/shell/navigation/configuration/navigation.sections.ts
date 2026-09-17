@@ -1,5 +1,5 @@
-import { type NavigationSection } from '../../model/navigation.model';
-import { APPLICATION_CONTEXTS } from '../../../../configuration/contexts.config';
+import { type NavigationSection } from '../model/navigation.model';
+import { APPLICATION_CONTEXTS } from '../../../configuration/contexts.config';
 
 export const NAVIGATION_SECTIONS: readonly NavigationSection[] = APPLICATION_CONTEXTS.map(
   (context) => {
