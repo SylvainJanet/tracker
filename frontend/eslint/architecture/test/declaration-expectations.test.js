@@ -418,6 +418,10 @@ describe('architecture declaration expectations', () => {
             name: 'translate<OptionalPascalName><PascalScope>HttpError',
             types: ['function'],
           },
+          {
+            name: 'translate<OptionalPascalName><PascalResponsibility>HttpError',
+            types: ['function'],
+          },
         ],
       },
     );

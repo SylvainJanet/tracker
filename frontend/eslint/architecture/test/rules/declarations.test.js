@@ -439,14 +439,14 @@ describe('declarations', () => {
       [],
     );
 
-    const [message] = await lint('export function translateGetRecordHttpError() {}', filePath);
+    const [message] = await lint('export function translateGetRecordError() {}', filePath);
 
     assert.equal(message?.messageId, 'invalidExports');
     assert.equal(
       message.message,
       `${filePath} does not follow its architectural declaration convention; ` +
         'expected exported declarations are ' +
-        '[function translate<OptionalPascalName>DailyRecordHttpError].',
+        '[function translate<OptionalPascalName>DailyRecordHttpError, function translate<OptionalPascalName>HttpError].',
     );
   });
   it('validates shell provider exports from their scope', async () => {
