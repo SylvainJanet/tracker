@@ -16,18 +16,18 @@ describe('application navigation configuration', () => {
         ],
       },
       {
-        id: 'daily-record',
-        path: '/daily-record',
-        label: 'Daily records',
+        id: 'journal',
+        path: '/journal',
+        label: 'Journal',
         preserveQueryParameters: true,
         destinations: [
           {
-            path: '/daily-record/daily-logging',
+            path: '/journal/journal-logging',
             label: 'Daily logging',
             preserveQueryParameters: true,
           },
           {
-            path: '/daily-record/summary',
+            path: '/journal/summary',
             label: 'Summary',
             preserveQueryParameters: true,
           },

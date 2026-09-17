@@ -20,7 +20,7 @@ describe('appConfig', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(router.url).toBe('/daily-record/daily-logging');
+    expect(router.url).toBe('/journal/journal-logging');
     expect(fixture.nativeElement.querySelector('app-navigation-page')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('main router-outlet')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('main h1')?.textContent?.trim()).toBe(

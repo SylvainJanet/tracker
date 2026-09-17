@@ -17,9 +17,9 @@ describe('application context registry', () => {
         label: 'Dummy',
       },
       {
-        id: 'daily-record',
-        path: 'daily-record',
-        label: 'Daily records',
+        id: 'journal',
+        path: 'journal',
+        label: 'Journal',
       },
       {
         id: 'other-dummy',
@@ -41,10 +41,10 @@ describe('application context registry', () => {
         ],
       },
       {
-        defaultPath: 'daily-logging',
+        defaultPath: 'journal-logging',
         destinations: [
           {
-            path: 'daily-logging',
+            path: 'journal-logging',
             label: 'Daily logging',
             preserveQueryParameters: true,
           },
