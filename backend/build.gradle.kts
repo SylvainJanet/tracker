@@ -2,6 +2,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     java
+    `java-test-fixtures`
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless")
@@ -94,6 +95,7 @@ testing {
             useJUnitJupiter()
             dependencies {
                 implementation(project())
+                implementation(testFixtures(project()))
                 implementation(
                     "org.springframework.boot:spring-boot-starter-test",
                 )

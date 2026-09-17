@@ -1,5 +1,6 @@
 package fr.sylvainjanet.tracker.tracking.adapter.out.persistence;
 
+import static fr.sylvainjanet.tracker.tracking.domain.builders.DailyRecordTestBuilder.aDailyRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.sylvainjanet.tracker.configuration.sqlite.environment.SqliteTestDatabase;
@@ -7,7 +8,6 @@ import fr.sylvainjanet.tracker.configuration.sqlite.environment.TestSqliteDataba
 import fr.sylvainjanet.tracker.tracking.adapter.out.persistence.repository.SqliteDailyRecordRepository;
 import fr.sylvainjanet.tracker.tracking.application.port.out.dtos.outcome.DailyRecordCreationOutcome;
 import fr.sylvainjanet.tracker.tracking.application.port.out.gateway.store.DailyRecordStore;
-import fr.sylvainjanet.tracker.tracking.domain.CompletionStatus;
 import fr.sylvainjanet.tracker.tracking.domain.DailyRecord;
 import java.time.LocalDate;
 import java.time.Month;
@@ -30,51 +30,26 @@ class SqliteDailyRecordRepositoryTest {
     }
 
     @Nested
-    class FindByDate {
-
-        @Test
-        void returnsEmptyWhenNoRecordExistsForDate() {
-            LocalDate criteria = LocalDate.of(2026, Month.AUGUST, 25);
-
-            assertThat(repository.findByDate(criteria)).isEmpty();
-        }
-
-        @Test
-        void returnsFoundDailyRecord() {
-            LocalDate criteria = LocalDate.of(2026, Month.AUGUST, 24);
-            repository.create(DailyRecord.reconstitute(criteria, CompletionStatus.COMPLETED));
-
-            DailyRecord found = repository.findByDate(criteria).orElseThrow();
-
-            assertThat(found.date()).isEqualTo(criteria);
-            assertThat(found.status()).isEqualTo(CompletionStatus.COMPLETED);
-        }
-    }
-
-    @Nested
     class Create {
 
         @Test
-        void savesAndFindsNewRecord() {
-            LocalDate criteria = LocalDate.of(2026, Month.AUGUST, 25);
+        void savesNewRecord() {
+            LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
+            float weight = 123.0f;
+            DailyRecord instruction = aDailyRecord().withDate(date).withWeightInKg(weight).build();
 
-            assertThat(repository.create(DailyRecord.create(criteria)))
+            assertThat(repository.create(instruction))
                     .isEqualTo(DailyRecordCreationOutcome.CREATED);
-
-            DailyRecord found = repository.findByDate(criteria).orElseThrow();
-
-            assertThat(found.date()).isEqualTo(criteria);
-            assertThat(found.status()).isEqualTo(CompletionStatus.IN_PROGRESS);
         }
 
         @Test
         void reportsDuplicateDateToApplication() {
             LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-            repository.create(DailyRecord.reconstitute(date, CompletionStatus.IN_PROGRESS));
+            float weight = 123.0f;
+            DailyRecord instruction = aDailyRecord().withDate(date).withWeightInKg(weight).build();
+            repository.create(instruction);
 
-            assertThat(
-                            repository.create(
-                                    DailyRecord.reconstitute(date, CompletionStatus.COMPLETED)))
+            assertThat(repository.create(instruction))
                     .isEqualTo(DailyRecordCreationOutcome.ALREADY_EXISTS);
         }
     }

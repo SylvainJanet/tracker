@@ -44,7 +44,7 @@ describe('application routes', () => {
 
     const harness = await RouterTestingHarness.create('/unknown?date=2026-08-27');
 
-    expect(TestBed.inject(Router).url).toBe('/daily-record/daily-logging?date=2026-08-27');
+    expect(TestBed.inject(Router).url).toBe('/journal/journal-logging?date=2026-08-27');
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe(
       'Daily logging',
     );

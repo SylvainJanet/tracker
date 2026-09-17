@@ -1,7 +1,6 @@
 package fr.sylvainjanet.tracker.tracking.adapter.in.web.handler;
 
 import fr.sylvainjanet.tracker.tracking.application.port.in.exceptions.DailyRecordAlreadyExistsException;
-import fr.sylvainjanet.tracker.tracking.application.port.in.exceptions.DailyRecordNotFoundException;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -22,17 +21,6 @@ public final class DailyRecordExceptionHandler extends ResponseEntityExceptionHa
 
         problem.setTitle("Daily record already exists");
         problem.setProperty("date", exception.date().toString());
-
-        return problem;
-    }
-
-    @ExceptionHandler(DailyRecordNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    ProblemDetail handleNotFound(DailyRecordNotFoundException exception) {
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
-
-        problem.setTitle("Daily record not found");
 
         return problem;
     }

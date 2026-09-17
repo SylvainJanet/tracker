@@ -6,16 +6,10 @@ import fr.sylvainjanet.tracker.tracking.domain.DailyRecord;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public final class InMemoryDailyRecordStore implements DailyRecordStore {
 
     private final Map<LocalDate, DailyRecord> records = new HashMap<>();
-
-    @Override
-    public Optional<DailyRecord> findByDate(LocalDate criteria) {
-        return Optional.ofNullable(records.get(criteria));
-    }
 
     @Override
     public DailyRecordCreationOutcome create(DailyRecord instruction) {

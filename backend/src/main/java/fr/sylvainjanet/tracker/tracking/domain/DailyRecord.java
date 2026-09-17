@@ -6,27 +6,27 @@ import java.util.Objects;
 public final class DailyRecord {
 
     private final LocalDate date;
-    private final CompletionStatus status;
+    private final Weight weight;
 
-    private DailyRecord(LocalDate date, CompletionStatus status) {
+    private DailyRecord(LocalDate date, Weight weight) {
         this.date = Objects.requireNonNull(date, "date must not be null");
-        this.status = Objects.requireNonNull(status, "status must not be null");
+        this.weight = Objects.requireNonNull(weight, "weight must not be null");
     }
 
-    public static DailyRecord create(LocalDate date) {
-        return new DailyRecord(date, CompletionStatus.IN_PROGRESS);
-    }
-
-    public static DailyRecord reconstitute(LocalDate date, CompletionStatus status) {
-        return new DailyRecord(date, status);
+    public static DailyRecord create(LocalDate date, Weight weight) {
+        return new DailyRecord(date, weight);
     }
 
     public LocalDate date() {
         return date;
     }
 
-    public CompletionStatus status() {
-        return status;
+    public Weight weight() {
+        return weight;
+    }
+
+    public Float weightInKilograms() {
+        return weight.kilograms();
     }
 
     @Override

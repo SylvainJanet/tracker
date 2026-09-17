@@ -26,13 +26,13 @@ class SqliteDailyRecordSchemaTest {
 
     @Test
     void acceptsValidDateAndCompletionStatus() {
-        insert("2024-02-29", "IN_PROGRESS");
+        insert("2024-02-29", "123.0");
 
-        String status =
+        String weight =
                 jdbcClient
                         .sql(
                                 """
-                SELECT completion_status
+                SELECT weight
                 FROM tracking_daily_record
                 WHERE record_date = :date
                 """)
@@ -40,20 +40,20 @@ class SqliteDailyRecordSchemaTest {
                         .query(String.class)
                         .single();
 
-        assertThat(status).isEqualTo("IN_PROGRESS");
+        assertThat(weight).isEqualTo("123.0");
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"2025-02-29", "2025-04-31", "2025-2-01", "2025/02/01", "not-a-date"})
     void rejectsInvalidDates(String date) {
-        assertThatThrownBy(() -> insert(date, "IN_PROGRESS"))
+        assertThatThrownBy(() -> insert(date, "123.0"))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("CHECK constraint failed");
     }
 
     @Test
-    void rejectsUnknownCompletionStatus() {
-        assertThatThrownBy(() -> insert("2025-01-01", "UNKNOWN"))
+    void rejectsNegativeWeight() {
+        assertThatThrownBy(() -> insert("2025-01-01", "-123.0"))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("CHECK constraint failed");
     }
@@ -66,10 +66,10 @@ class SqliteDailyRecordSchemaTest {
                                         .sql(
                                                 """
                             INSERT INTO tracking_daily_record (
-                                completion_status
+                                weight
                             )
                             VALUES (
-                                'IN_PROGRESS'
+                                '123.0'
                             )
                             """)
                                         .update())
@@ -94,34 +94,33 @@ class SqliteDailyRecordSchemaTest {
                             """)
                                         .update())
                 .isInstanceOf(DataAccessException.class)
-                .hasMessageContaining(
-                        "NOT NULL constraint failed: tracking_daily_record.completion_status");
+                .hasMessageContaining("NOT NULL constraint failed: tracking_daily_record.weight");
     }
 
     @Test
     void rejectsDuplicateDates() {
-        insert("2025-01-01", "IN_PROGRESS");
+        insert("2025-01-01", "123.0");
 
-        assertThatThrownBy(() -> insert("2025-01-01", "COMPLETED"))
+        assertThatThrownBy(() -> insert("2025-01-01", "321.0"))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("UNIQUE constraint failed");
     }
 
-    private void insert(String date, String completionStatus) {
+    private void insert(String date, String weight) {
         jdbcClient
                 .sql(
                         """
                 INSERT INTO tracking_daily_record (
                     record_date,
-                    completion_status
+                    weight
                 )
                 VALUES (
                     :date,
-                    :completionStatus
+                    :weight
                 )
                 """)
                 .param("date", date)
-                .param("completionStatus", completionStatus)
+                .param("weight", weight)
                 .update();
     }
 }

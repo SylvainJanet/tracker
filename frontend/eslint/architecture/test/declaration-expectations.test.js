@@ -65,7 +65,7 @@ describe('architecture declaration expectations', () => {
       requiredExports: [
         {
           name: '<PascalFileStem>',
-          types: ['interface', 'type'],
+          types: ['interface', 'type', 'class'],
         },
       ],
       optionalExports: [
@@ -373,6 +373,10 @@ describe('architecture declaration expectations', () => {
             types: ['class'],
           },
           {
+            name: '<PascalResponsibility>Url',
+            types: ['class'],
+          },
+          {
             name: '<OptionalPascalName><PascalScope>RequestParameters',
             types: ['interface'],
           },
@@ -382,6 +386,18 @@ describe('architecture declaration expectations', () => {
           },
           {
             name: '<OptionalPascalName><PascalScope>ResponseDto',
+            types: ['interface'],
+          },
+          {
+            name: '<OptionalPascalName><PascalResponsibility>RequestParameters',
+            types: ['interface'],
+          },
+          {
+            name: '<OptionalPascalName><PascalResponsibility>RequestBodyDto',
+            types: ['interface'],
+          },
+          {
+            name: '<OptionalPascalName><PascalResponsibility>ResponseDto',
             types: ['interface'],
           },
         ],
@@ -400,6 +416,10 @@ describe('architecture declaration expectations', () => {
         optionalExports: [
           {
             name: 'translate<OptionalPascalName><PascalScope>HttpError',
+            types: ['function'],
+          },
+          {
+            name: 'translate<OptionalPascalName><PascalResponsibility>HttpError',
             types: ['function'],
           },
         ],
