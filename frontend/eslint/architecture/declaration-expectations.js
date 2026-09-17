@@ -240,6 +240,10 @@ const declarations = /** @satisfies {Record<string, import('./types').Declaratio
         name: 'translate<OptionalPascalName><PascalScope>HttpError',
         types: ['function'],
       },
+      {
+        name: 'translate<OptionalPascalName><PascalResponsibility>HttpError',
+        types: ['function'],
+      },
     ],
   },
 
