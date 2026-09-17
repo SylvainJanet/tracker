@@ -76,7 +76,7 @@ const fileExpectations = {
     ],
     httpErrorTranslator: [
       expectedFile(
-        ['<scope>-http-error.translator'],
+        ['<scope>-http-error.translator', '<scope>-<responsibility>-http-error.translator'],
         TYPESCRIPT_EXTENSIONS,
         declarations.httpErrorTranslator,
       ),
