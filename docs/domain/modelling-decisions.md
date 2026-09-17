@@ -123,9 +123,9 @@ obtaining it implicitly. The current date is an environmental input; domain or
 application rules interpret it rather than owning its acquisition. This keeps
 date-dependent decisions explicit and deterministic in tests.
 
-## `DailyRecord`
+## Daily records
 
-`DailyRecord` represents actual logging for one calendar date. It may contain
+A daily record represents actual logging for one calendar date. It may contain
 the measured weight, calorie intake, protein intake, fibre intake, measurement
 quality, steps and performed-exercise information recorded for that date.
 
@@ -159,7 +159,7 @@ time advances.
 
 ### Measured weight
 
-A measured weight is an optional observation within `DailyRecord`. Its absence
+A measured weight is an optional observation within a daily record. Its absence
 does not prevent other daily information from being recorded and does not by
 itself determine completion.
 
@@ -228,7 +228,7 @@ The following areas remain unresolved:
 - aggregate boundaries for structured exercise, foods and meal planning;
 - whether different plans share an abstraction;
 - representation of planned, overridden and resolved day types;
-- completion requirements and the `DailyRecord` transition model;
+- completion requirements and the daily record transition model;
 - audit requirements for corrected observations;
 - correction of erroneous effective-dated strategy information;
 - failure and consistency rules for operations involving several contexts;

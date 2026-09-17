@@ -13,7 +13,7 @@ Weight information serves several different purposes in the tracker:
 
 These purposes require several kinds of values that must remain distinguishable.
 
-Tracking owns measured weights as part of `DailyRecord` and owns manually
+Tracking owns measured weights as part of daily records and owns manually
 entered predictions as a separate aggregate. Strategy owns the goal trajectory
 definition. Analysis owns expected, interpolated, carried and other derived
 weights.
@@ -143,7 +143,7 @@ and exposed source and method information alongside the calculated value.
 ### Daily observations
 
 The application deliberately places an optional measured weight in
-`DailyRecord`, not merely because the workbook put weight on the daily row but
+daily records, not merely because the workbook put weight on the daily row but
 because measurement is part of the daily logging workflow. Entering a measured
 weight starts a record when none exists, while completion remains independent
 from whether weight was measured.
@@ -186,7 +186,7 @@ audit history remains open.
 - Every weight value has a calendar date and unit.
 - Measured, predicted, interpolated and expected values remain distinguishable.
 - Missing weight is not numeric zero.
-- A measured weight is optional information within `DailyRecord`.
+- A measured weight is optional information within daily records.
 - Entering a measured weight starts a daily record when none exists.
 - A weight prediction may exist independently and does not create a daily
   record.
@@ -202,6 +202,6 @@ concrete weight use cases rather than inferred from spreadsheet values.
 ## Open domain questions
 
 Aggregate ownership and coexistence are now established: measured weights belong
-to `DailyRecord`, predictions are a separate Tracking aggregate, and calculated
+to daily records, predictions are a separate Tracking aggregate, and calculated
 weights belong to Analysis. Revision history, prediction resolution and
 historical as-of replay remain open application-domain questions.

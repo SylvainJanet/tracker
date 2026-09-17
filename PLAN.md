@@ -60,7 +60,7 @@ bounded contexts.
 
 - A calendar date composes information without making every concept one
   aggregate.
-- `DailyRecord` owns the optional measured weight logged for its date.
+- A daily record owns the optional measured weight logged for its date.
 - Entering an actual value for a new date starts a daily record in progress.
 - Completion is explicit and independent from measurement accuracy.
 - A weight prediction is a separate Tracking aggregate and does not create a
@@ -113,7 +113,7 @@ committed fixtures. Tests use synthetic data and isolated SQLite databases.
 - [x] Update the canonical domain-modelling decisions with the accepted context
       map.
 - [x] Update daily-observation and weight documentation to place measured weight
-      inside `DailyRecord`.
+      inside daily records.
 - [x] Record the target frontend context map and its independence from backend
       boundaries.
 - [x] Document Tracking's internal capability areas without declaring additional
@@ -134,7 +134,7 @@ and the two deferred contexts without contradicting weight ownership.
 - [ ] Model daily nutrition observations: calories, protein, and fibre with
       explicit units and absence semantics.
 - [ ] Model measurement quality independently from completion.
-- [ ] Add optional measured weight to `DailyRecord`.
+- [ ] Add optional measured weight to daily records.
 - [ ] Model steps so missing and zero remain distinct.
 - [ ] Preserve current exercise history as a recorded label and reported energy
       estimate.
