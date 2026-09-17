@@ -1,1 +1,1 @@
-export { provideApplicationNavigation } from '../configuration/providers/navigation.providers';
+export { provideApplicationNavigation } from '../configuration/navigation.providers';

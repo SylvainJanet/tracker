@@ -202,9 +202,8 @@ describe('architecture naming expectations', () => {
 
     'src/app/contexts/daily-record/configuration/navigation/navigation.ts',
     'src/app/contexts/daily-record/configuration/navigation/daily-record-navigation.ts',
-    'src/app/contexts/daily-record/configuration/routes/daily-record.providers.ts',
-    'src/app/contexts/daily-record/configuration/routes/daily-record.routes.test.ts',
-    'src/app/contexts/daily-record/reporting/history/configuration/routes/daily-record.routes.ts',
+    'src/app/contexts/daily-record/configuration/daily-record.routes.test.ts',
+    'src/app/contexts/daily-record/reporting/history/configuration/daily-record.routes.ts',
 
     'src/app/shared/configuration/navigation/shared.navigation.ts',
     'src/app/shared/configuration/navigation/configuration.navigation.ts',
@@ -217,7 +216,7 @@ describe('architecture naming expectations', () => {
     'src/app/configuration/app.ts',
     'src/app/configuration/App.config.ts',
     'src/app/configuration/contexts_config.ts',
-    'src/app/configuration/app.configuration.ts',
+    'src/app/configuration/smth/app.configuration.ts',
 
     'src/app/composition/app.ts',
     'src/app/composition/App.composition.ts',

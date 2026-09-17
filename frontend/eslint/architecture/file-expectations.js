@@ -95,14 +95,14 @@ const fileExpectations = {
       reExportFile(['navigation'], {
         statements: 'one',
         source: {
-          exact: '../configuration/navigation/<scope>.navigation',
+          exact: '../configuration/<scope>.navigation',
         },
         names: ['<UpperSnakeScope>_NAVIGATION'],
       }),
       reExportFile(['routes'], {
         statements: 'one',
         source: {
-          exact: '../configuration/routes/<scope>.routes',
+          exact: '../configuration/<scope>.routes',
         },
         names: ['<UpperSnakeScope>_ROUTES'],
       }),
@@ -119,15 +119,11 @@ const fileExpectations = {
         declarations.singleClass,
       ),
     ],
-    configuration: {
-      navigation: [
-        expectedFile(['<scope>.navigation'], TYPESCRIPT_EXTENSIONS, declarations.contextNavigation),
-      ],
-      providers: [
-        expectedFile(['<scope>.providers'], TYPESCRIPT_EXTENSIONS, declarations.contextProvider),
-      ],
-      routes: [expectedFile(['<scope>.routes'], TYPESCRIPT_EXTENSIONS, declarations.contextRoutes)],
-    },
+    configuration: [
+      expectedFile(['<scope>.navigation'], TYPESCRIPT_EXTENSIONS, declarations.contextNavigation),
+      expectedFile(['<scope>.providers'], TYPESCRIPT_EXTENSIONS, declarations.contextProvider),
+      expectedFile(['<scope>.routes'], TYPESCRIPT_EXTENSIONS, declarations.contextRoutes),
+    ],
   },
 
   shared: {
@@ -147,17 +143,15 @@ const fileExpectations = {
         declarations.sharedHttpDto,
       ),
     ],
-    configuration: {
-      navigation: [
-        expectedFile(
-          ['<scope>.configuration.navigation'],
-          TYPESCRIPT_EXTENSIONS,
-          declarations.sharedNavigation,
-        ),
-      ],
-      providers: [expectedFile(['<scope>.configuration.providers'])],
-      routes: [expectedFile(['<scope>.configuration.routes'])],
-    },
+    configuration: [
+      expectedFile(
+        ['<scope>.configuration.navigation'],
+        TYPESCRIPT_EXTENSIONS,
+        declarations.sharedNavigation,
+      ),
+      expectedFile(['<scope>.configuration.providers']),
+      expectedFile(['<scope>.configuration.routes']),
+    ],
   },
 
   shell: {
@@ -172,20 +166,16 @@ const fileExpectations = {
       reExportFile(['providers'], {
         statements: 'one',
         source: {
-          exact: '../configuration/providers/<scope>.providers',
+          exact: '../configuration/<scope>.providers',
         },
         names: 'any',
       }),
     ],
-    configuration: {
-      providers: [
-        expectedFile(['<scope>.providers'], TYPESCRIPT_EXTENSIONS, declarations.shellProvider),
-      ],
-      routes: [expectedFile(['<scope>.routes'], TYPESCRIPT_EXTENSIONS, declarations.shellRoutes)],
-      sections: [
-        expectedFile(['<scope>.sections'], TYPESCRIPT_EXTENSIONS, declarations.shellSections),
-      ],
-    },
+    configuration: [
+      expectedFile(['<scope>.providers'], TYPESCRIPT_EXTENSIONS, declarations.shellProvider),
+      expectedFile(['<scope>.routes'], TYPESCRIPT_EXTENSIONS, declarations.shellRoutes),
+      expectedFile(['<scope>.sections'], TYPESCRIPT_EXTENSIONS, declarations.shellSections),
+    ],
   },
 
   application: {

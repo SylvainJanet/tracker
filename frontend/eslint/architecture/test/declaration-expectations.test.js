@@ -486,7 +486,7 @@ describe('architecture declaration expectations', () => {
       {
         statements: 'one',
         source: {
-          exact: '../configuration/routes/<scope>.routes',
+          exact: '../configuration/<scope>.routes',
         },
         names: ['<UpperSnakeScope>_ROUTES'],
       },
@@ -506,7 +506,7 @@ describe('architecture declaration expectations', () => {
       {
         statements: 'one',
         source: {
-          exact: '../configuration/providers/<scope>.providers',
+          exact: '../configuration/<scope>.providers',
         },
         names: 'any',
       },

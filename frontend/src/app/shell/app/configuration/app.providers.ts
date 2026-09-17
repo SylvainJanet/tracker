@@ -2,8 +2,8 @@ import { type ApplicationConfig, provideBrowserGlobalErrorListeners } from '@ang
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 
-import { routes } from '../routes/app.routes';
-import { provideApplicationNavigation } from '../../../navigation/api/providers';
+import { routes } from './app.routes';
+import { provideApplicationNavigation } from '../../navigation/api/providers';
 
 export const appProviders: ApplicationConfig['providers'] = [
   provideBrowserGlobalErrorListeners(),

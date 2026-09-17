@@ -1,7 +1,7 @@
 import { type Routes } from '@angular/router';
 
-import { DUMMY_NAVIGATION, DUMMY_PATHS } from '../navigation/dummy.navigation';
-import { ContextNavigationModel } from '../../../../shared/api/shared.context-navigation';
+import { DUMMY_NAVIGATION, DUMMY_PATHS } from './dummy.navigation';
+import { ContextNavigationModel } from '../../../shared/api/shared.context-navigation';
 
 export const DUMMY_ROUTES: Routes = [
   {
@@ -13,7 +13,7 @@ export const DUMMY_ROUTES: Routes = [
       },
     ],
     loadComponent: () =>
-      import('../../adapter/in/web/layout/page/dummy.layout.page').then(
+      import('../adapter/in/web/layout/page/dummy.layout.page').then(
         (module) => module.DummyLayoutPage,
       ),
     children: [
@@ -25,16 +25,12 @@ export const DUMMY_ROUTES: Routes = [
       {
         path: DUMMY_PATHS.foo,
         loadComponent: () =>
-          import('../../adapter/in/web/foo/page/dummy.foo.page').then(
-            (module) => module.DummyFooPage,
-          ),
+          import('../adapter/in/web/foo/page/dummy.foo.page').then((module) => module.DummyFooPage),
       },
       {
         path: DUMMY_PATHS.bar,
         loadComponent: () =>
-          import('../../adapter/in/web/bar/page/dummy.bar.page').then(
-            (module) => module.DummyBarPage,
-          ),
+          import('../adapter/in/web/bar/page/dummy.bar.page').then((module) => module.DummyBarPage),
       },
     ],
   },

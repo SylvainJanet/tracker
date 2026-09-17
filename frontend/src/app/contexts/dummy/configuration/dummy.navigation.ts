@@ -1,4 +1,4 @@
-import { defineContextNavigation } from '../../../../shared/api/shared.context-navigation';
+import { defineContextNavigation } from '../../../shared/api/shared.context-navigation';
 
 export const DUMMY_PATHS = {
   foo: 'foo',

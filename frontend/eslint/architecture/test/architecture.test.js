@@ -33,9 +33,9 @@ describe('project architecture', () => {
     'src/app/contexts/daily-record/adapter/out/http/errors/daily-record-unexpected-gateway.error.ts',
     'src/app/contexts/daily-record/adapter/out/http/errors/translator/daily-record-http-error.translator.ts',
     'src/app/contexts/daily-record/adapter/out/time/browser-today.provider.ts',
-    'src/app/contexts/daily-record/configuration/navigation/daily-record.navigation.ts',
-    'src/app/contexts/daily-record/configuration/providers/daily-record.providers.ts',
-    'src/app/contexts/daily-record/configuration/routes/daily-record.routes.ts',
+    'src/app/contexts/daily-record/configuration/daily-record.navigation.ts',
+    'src/app/contexts/daily-record/configuration/daily-record.providers.ts',
+    'src/app/contexts/daily-record/configuration/daily-record.routes.ts',
 
     // Shared modules
     'src/app/shared/api/shared.context-navigation.ts',
@@ -53,20 +53,20 @@ describe('project architecture', () => {
     'src/app/shared/adapter/out/http/errors/shared-http.error.ts',
     'src/app/shared/adapter/out/http/errors/translator/shared-http-error.translator.ts',
     'src/app/shared/adapter/out/time/browser-today.provider.ts',
-    'src/app/shared/configuration/navigation/shared.configuration.navigation.ts',
-    'src/app/shared/configuration/providers/shared.providers.ts',
-    'src/app/shared/configuration/routes/shared.routes.ts',
+    'src/app/shared/configuration/shared.configuration.navigation.ts',
+    'src/app/shared/configuration/shared.providers.ts',
+    'src/app/shared/configuration/shared.routes.ts',
 
     // Shell modules
     'src/app/shell/app/api/page.ts',
     'src/app/shell/app/api/providers.ts',
-    'src/app/shell/app/configuration/providers/app.providers.ts',
-    'src/app/shell/app/configuration/routes/app.routes.ts',
+    'src/app/shell/app/configuration/app.providers.ts',
+    'src/app/shell/app/configuration/app.routes.ts',
     'src/app/shell/app/page/app.page.ts',
     'src/app/shell/navigation/api/page.ts',
     'src/app/shell/navigation/api/providers.ts',
-    'src/app/shell/navigation/configuration/providers/navigation.providers.ts',
-    'src/app/shell/navigation/configuration/sections/navigation.sections.ts',
+    'src/app/shell/navigation/configuration/navigation.providers.ts',
+    'src/app/shell/navigation/configuration/navigation.sections.ts',
     'src/app/shell/navigation/model/navigation.model.ts',
     'src/app/shell/navigation/page/navigation.page.ts',
     'src/app/shell/navigation/presenter/navigation.presenter.ts',
@@ -247,8 +247,8 @@ describe('project architecture', () => {
     {
       filePath: 'src/app/contexts/daily-record/configuration/components/example.ts',
       directoryPath: 'src/app/contexts/daily-record/configuration',
-      allowsFiles: false,
-      allowedFolders: ['navigation', 'providers', 'routes'],
+      allowsFiles: true,
+      allowedFolders: [],
     },
     {
       filePath: 'src/app/shell/example.ts',
@@ -265,8 +265,8 @@ describe('project architecture', () => {
     {
       filePath: 'src/app/shell/app/configuration/navigation/example.ts',
       directoryPath: 'src/app/shell/app/configuration',
-      allowsFiles: false,
-      allowedFolders: ['providers', 'routes', 'sections'],
+      allowsFiles: true,
+      allowedFolders: [],
     },
     {
       filePath: 'src/app/shell/app/model/details/example.ts',

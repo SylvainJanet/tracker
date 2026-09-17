@@ -1,26 +1,26 @@
 import { type EnvironmentProviders, InjectionToken, makeEnvironmentProviders } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { type CreateDailyRecordUseCase } from '../../application/port/in/create-daily-record.use-case';
-import { type GetDailyRecordUseCase } from '../../application/port/in/get-daily-record.use-case';
-import { type DailyRecordGateway } from '../../application/port/out/daily-record.gateway';
-import { CreateDailyRecordService } from '../../application/service/create-daily-record.service';
-import { GetDailyRecordService } from '../../application/service/get-daily-record.service';
-import { HttpDailyRecordGateway } from '../../adapter/out/http/http-daily-record.gateway';
-import { BrowserTodayProvider } from '../../adapter/out/time/browser-today.provider';
-import { type TodayProvider } from '../../application/port/out/today.provider';
+import { type CreateDailyRecordUseCase } from '../application/port/in/create-daily-record.use-case';
+import { type GetDailyRecordUseCase } from '../application/port/in/get-daily-record.use-case';
+import { type DailyRecordGateway } from '../application/port/out/daily-record.gateway';
+import { CreateDailyRecordService } from '../application/service/create-daily-record.service';
+import { GetDailyRecordService } from '../application/service/get-daily-record.service';
+import { HttpDailyRecordGateway } from '../adapter/out/http/http-daily-record.gateway';
+import { BrowserTodayProvider } from '../adapter/out/time/browser-today.provider';
+import { type TodayProvider } from '../application/port/out/today.provider';
 import {
   DAILY_RECORD_SUMMARY_PRESENTER_FACTORY,
   DailyRecordSummaryPresenter,
   type DailyRecordSummaryPresenterFactory,
-} from '../../adapter/in/web/summary/presenter/daily-record.summary.presenter';
+} from '../adapter/in/web/summary/presenter/daily-record.summary.presenter';
 import {
   DAILY_RECORD_LOGGING_PRESENTER_FACTORY,
   type DailyRecordLoggingPresenterFactory,
   DailyRecordLoggingPresenter,
-} from '../../adapter/in/web/logging/presenter/daily-record.logging.presenter';
-import type { GetDefaultDailyRecordDateUseCase } from '../../application/port/in/get-default-daily-record-date.use-case';
-import { GetDefaultDailyRecordDateService } from '../../application/service/get-default-daily-record-date.service';
+} from '../adapter/in/web/logging/presenter/daily-record.logging.presenter';
+import type { GetDefaultDailyRecordDateUseCase } from '../application/port/in/get-default-daily-record-date.use-case';
+import { GetDefaultDailyRecordDateService } from '../application/service/get-default-daily-record-date.service';
 
 export const GET_DAILY_RECORD_USE_CASE = new InjectionToken<GetDailyRecordUseCase>(
   'GetDailyRecordUseCase',

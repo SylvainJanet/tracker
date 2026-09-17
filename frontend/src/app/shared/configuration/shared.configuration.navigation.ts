@@ -1,4 +1,4 @@
-import { type ContextNavigationModel } from '../../adapter/in/web/navigation/model/shared.navigation.model';
+import { type ContextNavigationModel } from '../adapter/in/web/navigation/model/shared.navigation.model';
 
 export interface SharedConfigurationNavigation extends ContextNavigationModel {
   readonly defaultPath: string;

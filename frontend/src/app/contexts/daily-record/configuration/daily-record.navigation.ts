@@ -1,4 +1,4 @@
-import { defineContextNavigation } from '../../../../shared/api/shared.context-navigation';
+import { defineContextNavigation } from '../../../shared/api/shared.context-navigation';
 
 export const DAILY_RECORD_PATHS = {
   logging: 'daily-logging',

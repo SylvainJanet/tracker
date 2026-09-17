@@ -1,1 +1,1 @@
-export { DAILY_RECORD_NAVIGATION } from '../configuration/navigation/daily-record.navigation';
+export { DAILY_RECORD_NAVIGATION } from '../configuration/daily-record.navigation';
