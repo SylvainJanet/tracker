@@ -4,7 +4,7 @@
 
 The historical tracker recorded calorie, protein and fibre intake, steps and
 exercise as daily behavioural inputs. Tracking owns these actual observations
-within `DailyRecord`. This application decision follows the cohesive daily
+within a daily record. This application decision follows the cohesive daily
 logging workflow rather than mechanically reproducing the spreadsheet layout.
 
 Structured exercise definitions, prescriptions, plans and completed sessions

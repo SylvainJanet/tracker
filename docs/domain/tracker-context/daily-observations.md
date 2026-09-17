@@ -14,7 +14,7 @@ A daily view may eventually combine observations with plans, goals, predictions
 and calculated results. That does not mean all information displayed for a date
 belongs to the same aggregate.
 
-Tracking owns `DailyRecord` and the actual information logged for its date,
+Tracking owns the daily records and the actual information logged for its date,
 including an optional measured weight. Strategy owns plans and day assignments,
 while Analysis owns calculated values. This ownership is a deliberate
 application decision rather than a reproduction of the spreadsheet row.
@@ -116,7 +116,7 @@ step or exercise-derived energy is a calculation rather than an observation.
 
 ### Weight
 
-A measured weight is an optional observation within `DailyRecord`. Entering a
+A measured weight is an optional observation within a daily record. Entering a
 measurement starts a record for the date when one does not already exist, but
 weight is not required merely because a record exists or is complete.
 
@@ -176,7 +176,7 @@ The following matters remain deliberately undecided:
 - whether an intentionally unmeasured day needs a reason;
 - whether planned and actual day types must be stored separately;
 - how future structured Training completions update or reference the performed
-  exercise information in `DailyRecord`;
+  exercise information in daily records;
 - which numerical validations apply to each observation.
 
 These questions should be resolved through concrete use cases rather than
