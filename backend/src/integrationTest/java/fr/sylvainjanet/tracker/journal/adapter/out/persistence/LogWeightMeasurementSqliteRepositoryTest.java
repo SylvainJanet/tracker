@@ -10,6 +10,7 @@ import fr.sylvainjanet.tracker.journal.adapter.out.persistence.repository.LogWei
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.instruction.LogWeightMeasurementInstruction;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.LogWeightMeasurementStore;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,7 @@ class LogWeightMeasurementSqliteRepositoryTest {
         @Test
         void savesNewWeightMeasurement() {
             LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-            float weight = 123.0f;
+            BigDecimal weight = BigDecimal.valueOf(1234);
             LogWeightMeasurementInstruction instruction =
                     aLogWeightMeasurementInstruction()
                             .withDate(date)
@@ -51,8 +52,8 @@ class LogWeightMeasurementSqliteRepositoryTest {
         @Test
         void updatesExistingWeightMeasurement() {
             LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-            float weight = 123.0f;
-            float newWeight = 124.0f;
+            BigDecimal weight = BigDecimal.valueOf(1234);
+            BigDecimal newWeight = BigDecimal.valueOf(1244);
             LogWeightMeasurementInstruction instruction =
                     aLogWeightMeasurementInstruction()
                             .withDate(date)

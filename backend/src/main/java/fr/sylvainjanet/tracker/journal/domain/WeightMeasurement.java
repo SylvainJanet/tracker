@@ -1,5 +1,6 @@
 package fr.sylvainjanet.tracker.journal.domain;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -25,8 +26,8 @@ public final class WeightMeasurement {
         return weight;
     }
 
-    public Float weightInKilograms() {
-        return weight.kilograms();
+    public BigDecimal weightInKilograms() {
+        return weight.inKilograms();
     }
 
     @Override

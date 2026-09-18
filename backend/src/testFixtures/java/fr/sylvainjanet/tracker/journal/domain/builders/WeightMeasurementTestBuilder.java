@@ -2,6 +2,7 @@ package fr.sylvainjanet.tracker.journal.domain.builders;
 
 import fr.sylvainjanet.tracker.journal.domain.Weight;
 import fr.sylvainjanet.tracker.journal.domain.WeightMeasurement;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public final class WeightMeasurementTestBuilder {
@@ -17,7 +18,7 @@ public final class WeightMeasurementTestBuilder {
         return this;
     }
 
-    public WeightMeasurementTestBuilder withWeightInKg(Float weightInKg) {
+    public WeightMeasurementTestBuilder withWeightInKg(BigDecimal weightInKg) {
         this.weight = Weight.of(weightInKg);
         return this;
     }

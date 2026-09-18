@@ -26,13 +26,13 @@ class WeightMeasurementSqliteSchemaTest {
 
     @Test
     void acceptsValidDateAndWeight() {
-        insert("2024-02-29", "123.0");
+        insert("2024-02-29", "1234");
 
         String weight =
                 jdbcClient
                         .sql(
                                 """
-                SELECT weight_in_kg
+                SELECT weight_in_g
                 FROM weight_measurement
                 WHERE date = :date
                 """)
@@ -40,20 +40,20 @@ class WeightMeasurementSqliteSchemaTest {
                         .query(String.class)
                         .single();
 
-        assertThat(weight).isEqualTo("123.0");
+        assertThat(weight).isEqualTo("1234");
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"2025-02-29", "2025-04-31", "2025-2-01", "2025/02/01", "not-a-date"})
     void rejectsInvalidDates(String date) {
-        assertThatThrownBy(() -> insert(date, "123.0"))
+        assertThatThrownBy(() -> insert(date, "1234"))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("CHECK constraint failed");
     }
 
     @Test
     void rejectsNegativeWeight() {
-        assertThatThrownBy(() -> insert("2025-01-01", "-123.0"))
+        assertThatThrownBy(() -> insert("2025-01-01", "-1234"))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("CHECK constraint failed");
     }
@@ -66,10 +66,10 @@ class WeightMeasurementSqliteSchemaTest {
                                         .sql(
                                                 """
                     INSERT INTO weight_measurement (
-                        weight_in_kg
+                        weight_in_g
                     )
                     VALUES (
-                        '123.0'
+                        '1234'
                     )
                     """)
                                         .update())
@@ -93,28 +93,7 @@ class WeightMeasurementSqliteSchemaTest {
                     """)
                                         .update())
                 .isInstanceOf(DataAccessException.class)
-                .hasMessageContaining(
-                        "NOT NULL constraint failed: weight_measurement.weight_in_kg");
-    }
-
-    @Test
-    void rejectsMissingCompletionStatus() {
-        assertThatThrownBy(
-                        () ->
-                                jdbcClient
-                                        .sql(
-                                                """
-                            INSERT INTO weight_measurement (
-                                date
-                            )
-                            VALUES (
-                                '2025-01-01'
-                            )
-                            """)
-                                        .update())
-                .isInstanceOf(DataAccessException.class)
-                .hasMessageContaining(
-                        "NOT NULL constraint failed: weight_measurement.weight_in_kg");
+                .hasMessageContaining("NOT NULL constraint failed: weight_measurement.weight_in_g");
     }
 
     private void insert(String date, String weight) {
@@ -123,7 +102,7 @@ class WeightMeasurementSqliteSchemaTest {
                         """
                 INSERT INTO weight_measurement (
                     date,
-                    weight_in_kg
+                    weight_in_g
                 )
                 VALUES (
                     :date,

@@ -5,6 +5,7 @@ import fr.sylvainjanet.tracker.journal.adapter.out.persistence.exceptions.Unsupp
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.instruction.LogWeightMeasurementInstruction;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.LogWeightMeasurementStore;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -28,20 +29,20 @@ public final class LogWeightMeasurementSqliteRepository implements LogWeightMeas
                         """
                 INSERT INTO weight_measurement (
                     date,
-                    weight_in_kg
+                    weight_in_g
                 )
                 VALUES (
                     :date,
-                    :weight_in_kg
+                    :weight_in_g
                 )
                 ON CONFLICT (date) DO UPDATE SET
-                    weight_in_kg = excluded.weight_in_kg
+                    weight_in_g = excluded.weight_in_g
                 RETURNING
                     date,
-                    weight_in_kg
+                    weight_in_g
                 """)
                 .param("date", persistedDate(instruction.date()))
-                .param("weight_in_kg", persistedWeight(instruction.weightInKg()))
+                .param("weight_in_g", persistedWeight(instruction.weightInKg()))
                 .query((resultSet, rowNum) -> toOutcome(resultSet, rowNum))
                 .single();
     }
@@ -49,15 +50,16 @@ public final class LogWeightMeasurementSqliteRepository implements LogWeightMeas
     private LogWeightMeasurementOutcome toOutcome(ResultSet resultSet, int rowNum)
             throws SQLException {
         return new LogWeightMeasurementOutcome(
-                LocalDate.parse(resultSet.getString("date")), resultSet.getFloat("weight_in_kg"));
+                LocalDate.parse(resultSet.getString("date")),
+                resultSet.getBigDecimal("weight_in_g").divide(BigDecimal.valueOf(1000)));
     }
 
-    private static Float persistedWeight(Float weightInKilograms) {
-        if (weightInKilograms < 0) {
+    private static BigDecimal persistedWeight(BigDecimal weightInKilograms) {
+        if (weightInKilograms.compareTo(BigDecimal.ZERO) < 0) {
             throw new UnsupportedWeightSqliteException();
         }
 
-        return weightInKilograms;
+        return weightInKilograms.multiply(BigDecimal.valueOf(1000));
     }
 
     private static String persistedDate(LocalDate date) {

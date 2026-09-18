@@ -1,9 +1,9 @@
-POST {{host}}/api/daily-records
+POST {{host}}/api/journal/weight-measurement
 Content-Type: application/json
 
 {
   "date": "2026-09-16",
-  "weight": 75.5
+  "weightInKg": 75.6
 }
 
 
