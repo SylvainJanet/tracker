@@ -11,7 +11,7 @@ CREATE TABLE weight_measurement
                     )
             ),
 
-    weight_in_kg REAL NOT NULL
-        CHECK (weight_in_kg > 0)
+    weight_in_g INTEGER NOT NULL
+        CHECK (weight_in_g > 0)
 
 ) STRICT;

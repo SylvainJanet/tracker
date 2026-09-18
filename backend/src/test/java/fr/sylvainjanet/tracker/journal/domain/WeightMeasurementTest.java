@@ -4,6 +4,7 @@ import static fr.sylvainjanet.tracker.journal.domain.builders.WeightMeasurementT
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ class WeightMeasurementTest {
     @Test
     void createdLogWeightMeasurementHasTheProvidedDateAndWeight() {
         LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        Weight weight = Weight.of(123.0f);
+        Weight weight = Weight.of(BigDecimal.valueOf(123.0f));
 
         WeightMeasurement weightMeasurement = WeightMeasurement.create(date, weight);
 
@@ -23,7 +24,7 @@ class WeightMeasurementTest {
 
     @Test
     void weightMeasurementCannotBeCreatedWithoutDate() {
-        Weight weight = Weight.of(123.0f);
+        Weight weight = Weight.of(BigDecimal.valueOf(123.0f));
         assertThatThrownBy(() -> WeightMeasurement.create(null, weight))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("date must not be null");
@@ -40,8 +41,8 @@ class WeightMeasurementTest {
     @Test
     void weightMeasurementsWithTheSameDateAreEqualRegardlessOfWeight() {
         LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        Float firstWeight = 123.0f;
-        Float secondWeight = 124.0f;
+        BigDecimal firstWeight = BigDecimal.valueOf(123.0f);
+        BigDecimal secondWeight = BigDecimal.valueOf(124.0f);
 
         WeightMeasurement first =
                 aWeightMeasurement().withDate(date).withWeightInKg(firstWeight).build();
@@ -55,7 +56,7 @@ class WeightMeasurementTest {
     void weightMeasurementsWithDifferentDatesAreNotEqual() {
         LocalDate firstDate = LocalDate.of(2026, Month.AUGUST, 25);
         LocalDate secondDate = LocalDate.of(2026, Month.AUGUST, 26);
-        Float weight = 123.0f;
+        BigDecimal weight = BigDecimal.valueOf(123.0f);
         WeightMeasurement first =
                 aWeightMeasurement().withDate(firstDate).withWeightInKg(weight).build();
         WeightMeasurement second =
@@ -67,7 +68,7 @@ class WeightMeasurementTest {
     @Test
     void equalWeightMeasurementsHaveTheSameHashCode() {
         LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        Float weight = 123.0f;
+        BigDecimal weight = BigDecimal.valueOf(123.0f);
         WeightMeasurement inProgress =
                 aWeightMeasurement().withDate(date).withWeightInKg(weight).build();
         WeightMeasurement completed =

@@ -43,10 +43,7 @@ public final class JournalController {
                                     @Schema(
                                             implementation =
                                                     org.springframework.http.ProblemDetail.class)))
-    @PostMapping(
-            path = "/weight-measurement",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/weight-measurement")
     ResponseEntity<LogWeightMeasurementResponse> log(
             @RequestBody @Valid LogWeightMeasurementRequest request) {
         LogWeightMeasurementResult result = logWeightMeasurementUseCase.log(toCommand(request));

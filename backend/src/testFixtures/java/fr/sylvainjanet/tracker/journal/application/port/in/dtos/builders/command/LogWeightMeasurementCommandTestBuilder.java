@@ -1,11 +1,12 @@
 package fr.sylvainjanet.tracker.journal.application.port.in.dtos.builders.command;
 
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.command.LogWeightMeasurementCommand;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class LogWeightMeasurementCommandTestBuilder {
     private LocalDate date;
-    private Float weightInKg;
+    private BigDecimal weightInKg;
 
     public static LogWeightMeasurementCommandTestBuilder aLogWeightMeasurementCommand() {
         return new LogWeightMeasurementCommandTestBuilder();
@@ -16,7 +17,7 @@ public class LogWeightMeasurementCommandTestBuilder {
         return this;
     }
 
-    public LogWeightMeasurementCommandTestBuilder withWeightInKg(Float weightInKg) {
+    public LogWeightMeasurementCommandTestBuilder withWeightInKg(BigDecimal weightInKg) {
         this.weightInKg = weightInKg;
         return this;
     }
