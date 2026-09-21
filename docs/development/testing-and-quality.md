@@ -74,24 +74,63 @@ tests protect against adapter defects, manual SQL and other clients.
 
 Frontend tests live beside their source and use the `*.spec.ts` suffix.
 
-| Category     | Primary responsibility                                                     | Preferred boundary                                           |
-| ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Domain       | Calendar-date validation, value semantics and domain rules                 | Plain TypeScript without `TestBed`, HTTP or DOM APIs         |
-| Application  | Use-case outcomes and calls through outbound ports                         | Direct service construction with small fakes                 |
-| HTTP adapter | URLs, methods, payloads, runtime response validation and error translation | Angular HTTP testing or focused adapter tests                |
-| Presenter    | Input validation, loading, record and problem states                       | Direct construction with fixed use cases and `TodayProvider` |
-| Component    | Rendering, bindings, event forwarding and accessibility                    | Angular component test with presenter boundary controlled    |
-| Routing      | Guards, redirects, parameters, lazy loading or route providers             | Add only when route behaviour is meaningful                  |
-| End to end   | A small number of complete user journeys                                   | Full application boundary                                    |
+| Category     | Primary responsibility                                                     | Preferred boundary                                                         |
+| ------------ | -------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Domain       | Calendar-date validation, value semantics and domain rules                 | Plain TypeScript without `TestBed`, HTTP or DOM APIs                       |
+| Application  | Use-case outcomes and calls through outbound ports                         | Direct service construction with small fakes                               |
+| HTTP adapter | URLs, methods, payloads, runtime response validation and error translation | Angular HTTP testing or focused adapter tests                              |
+| Presenter    | Input validation, loading, record and problem states                       | Direct construction with fixed use cases and `TodayProvider`               |
+| Component    | Rendering, bindings, event forwarding and accessibility                    | Real component and template with the presenter boundary controlled         |
+| Composition  | Production routes, provider graph and component creation                   | One small `TestBed` or `RouterTestingHarness` smoke test using real wiring |
+| Routing      | Guards, redirects, parameters, nesting and other navigation behaviour      | Add only when application-specific route behaviour is meaningful           |
+| End to end   | A small number of complete user journeys                                   | Full application boundary                                                  |
+
+Direct model, application and presenter tests prove behaviour without an Angular
+component fixture or DOM. A presenter that can be constructed directly does not
+need `TestBed`, even when it uses Angular signals or forms.
+
+Component tests use the real component and template with a controlled fake
+presenter. They prove two directions:
+
+- presenter state produces the minimum meaningful semantic DOM;
+- a browser event reaches the intended presenter or page operation.
+
+As a default, add one minimal rendering assertion per substantially different
+state and one interaction assertion per distinct user intent. States that have
+the same representation do not require separate component tests when their
+differences are already covered by presenter tests.
+
+Prefer semantic content, roles, labels or stable test identifiers over CSS
+classes, element positions or exact DOM structure. Component tests do not verify
+layout, visual styling, Angular framework behaviour, presenter state transitions,
+domain validation or backend calls.
+
+A feature with non-trivial route-level providers should normally have one small
+composition smoke test. It uses the production route and providers while
+replacing external technical boundaries, such as the HTTP backend, with their
+test implementations. Successfully navigating to and creating the feature is
+the useful assertion: Angular must resolve the provider graph, create the
+component and instantiate its template.
+
+Prefer that composition test over separate tests asserting that every injection
+token resolves. Add dedicated configuration tests only when configuration has
+behaviour of its own, such as selecting between implementations.
+
+Static path-to-component declarations do not need dedicated routing tests.
+Test routing separately when application behaviour depends on parameters, query
+parameters, guards, redirects, nesting, lazy loading or route-level providers.
+A route-based composition test may cover routing, dependency injection and
+component creation together.
 
 HTTP adapter tests do not call a running backend. Error translators receive
 focused tests for supported statuses, malformed problem responses and unexpected
-failures. Presenter tests do not need `TestBed` when the presenter is an ordinary
-class. Component tests render presentation behaviour without repeating domain,
-application or backend protocol assertions.
+failures.
 
 End-to-end testing should be introduced only when a valuable complete workflow
-justifies its slower and more fragile execution.
+justifies its slower and more fragile execution. Once business behaviour, HTTP
+translation, state-to-DOM rendering, DOM-to-intent forwarding and production
+composition are covered, simple features should not expand their Angular test
+matrix without a specific risk to protect.
 
 ## Test design
 
@@ -188,6 +227,8 @@ coverage threshold should be introduced only through an explicit quality decisio
 | HTTP DTO or problem translation | HTTP adapter test                               |
 | Presenter state transition      | Presenter test                                  |
 | Template behaviour              | Component test                                  |
+| Frontend feature wiring         | Composition smoke test                          |
+| Meaningful navigation behaviour | Focused routing or component test               |
 | Critical complete workflow      | End-to-end test when the workflow justifies one |
 
 Not every change needs every category. Place each assertion at the lowest level
