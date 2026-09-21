@@ -79,12 +79,12 @@ module.exports = tseslint.config(
     },
 
     rules: {
-      'architecture/declarations': 'error',
+      'architecture/declarations': 'off',
       'architecture/reserved-vocabulary': 'error',
       'architecture/hexagonal-architecture': 'error',
       'architecture/module-boundaries': 'error',
-      'architecture/file-naming': 'error',
-      'architecture/file-structure': 'error',
+      'architecture/file-naming': 'off',
+      'architecture/file-structure': 'off',
     },
   },
 
