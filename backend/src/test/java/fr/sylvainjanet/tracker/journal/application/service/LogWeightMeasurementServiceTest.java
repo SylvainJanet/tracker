@@ -69,7 +69,8 @@ class LogWeightMeasurementServiceTest {
 
         assertThatThrownBy(() -> service.log(command))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("weight must be a positive number of grams");
+                .hasMessage(
+                        "weight must be a positive number of grams that is a multiple of 50 grams");
         verifyNoInteractions(store);
     }
 

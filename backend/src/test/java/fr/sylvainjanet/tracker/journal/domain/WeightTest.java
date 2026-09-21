@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import fr.sylvainjanet.tracker.journal.domain.error.WeightValidationError;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,16 +30,44 @@ class WeightTest {
         IllegalArgumentException exception =
                 assertThrows(IllegalArgumentException.class, () -> Weight.of(kilograms));
 
-        assertEquals("weight must be a positive number of grams", exception.getMessage());
+        assertEquals(
+                "weight must be a positive number of grams that is a multiple of 50 grams",
+                exception.getMessage());
     }
 
     @ParameterizedTest
     @MethodSource("invalidScaleWeights")
     void shouldRejectInvalidScaleOfGrams(BigDecimal kilograms) {
-        ArithmeticException exception =
-                assertThrows(ArithmeticException.class, () -> Weight.of(kilograms));
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> Weight.of(kilograms));
 
-        assertEquals("Rounding necessary", exception.getMessage());
+        assertEquals(
+                "weight must be a positive number of grams that is a multiple of 50 grams",
+                exception.getMessage());
+    }
+
+    @Test
+    void shouldValidateWeightFromValidKilograms() {
+        Set<WeightValidationError> errors = Weight.validateWeightInKg(BigDecimal.valueOf(75.5f));
+
+        assertEquals(0, errors.size());
+    }
+
+    @Test
+    void shouldInvalidateNegativeWeight() {
+        Set<WeightValidationError> errors = Weight.validateWeightInKg(BigDecimal.valueOf(-75.5f));
+
+        assertEquals(1, errors.size());
+        assertEquals(WeightValidationError.Kind.POSITIVE, errors.iterator().next().kind());
+    }
+
+    @Test
+    void shouldInvalidateWeightInWrongIncrement() {
+        Set<WeightValidationError> errors = Weight.validateWeightInKg(BigDecimal.valueOf(75.1234f));
+
+        assertEquals(1, errors.size());
+        assertEquals(
+                WeightValidationError.Kind.MULTIPLE_OF_GRAMS_UNIT, errors.iterator().next().kind());
     }
 
     @Test

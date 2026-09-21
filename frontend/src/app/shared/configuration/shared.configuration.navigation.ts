@@ -5,15 +5,17 @@ export interface SharedConfigurationNavigation extends ContextNavigationModel {
 }
 
 export function defineContextNavigation(
-  configuration: SharedConfigurationNavigation,
+  defaultPath: string,
+  contextNavigationModel: ContextNavigationModel,
 ): SharedConfigurationNavigation {
   if (
-    !configuration.destinations.some(
-      (destination) => destination.path === configuration.defaultPath,
-    )
+    !contextNavigationModel.destinations.some((destination) => destination.path === defaultPath)
   ) {
     throw new Error('The default context navigation path must identify a destination');
   }
 
-  return configuration;
+  return {
+    ...contextNavigationModel,
+    defaultPath,
+  };
 }

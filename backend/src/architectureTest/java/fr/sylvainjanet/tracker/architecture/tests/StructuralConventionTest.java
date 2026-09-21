@@ -40,6 +40,7 @@ public class StructuralConventionTest {
     private static final Set<String> ALLOWED_WEB_DTO_PACKAGES = Set.of("request", "response");
     private static final Set<String> ALLOWED_REQUEST_PACKAGES = Set.of("enums");
     private static final Set<String> ALLOWED_RESPONSE_PACKAGES = Set.of("enums");
+    private static final Set<String> ALLOWED_WEB_VALIDATOR_PACKAGES = Set.of("annotation");
 
     private static final Set<String> ALLOWED_OUTBOUND_ADAPTER_PACKAGES = Set.of("persistence");
     private static final Set<String> ALLOWED_PERSISTENCE_PACKAGES =
@@ -71,6 +72,8 @@ public class StructuralConventionTest {
     private static final String RESPONSES_ENUMS = packageTree("adapter.in.web.dtos.response.enums");
     private static final String WEB_HANDLER = packageTree("adapter.in.web.handler");
     private static final String WEB_VALIDATOR = packageTree("adapter.in.web.validator");
+    private static final String WEB_VALIDATOR_ANNOTATION =
+            packageTree("adapter.in.web.validator.annotation");
 
     private static final String OUTBOUND_ADAPTERS = packageTree("adapter.out");
     private static final String PERSISTENCE = packageTree("adapter.out.persistence");
@@ -499,10 +502,29 @@ public class StructuralConventionTest {
                     public static final class WebValidatorRules {
 
                         @ArchTest
+                        public static final ArchRule webValidatorsUseAllowedPackages =
+                                classes()
+                                        .that()
+                                        .resideInAPackage(WEB_VALIDATOR + "*")
+                                        .should()
+                                        .resideInAnyPackage(
+                                                allowedSubpackageTrees(
+                                                        WEB_VALIDATOR,
+                                                        ALLOWED_WEB_VALIDATOR_PACKAGES))
+                                        .allowEmptyShould(true);
+
+                        @ArchTest
                         public static final ArchRule webValidatorShouldHaveValidatorSuffix =
                                 classes()
                                         .that()
                                         .resideInAPackage(WEB_VALIDATOR)
+                                        .and()
+                                        .resideOutsideOfPackages(
+                                                allowedSubpackageTrees(
+                                                        WEB_VALIDATOR,
+                                                        ALLOWED_WEB_VALIDATOR_PACKAGES))
+                                        .and()
+                                        .areTopLevelClasses()
                                         .should()
                                         .haveSimpleNameEndingWith("Validator")
                                         .allowEmptyShould(true);
@@ -515,6 +537,36 @@ public class StructuralConventionTest {
                                         .should()
                                         .resideInAPackage(WEB_VALIDATOR)
                                         .allowEmptyShould(true);
+
+                        @ArchTest
+                        static final ArchTests webValidatorRules =
+                                ArchTests.in(
+                                        StructuralConventionTest.ContextRules.AdapterRules
+                                                .AdapterInboundRules.WebAdapterRules
+                                                .WebValidatorRules.webValidatorAnnotationRules
+                                                .class);
+
+                        public static final class webValidatorAnnotationRules {
+
+                            @ArchTest
+                            public static final ArchRule
+                                    webValidatorAnnotationShouldHaveValidSuffix =
+                                            classes()
+                                                    .that()
+                                                    .resideInAPackage(WEB_VALIDATOR_ANNOTATION)
+                                                    .should()
+                                                    .haveSimpleNameEndingWith("Valid")
+                                                    .allowEmptyShould(true);
+
+                            @ArchTest
+                            public static final ArchRule classesNamedValidStayInValidPackages =
+                                    classes()
+                                            .that()
+                                            .haveSimpleNameEndingWith("Valid")
+                                            .should()
+                                            .resideInAPackage(WEB_VALIDATOR_ANNOTATION)
+                                            .allowEmptyShould(true);
+                        }
                     }
                 }
             }
