@@ -1,5 +1,7 @@
-import type { ContextDestination } from '../../../shared/api/shared.context-navigation';
-import { type ContextNavigationModel } from '../../../shared/api/shared.context-navigation';
+import type {
+  ContextDestination,
+  ContextNavigationModel,
+} from '../../../shared/api/shared.context-navigation';
 
 export interface NavigationSection extends ContextDestination, ContextNavigationModel {
   readonly id: string;

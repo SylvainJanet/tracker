@@ -1,0 +1,162 @@
+<section class="tracker-page">
+  <header class="tracker-page-header">
+    <h1>Daily logging</h1>
+    <p>Select a calendar date to log a weight measurement.</p>
+  </header>
+
+  <div class="tracker-form">
+    <label class="tracker-control-label" for="record-date">Date</label>
+
+    <input
+      #dateInput
+      id="record-date"
+      class="tracker-input"
+      data-testid="date"
+      type="date"
+      required
+      (input)="selectDate(dateInput.value)"
+      [formControl]="presenter.dateControl"
+      aria-describedby="date-error"
+      [attr.aria-invalid]="presenter.dateControl.invalid ? 'true' : null"
+    />
+
+    @if (
+      presenter.dateControl.hasError('required') ||
+      presenter.dateControl.hasError('notACalendarDate')
+    ) {
+      <p id="date-error" class="tracker-form-error">Select a date.</p>
+    }
+
+    <div class="tracker-actions">
+      <button
+        class="tracker-button"
+        data-testid="log"
+        type="button"
+        [disabled]="!presenter.validDate()"
+        (click)="openDialog()"
+      >
+        Log weight measurement
+      </button>
+    </div>
+  </div>
+
+  @let currentState = state();
+  @switch (currentState.kind) {
+    @case ('loading') {
+      <p aria-live="polite">Loading…</p>
+    }
+    @case ('log-successful') {
+      <article class="tracker-panel tracker-panel--neutral">
+        <h2>Weight measurement</h2>
+
+        <dl class="tracker-details">
+          <div>
+            <dt>Date</dt>
+            <dd>{{ currentState.view.date }}</dd>
+          </div>
+          <div>
+            <dt>Weight</dt>
+            <dd>{{ currentState.view.weightInKg }} kg</dd>
+          </div>
+        </dl>
+      </article>
+    }
+  }
+</section>
+
+<dialog
+  #logWeightMeasurementDialog
+  class="tracker-confirmation-dialog"
+  aria-labelledby="log-weight-title"
+  (close)="dialogClosed()"
+  [attr.closedby]="presenter.loading ? 'none' : 'any'"
+>
+  <form
+    class="tracker-confirmation-form"
+    [formGroup]="presenter.weightForm"
+    (ngSubmit)="submitLog()"
+    novalidate
+  >
+    <h2 id="log-weight-title">Log weight</h2>
+
+    <p>
+      Selected date:
+      <time [attr.datetime]="presenter.dateControl.value">
+        {{ presenter.dateControl.value }}
+      </time>
+    </p>
+
+    <div class="tracker-form-field">
+      <label for="weight-in-kg" class="tracker-control-label"> Weight in kilograms </label>
+      <div class="tracker-input-and-label">
+        <input
+          id="weight-in-kg"
+          class="tracker-input"
+          data-testid="weight-input"
+          type="number"
+          inputmode="decimal"
+          step="0.05"
+          formControlName="weightInKg"
+          aria-describedby="weight-error-required weight-error-not-a-number weight-error-not-positive weight-error-not-multiple-of-grams-unit"
+          [attr.aria-invalid]="
+            presenter.showWeightErrors() && presenter.weightControl.invalid ? 'true' : null
+          "
+        />
+
+        <span aria-hidden="true">kg</span>
+      </div>
+
+      @if (presenter.showWeightErrors() && presenter.weightControl.hasError('required')) {
+        <p id="weight-error-required" class="tracker-form-error">Enter your weight.</p>
+      }
+      @if (presenter.showWeightErrors() && presenter.weightControl.hasError('notANumber')) {
+        <p id="weight-error-not-a-number" class="tracker-form-error">Weight must be a number.</p>
+      }
+      @if (presenter.showWeightErrors() && presenter.weightControl.hasError('notPositive')) {
+        <p id="weight-error-not-positive" class="tracker-form-error">Weight must be positive.</p>
+      }
+      @if (
+        presenter.showWeightErrors() && presenter.weightControl.hasError('notMultipleOfGramsUnit')
+      ) {
+        <p id="weight-error-not-multiple-of-grams-unit" class="tracker-form-error">
+          Weight must be a multiple in units of
+          {{ presenter.weightControl.getError('notMultipleOfGramsUnit')?.gramsUnit }} grams.
+        </p>
+      }
+    </div>
+
+    @if (presenter.state(); as state) {
+      @if (state.kind === 'log-failure') {
+        <div class="tracker-panel tracker-panel--danger" role="alert">
+          <h2>{{ state.title }}</h2>
+          <p>{{ state.message }}</p>
+        </div>
+      }
+    }
+
+    <div class="tracker-actions tracker-confirmation-actions">
+      <button
+        class="tracker-button tracker-button--secondary"
+        type="button"
+        [disabled]="presenter.loading"
+        data-testid="cancel-log"
+        (click)="cancelLog()"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="tracker-button"
+        data-testid="confirm-log"
+        type="submit"
+        [disabled]="presenter.loading"
+      >
+        @if (presenter.loading) {
+          Logging…
+        } @else {
+          Log
+        }
+      </button>
+    </div>
+  </form>
+</dialog>

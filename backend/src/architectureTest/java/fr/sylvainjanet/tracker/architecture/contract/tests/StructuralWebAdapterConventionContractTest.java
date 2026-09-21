@@ -23,7 +23,10 @@ import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTes
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebHandlerRules.webHandlersShouldBeAnnotatedWithRestControllerAdvice;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebHandlerRules.webHandlersShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebValidatorRules.classesNamedValidatorStayInValidatorPackages;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebValidatorRules.webValidatorAnnotationRules.classesNamedValidStayInValidPackages;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebValidatorRules.webValidatorAnnotationRules.webValidatorAnnotationShouldHaveValidSuffix;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebValidatorRules.webValidatorShouldHaveValidatorSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebValidatorRules.webValidatorsUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.webAdaptersUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.inboundAdaptersUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.adaptersUseAllowedPackages;
@@ -51,6 +54,9 @@ import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.handler.Miscon
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.unsupported.UnsupportedWebAdapterType;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.validator.CorrectlyNamedValidator;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.validator.MisnamedValidationComponent;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.validator.annotation.CorrectlyNamedAnnotationValid;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.validator.annotation.MisnamedAnnotationService;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.validator.unsupported.UnsupportedValidatorType;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.unsupported.UnsupportedAdapterType;
 import fr.sylvainjanet.tracker.architecturefixture.domain.CorrectlyLocatedDomainType;
 import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedController;
@@ -58,6 +64,7 @@ import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedHandler;
 import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedRequest;
 import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedResponse;
 import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedValidator;
+import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedValidatorAnnotationValid;
 import org.junit.jupiter.api.Test;
 
 public class StructuralWebAdapterConventionContractTest {
@@ -327,5 +334,35 @@ public class StructuralWebAdapterConventionContractTest {
                 classesNamedValidatorStayInValidatorPackages,
                 "MisplacedValidator",
                 MisplacedValidator.class);
+    }
+
+    @Test
+    void webValidatorAnnotationShouldHaveValidSuffix() {
+        ArchitectureRuleContract.assertAccepts(
+                webValidatorAnnotationShouldHaveValidSuffix, CorrectlyNamedAnnotationValid.class);
+        ArchitectureRuleContract.assertRejects(
+                webValidatorAnnotationShouldHaveValidSuffix,
+                "MisnamedAnnotationService",
+                MisnamedAnnotationService.class);
+    }
+
+    @Test
+    void classesNamedValidStayInValidPackages() {
+        ArchitectureRuleContract.assertAccepts(
+                classesNamedValidStayInValidPackages, CorrectlyNamedValidator.class);
+        ArchitectureRuleContract.assertRejects(
+                classesNamedValidStayInValidPackages,
+                "MisplacedValidatorAnnotationValid",
+                MisplacedValidatorAnnotationValid.class);
+    }
+
+    @Test
+    void webValidatorsUseAllowedPackages() {
+        ArchitectureRuleContract.assertAccepts(
+                webValidatorsUseAllowedPackages, CorrectlyNamedValidator.class);
+        ArchitectureRuleContract.assertRejects(
+                webValidatorsUseAllowedPackages,
+                "UnsupportedValidatorType",
+                UnsupportedValidatorType.class);
     }
 }
