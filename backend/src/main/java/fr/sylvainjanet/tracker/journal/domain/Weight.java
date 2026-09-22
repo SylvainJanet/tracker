@@ -13,18 +13,18 @@ public final class Weight {
     private final long grams;
 
     private Weight(BigDecimal grams) {
-        if (!validateWeightInGrams(grams).isEmpty()) {
+        validateWeightInGramsOrThrow(grams);
+        this.grams = grams.longValueExact();
+    }
+
+    private static void validateWeightInGramsOrThrow(BigDecimal grams) {
+        Set<WeightValidationError> errors = validateWeightInGrams(grams);
+        if (!errors.isEmpty()) {
             throw new IllegalArgumentException(
                     "weight must be a positive number of grams that is a multiple of "
                             + GRAMS_MEASURABLE_UNIT
                             + " grams");
         }
-        this.grams = grams.longValueExact();
-    }
-
-    public static Weight of(BigDecimal kilograms) {
-        BigDecimal grams = kilograms.multiply(BigDecimal.valueOf(1000));
-        return new Weight(grams);
     }
 
     private static Set<WeightValidationError> validateWeightInGrams(BigDecimal grams) {
@@ -43,13 +43,38 @@ public final class Weight {
         return Set.copyOf(errors);
     }
 
+    private static BigDecimal toKilogramsUnchecked(BigDecimal grams) {
+        return BigDecimal.valueOf(grams.longValueExact())
+                .divide(BigDecimal.valueOf(1000), 2, RoundingMode.UNNECESSARY);
+    }
+
+    private static BigDecimal toGramsUnchecked(BigDecimal kilograms) {
+        return kilograms.multiply(BigDecimal.valueOf(1000));
+    }
+
+    public static BigDecimal toKilograms(BigDecimal grams) {
+        validateWeightInGramsOrThrow(grams);
+        return toKilogramsUnchecked(grams);
+    }
+
+    public static BigDecimal toGrams(BigDecimal kilograms) {
+        BigDecimal grams = toGramsUnchecked(kilograms);
+        validateWeightInGramsOrThrow(grams);
+        return grams.setScale(0, RoundingMode.UNNECESSARY);
+    }
+
     public static Set<WeightValidationError> validateWeightInKg(BigDecimal kilograms) {
-        BigDecimal grams = kilograms.multiply(BigDecimal.valueOf(1000));
+        BigDecimal grams = toGramsUnchecked(kilograms);
         return validateWeightInGrams(grams);
     }
 
+    public static Weight of(BigDecimal kilograms) {
+        BigDecimal grams = toGrams(kilograms);
+        return new Weight(grams);
+    }
+
     public BigDecimal inKilograms() {
-        return BigDecimal.valueOf(grams, 3).setScale(2, RoundingMode.UNNECESSARY);
+        return toKilograms(BigDecimal.valueOf(grams));
     }
 
     @Override

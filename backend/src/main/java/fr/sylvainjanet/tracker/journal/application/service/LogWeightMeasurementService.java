@@ -4,16 +4,17 @@ import fr.sylvainjanet.tracker.journal.application.port.in.dtos.command.LogWeigh
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.LogWeightMeasurementResult;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.LogWeightMeasurementUseCase;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.instruction.LogWeightMeasurementInstruction;
-import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.LogWeightMeasurementStore;
+import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
+import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
 import fr.sylvainjanet.tracker.journal.domain.Weight;
 import fr.sylvainjanet.tracker.journal.domain.WeightMeasurement;
 import java.util.Objects;
 
 public final class LogWeightMeasurementService implements LogWeightMeasurementUseCase {
 
-    private final LogWeightMeasurementStore store;
+    private final WeightMeasurementStore store;
 
-    public LogWeightMeasurementService(LogWeightMeasurementStore store) {
+    public LogWeightMeasurementService(WeightMeasurementStore store) {
         this.store = Objects.requireNonNull(store, "store must not be null");
     }
 
@@ -21,14 +22,16 @@ public final class LogWeightMeasurementService implements LogWeightMeasurementUs
     public LogWeightMeasurementResult log(LogWeightMeasurementCommand command) {
         Objects.requireNonNull(command, "command must not be null");
 
-        WeightMeasurement weightMeasurement = toDomain(command);
+        WeightMeasurement domainCommand = commandToDomain(command);
 
-        store.log(toInstruction(weightMeasurement));
+        LogWeightMeasurementOutcome outcome = store.log(toInstruction(domainCommand));
 
-        return toResult(weightMeasurement);
+        WeightMeasurement domainOutcome = outcomeToDomain(outcome);
+
+        return toResult(domainOutcome);
     }
 
-    private WeightMeasurement toDomain(LogWeightMeasurementCommand command) {
+    private WeightMeasurement commandToDomain(LogWeightMeasurementCommand command) {
         return WeightMeasurement.create(command.date(), Weight.of(command.weightInKg()));
     }
 
@@ -40,5 +43,9 @@ public final class LogWeightMeasurementService implements LogWeightMeasurementUs
     private LogWeightMeasurementResult toResult(WeightMeasurement weightMeasurement) {
         return new LogWeightMeasurementResult(
                 weightMeasurement.date(), weightMeasurement.weightInKilograms());
+    }
+
+    private WeightMeasurement outcomeToDomain(LogWeightMeasurementOutcome outcome) {
+        return WeightMeasurement.create(outcome.date(), Weight.of(outcome.weightInKg()));
     }
 }

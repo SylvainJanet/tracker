@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.command.LogWeightMeasurementCommand;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.LogWeightMeasurementResult;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
-import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.LogWeightMeasurementStore;
+import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LogWeightMeasurementServiceTest {
 
-    @Mock private LogWeightMeasurementStore store;
+    @Mock private WeightMeasurementStore store;
 
     private LogWeightMeasurementService service;
 
@@ -72,6 +72,25 @@ class LogWeightMeasurementServiceTest {
                 .hasMessage(
                         "weight must be a positive number of grams that is a multiple of 50 grams");
         verifyNoInteractions(store);
+    }
+
+    @Test
+    void shouldRejectInvalidOutcome() {
+        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
+        BigDecimal validWeight = BigDecimal.valueOf(123.0f).setScale(2, RoundingMode.UNNECESSARY);
+        BigDecimal invalidWeight =
+                BigDecimal.valueOf(-123.0f).setScale(2, RoundingMode.UNNECESSARY);
+
+        LogWeightMeasurementCommand command =
+                aLogWeightMeasurementCommand().withDate(date).withWeightInKg(validWeight).build();
+        LogWeightMeasurementOutcome outcome =
+                aLogWeightMeasurementOutcome().withDate(date).withWeightInKg(invalidWeight).build();
+        when(store.log(any())).thenReturn(outcome);
+
+        assertThatThrownBy(() -> service.log(command))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(
+                        "weight must be a positive number of grams that is a multiple of 50 grams");
     }
 
     @Test
