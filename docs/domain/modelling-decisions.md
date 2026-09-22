@@ -42,12 +42,12 @@ defined below.
 
 The initial backend consists of four bounded contexts:
 
-| Context  | Responsibility                                                                                                                                                |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tracking | User-entered dated information, including daily completion, measured weight, weight predictions, nutrition, measurement quality, steps and performed exercise |
-| Strategy | Phases, goals, effective-dated policies, day-type strategies and assignments, expected-trajectory definitions, maintenance assumptions and boundary policies  |
-| Analysis | Versioned calculation methods and derived values such as expected or resolved weights, thresholds, rolling evaluations, boundaries, signals and explanations  |
-| Import   | Spreadsheet parsing, translation, validation, dry runs, repeatable execution and reconciliation reporting                                                     |
+| Context  | Responsibility                                                                                                                                               |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tracking | User-entered dated information, including weight measurements, weight predictions, nutrition observations, measurement quality, steps and performed exercise |
+| Strategy | Phases, goals, effective-dated policies, day-type strategies and assignments, expected-trajectory definitions, maintenance assumptions and boundary policies |
+| Analysis | Versioned calculation methods and derived values such as expected or resolved weights, thresholds, rolling evaluations, boundaries, signals and explanations |
+| Import   | Spreadsheet parsing, translation, validation, dry runs, repeatable execution and reconciliation reporting                                                    |
 
 Training and Food Planning are accepted future bounded contexts. Training will
 own structured exercises, prescriptions, plans and completed sessions. Food
@@ -68,8 +68,8 @@ automatically.
 ### Context collaboration
 
 Strategy owns day-type definitions, schedules, resolution and per-date
-assignments. Tracking may reference the stable strategy classification applied
-to a daily record, but it does not copy or redefine the associated rules.
+assignments. Tracking may reference the stable strategy classification
+applicable to a date, but it does not copy or redefine the associated rules.
 
 Analysis consumes explicit representations published by Tracking and Strategy.
 Its models distinguish observations, predictions, goals, policies, methods and
@@ -85,7 +85,7 @@ independent or asynchronous consumers.
 
 A bounded context may contain several aggregates and capability modules without
 those modules becoming subordinate bounded contexts. Tracking may, for example,
-contain daily logging, nutrition, activity, weight prediction, correction and
+contain journaling, nutrition, activity, weight prediction, correction and
 provenance capabilities.
 
 An internal module becomes a candidate for extraction only when it develops
@@ -123,50 +123,19 @@ obtaining it implicitly. The current date is an environmental input; domain or
 application rules interpret it rather than owning its acquisition. This keeps
 date-dependent decisions explicit and deterministic in tests.
 
-## Daily records
+## Journal observations
 
-A daily record represents actual logging for one calendar date. It may contain
-the measured weight, calorie intake, protein intake, fibre intake, measurement
-quality, steps and performed-exercise information recorded for that date.
+Journal composes dated information for recording and review without making it
+one aggregate. Weight measurements are independent observations within Tracking;
+their inclusion does not introduce a general daily-record aggregate or completion
+lifecycle.
 
-It does not own future weight predictions, strategy rules, plans, calculated
-expectations or analysis results merely because those values can be displayed
-for the same date.
+Later nutrition, activity or completion use cases must establish their own
+ownership and lifecycle rules rather than inherit them from the spreadsheet
+layout.
 
-### Identity and construction
-
-The calendar date is the business identity of a daily record. It is mandatory
-and immutable, and at most one record may exist for a date. Changing the date
-would mean identifying a different record.
-
-Creating a daily record represents starting actual logging. A new record begins
-in `IN_PROGRESS`. Entering an actual observation for a date without a record
-starts that record.
-
-### Completion and absence
-
-The completion states are `IN_PROGRESS` and `COMPLETED`. Completion describes
-the state of actual logging, not the temporal interpretation of a date.
-
-Completion requirements and transitions remain unresolved and should be defined
-from concrete logging rules rather than introduced as generic status mutation.
-
-A date may have no daily record. Its presentation can depend on the evaluated
-date, today and record availability: absence today may be pending, past absence
-may be missing, and a future date may be unavailable for actual logging. These
-labels are derived rather than stored, avoiding state changes merely because
-time advances.
-
-### Measured weight
-
-A measured weight is an optional observation within a daily record. Its absence
-does not prevent other daily information from being recorded and does not by
-itself determine completion.
-
-A manually entered future weight prediction is a separate aggregate within
-Tracking and does not create a daily record. Expected, interpolated, carried and
-otherwise derived weights belong to Analysis. These distinctions must remain
-visible even though all of the values use kilograms.
+Manually entered weight predictions remain a separate Tracking aggregate.
+Expected, interpolated, carried and otherwise derived weights belong to Analysis.
 
 ## Separate domain lifecycles
 
@@ -175,9 +144,9 @@ what is intended; a method states how a derived value is calculated. They may
 both need historical resolution, but adopting one must not mutate or imply a
 change to the other.
 
-Likewise, a daily observation, prediction, planned day assignment and calculated
-result can concern the same date and quantity without sharing an aggregate or
-transition lifecycle.
+Likewise, a weight measurement, nutrition observation, prediction, planned day
+assignment and calculated result can concern the same date without sharing an
+aggregate or transition lifecycle.
 
 ## Shared concepts and value objects
 
@@ -228,7 +197,8 @@ The following areas remain unresolved:
 - aggregate boundaries for structured exercise, foods and meal planning;
 - whether different plans share an abstraction;
 - representation of planned, overridden and resolved day types;
-- completion requirements and the daily record transition model;
+- whether later Journal use cases require a broader dated aggregate or an
+  explicit completion concept;
 - audit requirements for corrected observations;
 - correction of erroneous effective-dated strategy information;
 - failure and consistency rules for operations involving several contexts;

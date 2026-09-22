@@ -14,11 +14,6 @@ A daily view may eventually combine observations with plans, goals, predictions
 and calculated results. That does not mean all information displayed for a date
 belongs to the same aggregate.
 
-Tracking owns the daily records and the actual information logged for its date,
-including an optional measured weight. Strategy owns plans and day assignments,
-while Analysis owns calculated values. This ownership is a deliberate
-application decision rather than a reproduction of the spreadsheet row.
-
 ## Historical daily information
 
 The redesigned tracker’s `01 Daily` sheet contained:
@@ -63,26 +58,21 @@ while logging was still incomplete.
 
 ## Completion and measurement accuracy
 
-Completion and accuracy are separate concerns.
+In the historical spreadsheet, completion and calorie accuracy were separate
+concerns.
 
-The spreadsheet stored completion and calorie accuracy independently rather
-than deriving one from the other.
+A completed day could be intentionally unmeasured because completion meant that
+logging decisions for the day were finished; it did not guarantee that calorie
+intake was measured accurately. Likewise, an incomplete day could already
+contain an accurate calorie value while other information remained to be
+entered.
 
-A completed day may therefore be intentionally unmeasured. Completion means that
-logging decisions for the day are finished; it does not guarantee that calorie
-intake was measured accurately.
-
-Likewise, an incomplete day may already contain an accurate calorie value while
-other information remains to be entered.
-
-The application must not derive completion from calorie accuracy or derive
-calorie accuracy from completion.
+These historical semantics do not establish a completion concept for the
+current Journal. If a later use case introduces one, its relationship with
+measurement accuracy must be decided explicitly rather than inferred from the
+spreadsheet columns.
 
 ## Observed values
-
-The historical daily row grouped several observations and related concepts.
-That layout did not determine their application ownership; the accepted
-Tracking ownership is described above.
 
 ### Nutrition
 
@@ -116,13 +106,9 @@ step or exercise-derived energy is a calculation rather than an observation.
 
 ### Weight
 
-A measured weight is an optional observation within a daily record. Entering a
-measurement starts a record for the date when one does not already exist, but
-weight is not required merely because a record exists or is complete.
-
-A prediction is a separate aggregate within Tracking. Derived and expected
-weights belong to Analysis. All of these values remain distinguishable even
-when a daily view composes them; see
+The spreadsheet weight entry represented an observation, distinct from
+predictions and calculated weights. Its placement in a daily row does not
+establish a daily-record aggregate; see
 [Weight and projections](weight-and-projections.md).
 
 ## Missing, zero and intentionally unmeasured
@@ -162,21 +148,22 @@ Correcting an observation is different from changing the goal or calculation
 method that applied, entering a later prediction, or retrospectively
 reclassifying what occurred.
 
-The precise correction and audit policy remains undecided. Completion must
-not by itself imply either that a record is permanently uneditable or that
-completed history may be rewritten without restriction.
+The precise correction and audit policy remains undecided. If a later use case
+introduces completion, that state must not implicitly make observations
+permanently uneditable or permit unrestricted history rewriting.
 
 ## Open domain questions
 
 The following matters remain deliberately undecided:
 
-- which observations are mandatory before a day can be completed;
-- whether a completed day must be explicitly reopened before correction;
+- whether later Journal use cases need an explicit day-completion concept;
+- if completion is introduced, which observations are mandatory beforehand;
+- if completion is introduced, whether correction requires reopening the day;
 - whether measurement accuracy belongs to each nutrition value or to the day;
 - whether an intentionally unmeasured day needs a reason;
 - whether planned and actual day types must be stored separately;
-- how future structured Training completions update or reference the performed
-  exercise information in daily records;
+- how future structured Training completions update or reference performed
+  exercise observations;
 - which numerical validations apply to each observation.
 
 These questions should be resolved through concrete use cases rather than

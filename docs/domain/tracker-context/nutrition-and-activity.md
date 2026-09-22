@@ -3,9 +3,10 @@
 ## Purpose
 
 The historical tracker recorded calorie, protein and fibre intake, steps and
-exercise as daily behavioural inputs. Tracking owns these actual observations
-within a daily record. This application decision follows the cohesive daily
-logging workflow rather than mechanically reproducing the spreadsheet layout.
+exercise as daily behavioural inputs. Tracking owns these dated observations,
+but their aggregate boundaries and lifecycles remain to be established by
+concrete use cases. Their grouping in a spreadsheet daily row does not establish
+a daily-record aggregate in the application.
 
 Structured exercise definitions, prescriptions, plans and completed sessions
 will belong to the future Training context. Physiological estimates remain
@@ -43,17 +44,18 @@ totals must remain distinct from actual daily observations.
 ## Calorie intake
 
 Calorie intake is the total recorded daily energy consumption in kilocalories.
-Its interpretation depends on the effective goal, day type, applicable target
-or range, measurement quality, completion and analysis window.
+In the historical tracker, its interpretation depended on the effective goal,
+day type, applicable target or range, measurement quality, completion and
+analysis window.
 
 Historically, strict days used a central target, while big measured, regular
 cheat and all-in cheat days could use ranges with their own measurement rules.
 Falling outside a range does not retrospectively change the day type.
 
-Calorie accuracy is independent of the presence of a number, completion and
-day type. See
-[Daily observations](daily-observations.md) for completion and measurement
-quality.
+The historical tracker stored calorie accuracy separately from the presence of a
+number, completion and day type. How measurement accuracy relates to any future
+completion concept remains undecided. See
+[Daily observations](daily-observations.md) for the historical semantics.
 
 ## Nutrient goals and thresholds
 
@@ -182,7 +184,6 @@ Detailed formulas belong in [Analysis and boundaries](analysis-and-boundaries.md
 - Units remain explicit.
 - Nutrition and activity observations remain distinct from derived values.
 - Missing or intentionally unmeasured information is not numeric zero.
-- Completion and measurement quality remain independent.
 - Excluded days do not become silently compliant.
 - Nutrient thresholds retain their date-specific inputs and meaning.
 - Protein and fibre above-goal values are not automatically failures.
@@ -195,7 +196,8 @@ Detailed formulas belong in [Analysis and boundaries](analysis-and-boundaries.md
 
 The following matters remain deliberately undecided:
 
-- whether accuracy applies to the whole nutrition record or each value;
+- whether accuracy applies to the whole nutrition record or each value and how
+  it relates to any future completion concept;
 - which calorie reference determines the fibre goal for each day type;
 - the precise equality behaviour at nutrition thresholds;
 - whether fibre requires an additional minimum threshold;
