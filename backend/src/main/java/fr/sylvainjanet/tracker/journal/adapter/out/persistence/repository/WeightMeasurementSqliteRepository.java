@@ -2,21 +2,25 @@ package fr.sylvainjanet.tracker.journal.adapter.out.persistence.repository;
 
 import fr.sylvainjanet.tracker.journal.adapter.out.persistence.exceptions.UnsupportedDateSqliteException;
 import fr.sylvainjanet.tracker.journal.adapter.out.persistence.exceptions.UnsupportedWeightSqliteException;
+import fr.sylvainjanet.tracker.journal.application.port.out.dtos.criteria.GetWeightMeasurementByDateCriteria;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.instruction.LogWeightMeasurementInstruction;
+import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementByDateOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
-import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.LogWeightMeasurementStore;
+import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
+import fr.sylvainjanet.tracker.journal.domain.Weight;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-public final class LogWeightMeasurementSqliteRepository implements LogWeightMeasurementStore {
+public final class WeightMeasurementSqliteRepository implements WeightMeasurementStore {
 
     private final JdbcClient jdbcClient;
 
-    public LogWeightMeasurementSqliteRepository(JdbcClient jdbcClient) {
+    public WeightMeasurementSqliteRepository(JdbcClient jdbcClient) {
         this.jdbcClient = Objects.requireNonNull(jdbcClient, "jdbcClient must not be null");
     }
 
@@ -43,15 +47,41 @@ public final class LogWeightMeasurementSqliteRepository implements LogWeightMeas
                 """)
                 .param("date", persistedDate(instruction.date()))
                 .param("weight_in_g", persistedWeight(instruction.weightInKg()))
-                .query((resultSet, rowNum) -> toOutcome(resultSet, rowNum))
+                .query(this::toLogOutcome)
                 .single();
     }
 
-    private LogWeightMeasurementOutcome toOutcome(ResultSet resultSet, int rowNum)
+    @Override
+    public Optional<GetWeightMeasurementByDateOutcome> getByDate(
+            GetWeightMeasurementByDateCriteria criteria) {
+        Objects.requireNonNull(criteria, "criteria must not be null");
+
+        return jdbcClient
+                .sql(
+                        """
+                SELECT
+                    date,
+                    weight_in_g
+                FROM weight_measurement
+                WHERE date = :date
+                """)
+                .param("date", persistedDate(criteria.date()))
+                .query(this::toGetByDateOutcome)
+                .optional();
+    }
+
+    private LogWeightMeasurementOutcome toLogOutcome(ResultSet resultSet, int rowNum)
             throws SQLException {
         return new LogWeightMeasurementOutcome(
                 LocalDate.parse(resultSet.getString("date")),
-                resultSet.getBigDecimal("weight_in_g").divide(BigDecimal.valueOf(1000)));
+                Weight.toKilograms(resultSet.getBigDecimal("weight_in_g")));
+    }
+
+    private GetWeightMeasurementByDateOutcome toGetByDateOutcome(ResultSet resultSet, int rowNum)
+            throws SQLException {
+        return new GetWeightMeasurementByDateOutcome(
+                LocalDate.parse(resultSet.getString("date")),
+                Weight.toKilograms(resultSet.getBigDecimal("weight_in_g")));
     }
 
     private static BigDecimal persistedWeight(BigDecimal weightInKilograms) {

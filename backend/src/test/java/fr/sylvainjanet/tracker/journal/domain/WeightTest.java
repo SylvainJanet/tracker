@@ -87,6 +87,47 @@ class WeightTest {
     }
 
     @Test
+    void shouldConvertGramsToKilograms() {
+        BigDecimal grams = BigDecimal.valueOf(75500);
+        BigDecimal expectedKilograms =
+                BigDecimal.valueOf(75.5f).setScale(2, RoundingMode.UNNECESSARY);
+
+        assertEquals(expectedKilograms, Weight.toKilograms(grams));
+    }
+
+    @Test
+    void shouldFailToConvertInvalidGramsToKilograms() {
+        BigDecimal grams = BigDecimal.valueOf(75501);
+
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> Weight.toKilograms(grams));
+
+        assertEquals(
+                "weight must be a positive number of grams that is a multiple of 50 grams",
+                exception.getMessage());
+    }
+
+    @Test
+    void shouldConvertKilogramsToGrams() {
+        BigDecimal kilograms = BigDecimal.valueOf(75.5f);
+        BigDecimal expectedGrams = BigDecimal.valueOf(75500).setScale(0, RoundingMode.UNNECESSARY);
+
+        assertEquals(expectedGrams, Weight.toGrams(kilograms));
+    }
+
+    @Test
+    void shouldFailToConvertInvalidKilogramsToGrams() {
+        BigDecimal kilograms = BigDecimal.valueOf(75.1234f);
+
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> Weight.toGrams(kilograms));
+
+        assertEquals(
+                "weight must be a positive number of grams that is a multiple of 50 grams",
+                exception.getMessage());
+    }
+
+    @Test
     void weightShouldNotEqualNull() {
         assertNotEquals(null, Weight.of(BigDecimal.valueOf(75.5f)));
     }

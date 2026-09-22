@@ -1,9 +1,14 @@
+### UPSERT weight measurement
 POST {{host}}/api/journal/weight-measurement
 Content-Type: application/json
 
 {
   "date": "2026-09-16",
-  "weightInKg": 75.6
+  "weightInKg": 75.65
 }
 
+
+### GET weight measurement
+GET {{host}}/api/journal/weight-measurement/2026-09-16
+Content-Type: application/json
 
