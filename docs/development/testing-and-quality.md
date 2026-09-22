@@ -64,11 +64,10 @@ A database-backed test class should:
 Explicit cleanup is clearer than relying on transactional rollback for these
 tests.
 
-Migration tests cover valid data and important defensive constraints. For the
-current daily-record table, that includes valid leap dates, malformed or
-impossible dates, unknown completion statuses, duplicate dates and required
-columns. Domain code remains the primary source of business validity; database
-tests protect against adapter defects, manual SQL and other clients.
+Migration tests cover valid data and important defensive constraints.
+
+Domain code remains the primary source of business validity. Database tests
+protect against adapter defects, manual SQL and other clients.
 
 ## Frontend test categories
 

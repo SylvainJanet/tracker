@@ -28,21 +28,21 @@ becomes frontend-owned domain or application data.
 Frontend contexts follow cohesive user workflows and do not have to mirror the
 backend bounded contexts. The accepted target context map is:
 
-| Context       | Responsibility                                                     |
-| ------------- | ------------------------------------------------------------------ |
-| Journal       | Daily entry, weight entry, completion, date navigation and history |
-| Strategy      | Phase, goal, rule, schedule and per-date choice management         |
-| Insights      | Progress, rolling analysis, boundaries, signals and explanations   |
-| Training      | Future exercise planning and completion workflows                  |
-| Food Planning | Future food, price and meal-planning workflows                     |
+| Context       | Responsibility                                                   |
+| ------------- | ---------------------------------------------------------------- |
+| Journal       | Dated observation entry, date navigation and history             |
+| Strategy      | Phase, goal, rule, schedule and per-date choice management       |
+| Insights      | Progress, rolling analysis, boundaries, signals and explanations |
+| Training      | Future exercise planning and completion workflows                |
+| Food Planning | Future food, price and meal-planning workflows                   |
 
 Training and Food Planning remain deferred until concrete use cases justify
 their implementation. A Data Management context may be introduced if repeated
 import or export interaction justifies a dedicated frontend workflow.
 
-The existing `daily-record` context is temporary scaffolding for the future
-Journal context. A page that composes information from several backend contexts
-does not merge their ownership in either the frontend or backend.
+Journal is the user-facing workflow for recording and reviewing dated
+observations. A Journal page may compose information from several backend
+contexts without merging their ownership in either the frontend or backend.
 
 A page renders state and forwards browser interaction. A framework-independent
 presentation model owns meaningful state transitions. When a workflow requires

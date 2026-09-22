@@ -22,7 +22,7 @@ decided in the vertical slice that first needs them.
 
 | Context       | Responsibility                                                                                                                                                |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tracking      | User-entered dated records: daily completion, measured weight, weight predictions, nutrition, measurement quality, steps, and performed exercise              |
+| Tracking      | User-entered dated observations, including weight measurements, weight predictions, nutrition, measurement quality, steps, and performed exercise             |
 | Strategy      | Phases, goals, effective-dated policies, day-type strategies and assignments, expected-trajectory definitions, maintenance assumptions, and boundary policies |
 | Analysis      | Versioned calculation methods and derived results, including resolved weights, thresholds, rolling evaluations, boundaries, signals, and explanations         |
 | Import        | Spreadsheet parsing, translation, validation, dry runs, idempotent execution, and reconciliation reporting                                                    |
@@ -44,14 +44,14 @@ flowchart LR
 
 ### Frontend contexts
 
-| Context         | Responsibility                                                      |
-| --------------- | ------------------------------------------------------------------- |
-| Journal         | Daily entry, weight entry, completion, date navigation, and history |
-| Strategy        | Phase, goal, rule, schedule, and per-date choice management         |
-| Insights        | Progress, rolling analysis, boundaries, signals, and explanations   |
-| Training        | Future exercise planning and completion workflows                   |
-| Food Planning   | Future food, price, and meal-planning workflows                     |
-| Data Management | Import and export workflows when a dedicated UI is useful           |
+| Context         | Responsibility                                                    |
+| --------------- | ----------------------------------------------------------------- |
+| Journal         | Dated observation entry, date navigation, and history             |
+| Strategy        | Phase, goal, rule, schedule, and per-date choice management       |
+| Insights        | Progress, rolling analysis, boundaries, signals, and explanations |
+| Training        | Future exercise planning and completion workflows                 |
+| Food Planning   | Future food, price, and meal-planning workflows                   |
+| Data Management | Import and export workflows when a dedicated UI is useful         |
 
 Frontend contexts follow user workflows and do not have to mirror backend
 bounded contexts.
@@ -60,16 +60,14 @@ bounded contexts.
 
 - A calendar date composes information without making every concept one
   aggregate.
-- A daily record owns the optional measured weight logged for its date.
-- Entering an actual value for a new date starts a daily record in progress.
-- Completion is explicit and independent from measurement accuracy.
-- A weight prediction is a separate Tracking aggregate and does not create a
-  daily record.
+- A weight measurement is an independent dated observation within Tracking.
+- Logging one does not create a broader dated aggregate or completion lifecycle.
+- A weight prediction is a separate Tracking aggregate.
 - Measured, predicted, expected, interpolated, and carried weights remain
   distinguishable.
 - Strategy owns day-type definitions, schedules, rule resolution, and per-date
   assignments.
-- Tracking references the strategy classification applied to a daily record
+- Tracking may reference the strategy classification applicable to a date
   without owning its rules.
 - Analysis owns calculated values and never replaces source observations,
   predictions, or goals.
@@ -112,8 +110,8 @@ committed fixtures. Tests use synthetic data and isolated SQLite databases.
 
 - [x] Update the canonical domain-modelling decisions with the accepted context
       map.
-- [x] Update daily-observation and weight documentation to place measured weight
-      inside daily records.
+- [x] Update daily-observation and weight documentation to describe weight
+      measurements as independent dated observations.
 - [x] Record the target frontend context map and its independence from backend
       boundaries.
 - [x] Document Tracking's internal capability areas without declaring additional
@@ -131,30 +129,31 @@ and the two deferred contexts without contradicting weight ownership.
 
 - [ ] Evolve the existing Tracking context rather than creating a separate
       Weight context.
+- [x] Implement the initial weight-measurement logging slice.
 - [ ] Model daily nutrition observations: calories, protein, and fibre with
       explicit units and absence semantics.
-- [ ] Model measurement quality independently from completion.
-- [ ] Add optional measured weight to daily records.
+- [ ] Model measurement quality independently from any future completion
+      concept.
 - [ ] Model steps so missing and zero remain distinct.
 - [ ] Preserve current exercise history as a recorded label and reported energy
       estimate.
 - [ ] Mark imported exercise-energy values with spreadsheet provenance and do
       not present them as measured physiological facts.
 - [ ] Add a separate dated weight-prediction aggregate.
-- [ ] Support creating, reading, editing, completing, and correcting a daily
-      record.
+- [ ] Add reading, history, and correction use cases for dated observations.
+- [ ] Decide whether later Journal use cases require a broader dated aggregate
+      or explicit completion concept.
 - [ ] Add date-range queries needed by history and later analysis.
 - [ ] Extend SQLite through new Flyway migrations.
-- [ ] Replace the temporary frontend daily-record experience with the Journal
+- [x] Replace the temporary frontend daily-record experience with the Journal
       workflow.
-- [ ] Remove dummy frontend contexts when they no longer serve a development
-      purpose.
+- [x] Remove dummy frontend contexts.
 
 ### Decision gates
 
-- Exact numerical ranges and storage precision.
-- Completion requirements for measured and intentionally unmeasured days.
-- Whether completed records require an explicit reopen action before correction.
+- Numerical ranges and storage precision for observations other than weight.
+- Whether later Journal use cases require an explicit completion concept.
+- If completion is introduced, whether correction requires reopening the day.
 - The initial correction-history policy.
 
 ### Exit criteria
@@ -217,7 +216,7 @@ policy.
 
 ### Exit criteria
 
-The 300-plus daily records can be imported without loss of meaning, every
+The 300-plus historical daily rows can be imported without loss of meaning, every
 accepted row is traceable to its source, and rerunning the import cannot create
 duplicates.
 

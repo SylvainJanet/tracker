@@ -13,10 +13,10 @@ Weight information serves several different purposes in the tracker:
 
 These purposes require several kinds of values that must remain distinguishable.
 
-Tracking owns measured weights as part of daily records and owns manually
-entered predictions as a separate aggregate. Strategy owns the goal trajectory
-definition. Analysis owns expected, interpolated, carried and other derived
-weights.
+Tracking owns weight measurements as independent dated observations and owns
+manually entered predictions as a separate aggregate. Strategy owns the goal
+trajectory definition. Analysis owns expected, interpolated, carried and other
+derived weights.
 
 A weight associated with a date may be:
 
@@ -26,29 +26,6 @@ A weight associated with a date may be:
 - expected from an applicable goal.
 
 They are not interchangeable merely because they share the same unit and date.
-
-## Units and dates
-
-Weight is expressed in kilograms.
-
-Every weight value belongs to a civil calendar date. It does not represent an
-instant and does not require a time zone.
-
-The useful precision for storage, display and calculations may differ. Rounding
-must be applied deliberately at a defined boundary rather than by repeatedly
-rounding intermediate calculations.
-
-## Measured weight
-
-A measured weight is a value actually observed by the user.
-
-It has stronger evidential quality than estimates for the same date.
-
-Conceptually, a measurement is distinct from:
-
-- a prediction entered earlier for the same date;
-- an interpolation;
-- an expected weight generated from a goal.
 
 ## Predicted weight
 
@@ -138,20 +115,7 @@ derived values; they did not create measurements for the affected dates.
 The spreadsheet made derived weight reproducible from the relevant endpoints
 and exposed source and method information alongside the calculated value.
 
-## Relationships
-
-### Daily observations
-
-The application deliberately places an optional measured weight in
-daily records, not merely because the workbook put weight on the daily row but
-because measurement is part of the daily logging workflow. Entering a measured
-weight starts a record when none exists, while completion remains independent
-from whether weight was measured.
-
-A future prediction is a separate Tracking aggregate and does not create a
-daily record. Interpolations and other derived weights remain Analysis results.
-
-### Goals and analysis
+## Goals and analysis
 
 Goal history determines expected weight trajectories. Changing a goal may alter
 expected weight, boundaries and progress results, but it must not change
@@ -186,22 +150,13 @@ audit history remains open.
 - Every weight value has a calendar date and unit.
 - Measured, predicted, interpolated and expected values remain distinguishable.
 - Missing weight is not numeric zero.
-- A measured weight is optional information within daily records.
-- Entering a measured weight starts a daily record when none exists.
-- A weight prediction may exist independently and does not create a daily
-  record.
 - Goals and boundaries must not modify observations or historical inputs.
 - Direct entered weights took precedence over derived weights.
 - Future predicted weights could act as interpolation endpoints.
 - Missing weights were resolved through linear interpolation, carry forward,
   carry backward, or blank according to endpoint availability.
 
-Acceptable ranges, storage precision and validation should be introduced with
-concrete weight use cases rather than inferred from spreadsheet values.
-
 ## Open domain questions
 
-Aggregate ownership and coexistence are now established: measured weights belong
-to daily records, predictions are a separate Tracking aggregate, and calculated
-weights belong to Analysis. Revision history, prediction resolution and
-historical as-of replay remain open application-domain questions.
+Revision history, prediction resolution and historical as-of replay remain open
+application-domain questions.
