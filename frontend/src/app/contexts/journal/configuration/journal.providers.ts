@@ -9,10 +9,12 @@ import {
 } from '../adapter/in/web/logging/presenter/journal.logging.presenter';
 import type { GetDefaultJournalDateUseCase } from '../application/port/in/get-default-journal-date.use-case';
 import type { LogWeightMeasurementUseCase } from '../application/port/in/log-weight-measurement.use-case';
-import type { LogWeightMeasurementStore } from '../application/port/out/log-weight-measurement.store';
-import { LogWeightMeasurementGateway } from '../adapter/out/http/log-wright-measurement.gateway';
+import type { WeightMeasurementStore } from '../application/port/out/weight-measurement.store';
+import { WeightMeasurementGateway } from '../adapter/out/http/weight-measurement.gateway';
 import { GetDefaultJournalDateService } from '../application/service/get-default-journal-date.service';
 import { LogWeightMeasurementService } from '../application/service/log-weight-measurement.service';
+import type { GetWeightMeasurementByDateUseCase } from '../application/port/in/get-weight-measurement-by-date.use-case';
+import { GetWeightMeasurementByDateService } from '../application/service/get-weight-measurement-by-date.service';
 
 export const GET_DEFAULT_JOURNAL_DATE_USE_CASE = new InjectionToken<GetDefaultJournalDateUseCase>(
   'GetDefaultJournalDateUseCase',
@@ -20,18 +22,20 @@ export const GET_DEFAULT_JOURNAL_DATE_USE_CASE = new InjectionToken<GetDefaultJo
 export const LOG_WEIGHT_MEASUREMENT_USE_CASE = new InjectionToken<LogWeightMeasurementUseCase>(
   'LogWeightMeasurementUseCase',
 );
+export const GET_WEIGHT_MEASUREMENT_BY_DATE_USE_CASE =
+  new InjectionToken<GetWeightMeasurementByDateUseCase>('GetWeightMeasurementByDateUseCase');
 
-const LOG_WEIGHT_MEASUREMENT_STORE = new InjectionToken<LogWeightMeasurementStore>(
-  'LogWeightMeasurementStore',
+const WEIGHT_MEASUREMENT_STORE = new InjectionToken<WeightMeasurementStore>(
+  'WeightMeasurementStore',
 );
 const TODAY_PROVIDER = new InjectionToken<TodayProvider>('TodayProvider');
 
 export function provideJournalContext(): EnvironmentProviders {
   return makeEnvironmentProviders([
     {
-      provide: LOG_WEIGHT_MEASUREMENT_STORE,
-      useFactory: (httpClient: HttpClient): LogWeightMeasurementStore =>
-        new LogWeightMeasurementGateway(httpClient),
+      provide: WEIGHT_MEASUREMENT_STORE,
+      useFactory: (httpClient: HttpClient): WeightMeasurementStore =>
+        new WeightMeasurementGateway(httpClient),
       deps: [HttpClient],
     },
     {
@@ -47,9 +51,15 @@ export function provideJournalContext(): EnvironmentProviders {
     },
     {
       provide: LOG_WEIGHT_MEASUREMENT_USE_CASE,
-      useFactory: (store: LogWeightMeasurementStore): LogWeightMeasurementUseCase =>
+      useFactory: (store: WeightMeasurementStore): LogWeightMeasurementUseCase =>
         new LogWeightMeasurementService(store),
-      deps: [LOG_WEIGHT_MEASUREMENT_STORE],
+      deps: [WEIGHT_MEASUREMENT_STORE],
+    },
+    {
+      provide: GET_WEIGHT_MEASUREMENT_BY_DATE_USE_CASE,
+      useFactory: (store: WeightMeasurementStore): GetWeightMeasurementByDateUseCase =>
+        new GetWeightMeasurementByDateService(store),
+      deps: [WEIGHT_MEASUREMENT_STORE],
     },
   ]);
 }
@@ -61,11 +71,20 @@ export function provideJournalLoggingPresenter(): EnvironmentProviders {
       useFactory: (
         getDefaultJournalDateUseCase: GetDefaultJournalDateUseCase,
         logWeightMeasurementUseCase: LogWeightMeasurementUseCase,
+        getWeightMeasurementByDateUseCase: GetWeightMeasurementByDateUseCase,
       ): JournalLoggingPresenterFactory => {
         return () =>
-          new JournalLoggingPresenter(logWeightMeasurementUseCase, getDefaultJournalDateUseCase);
+          new JournalLoggingPresenter(
+            logWeightMeasurementUseCase,
+            getWeightMeasurementByDateUseCase,
+            getDefaultJournalDateUseCase,
+          );
       },
-      deps: [GET_DEFAULT_JOURNAL_DATE_USE_CASE, LOG_WEIGHT_MEASUREMENT_USE_CASE],
+      deps: [
+        GET_DEFAULT_JOURNAL_DATE_USE_CASE,
+        LOG_WEIGHT_MEASUREMENT_USE_CASE,
+        GET_WEIGHT_MEASUREMENT_BY_DATE_USE_CASE,
+      ],
     },
   ]);
 }

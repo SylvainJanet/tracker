@@ -37,10 +37,15 @@ function isHttpError(error: unknown): error is HttpErrorResponse {
   return error instanceof HttpErrorResponse;
 }
 
-export function gatewayErrorMessage(error: unknown): string | undefined {
+export function isHttpErrorWithStatus(error: unknown, status: number): error is HttpErrorResponse {
+  return isHttpError(error) && error.status === status;
+}
+
+export function gatewayErrorMessage(error: unknown): string {
+  const defaultMessage = 'An unexpected gateway error occurred.';
   if (!isHttpError(error)) {
-    return undefined;
+    return defaultMessage;
   }
 
-  return problemDetailMessage(error.error);
+  return problemDetailMessage(error.error) ?? defaultMessage;
 }

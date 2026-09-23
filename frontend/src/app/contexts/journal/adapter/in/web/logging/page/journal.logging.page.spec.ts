@@ -2,16 +2,16 @@ import { signal, type WritableSignal } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, type ParamMap, Router } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BehaviorSubject, of, Subject } from 'rxjs';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
-import type { JournalLoggingState } from '../model/journal.logging.model';
+import type { JournalLoggingState } from '../model/state/journal.logging.model.state';
 import {
   JOURNAL_LOGGING_PRESENTER_FACTORY,
   type JournalLoggingPresenter,
 } from '../presenter/journal.logging.presenter';
 import { JournalLoggingPage } from './journal.logging.page';
-
+type JournalLoggingPresenterFake = Pick<JournalLoggingPresenter, keyof JournalLoggingPresenter>;
 describe('JournalLoggingPage', () => {
   const defaultDate = '2026-09-20';
 
@@ -25,10 +25,13 @@ describe('JournalLoggingPage', () => {
   }>;
 
   let dateValid: WritableSignal<boolean>;
-  let log: ReturnType<typeof vi.fn>;
-  let resetForm: ReturnType<typeof vi.fn>;
-  let cancelPresenterLog: ReturnType<typeof vi.fn>;
-  let selectPresenterDate: ReturnType<typeof vi.fn>;
+  let showPageMainSection: WritableSignal<boolean>;
+  let canEditWeight: WritableSignal<boolean>;
+
+  let log: Mock<JournalLoggingPresenterFake['log']>;
+  let resetForm: Mock<JournalLoggingPresenterFake['resetForm']>;
+  let cancelPresenterLog: Mock<JournalLoggingPresenterFake['cancelLog']>;
+  let selectPresenterDate: Mock<JournalLoggingPresenterFake['selectDate']>;
 
   let queryParamMap: BehaviorSubject<ParamMap>;
   let activatedRoute: {
@@ -41,8 +44,13 @@ describe('JournalLoggingPage', () => {
   let close: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    state = signal<JournalLoggingState>({ kind: 'idle' });
+    state = signal<JournalLoggingState>({
+      logState: { kind: 'idle' },
+      getState: { kind: 'idle' },
+    });
     dateValid = signal(true);
+    showPageMainSection = signal(true);
+    canEditWeight = signal(true);
 
     dateControl = new FormControl(defaultDate, {
       nonNullable: true,
@@ -52,31 +60,38 @@ describe('JournalLoggingPage', () => {
       weightInKg: weightControl,
     });
 
-    log = vi.fn(() => of(false));
-    selectPresenterDate = vi.fn((newDate: string) => {
+    log = vi.fn<JournalLoggingPresenterFake['log']>(() => of(false));
+    selectPresenterDate = vi.fn<JournalLoggingPresenterFake['selectDate']>((newDate) => {
       dateControl.setValue(newDate);
+      return of(undefined);
     });
-
-    resetForm = vi.fn();
-    cancelPresenterLog = vi.fn();
+    resetForm = vi.fn<JournalLoggingPresenterFake['resetForm']>();
+    cancelPresenterLog = vi.fn<JournalLoggingPresenterFake['cancelLog']>();
 
     const presenter = {
       state: state.asReadonly(),
       dateControl,
       weightControl,
       weightForm,
+      weightStepInKg: 0.1,
 
-      get loading(): boolean {
-        return state().kind === 'loading';
+      get logLoading(): boolean {
+        return state().logState.kind === 'loading';
+      },
+
+      get getLoading(): boolean {
+        return state().getState.kind === 'loading';
       },
 
       validDate: (): boolean => dateValid(),
+      showPageMainSection: (): boolean => showPageMainSection(),
+      canEditWeightToLog: (): boolean => canEditWeight(),
       selectDate: selectPresenterDate,
       showWeightErrors: (): boolean => false,
       log,
       resetForm,
       cancelLog: cancelPresenterLog,
-    } as unknown as JournalLoggingPresenter;
+    } satisfies JournalLoggingPresenterFake;
 
     queryParamMap = new BehaviorSubject<ParamMap>(convertToParamMap({}));
     activatedRoute = {
@@ -90,7 +105,7 @@ describe('JournalLoggingPage', () => {
       providers: [
         {
           provide: JOURNAL_LOGGING_PRESENTER_FACTORY,
-          useValue: (): JournalLoggingPresenter => presenter,
+          useValue: (): JournalLoggingPresenterFake => presenter,
         },
         {
           provide: ActivatedRoute,
@@ -108,7 +123,9 @@ describe('JournalLoggingPage', () => {
     fixture = TestBed.createComponent(JournalLoggingPage);
     fixture.detectChanges();
 
-    dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    dialog = fixture.nativeElement.querySelector(
+      '[data-testid="log-weight-dialog"]',
+    ) as HTMLDialogElement;
 
     const dialogMethods = installDialogMethods(dialog);
     showModal = dialogMethods.showModal;
@@ -116,16 +133,17 @@ describe('JournalLoggingPage', () => {
   });
 
   describe('URL date', () => {
-    it('renders the default date when the URL has no date', () => {
+    it('loads and renders the default date when the URL has no date', () => {
       const dateInput = fixture.nativeElement.querySelector(
         '[data-testid="date"]',
       ) as HTMLInputElement;
 
       expect(dateInput.value).toBe(defaultDate);
-      expect(selectPresenterDate).not.toHaveBeenCalled();
+      expect(selectPresenterDate).toHaveBeenCalledOnce();
+      expect(selectPresenterDate).toHaveBeenCalledWith(defaultDate);
     });
 
-    it('renders the date supplied by the URL', () => {
+    it('loads and renders the date supplied by the URL', () => {
       queryParamMap.next(
         convertToParamMap({
           date: '2026-09-21',
@@ -138,14 +156,50 @@ describe('JournalLoggingPage', () => {
       ) as HTMLInputElement;
 
       expect(dateInput.value).toBe('2026-09-21');
+      expect(selectPresenterDate).toHaveBeenCalledTimes(2);
+      expect(selectPresenterDate).toHaveBeenLastCalledWith('2026-09-21');
+    });
+
+    it('writes the date entered by the user to the URL', () => {
+      const dateInput = fixture.nativeElement.querySelector(
+        '[data-testid="date"]',
+      ) as HTMLInputElement;
+
+      dateInput.value = '2026-09-21';
+      dateInput.dispatchEvent(new Event('input'));
+
+      expect(navigate).toHaveBeenCalledOnce();
+      expect(navigate).toHaveBeenCalledWith([], {
+        relativeTo: activatedRoute,
+        queryParams: {
+          date: '2026-09-21',
+        },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    });
+    it('waits for the current lookup before looking up a newer URL date', () => {
+      const firstLookup = new Subject<void>();
+      selectPresenterDate.mockClear();
+      selectPresenterDate.mockReturnValueOnce(firstLookup);
+
+      queryParamMap.next(convertToParamMap({ date: '2026-09-21' }));
+      queryParamMap.next(convertToParamMap({ date: '2026-09-22' }));
+
       expect(selectPresenterDate).toHaveBeenCalledOnce();
-      expect(selectPresenterDate).toHaveBeenCalledWith('2026-09-21');
+      expect(selectPresenterDate).toHaveBeenLastCalledWith('2026-09-21');
+
+      firstLookup.next(undefined);
+
+      expect(selectPresenterDate).toHaveBeenCalledTimes(2);
+      expect(selectPresenterDate).toHaveBeenLastCalledWith('2026-09-22');
     });
   });
 
   describe('dialog opening', () => {
-    it('opens the dialog when the user requests logging for a valid date', () => {
+    it('opens the dialog when logging is available', () => {
       dialog.returnValue = 'previous-result';
+
       const logButton = fixture.nativeElement.querySelector(
         '[data-testid="log"]',
       ) as HTMLButtonElement;
@@ -157,8 +211,8 @@ describe('JournalLoggingPage', () => {
       expect(dialog.open).toBe(true);
     });
 
-    it('disables the log action for an invalid date', () => {
-      dateValid.set(false);
+    it('disables the log action when the presenter reports it unavailable', () => {
+      canEditWeight.set(false);
       fixture.detectChanges();
 
       const logButton = fixture.nativeElement.querySelector(
@@ -216,6 +270,12 @@ describe('JournalLoggingPage', () => {
   });
 
   describe('weight form', () => {
+    it('uses the measurement step supplied by the presenter', () => {
+      const weightInput = dialog.querySelector('[data-testid="weight-input"]') as HTMLInputElement;
+
+      expect(weightInput.step).toBe('0.1');
+    });
+
     it('writes the entered weight to the presenter control', () => {
       dialog.showModal();
 
@@ -227,13 +287,18 @@ describe('JournalLoggingPage', () => {
       expect(weightControl.value).toBe(72.5);
     });
 
-    it('forwards form submission to the presenter and closes after success', () => {
-      log.mockReturnValue(of(true));
+    it('forwards submission and closes the dialog after the first successful result', () => {
+      const result = new Subject<boolean>();
+      log.mockReturnValue(result);
       dialog.showModal();
 
-      const form = dialog.querySelector('form') as HTMLFormElement;
+      const confirmButton = dialog.querySelector(
+        '[data-testid="confirm-log"]',
+      ) as HTMLButtonElement;
 
-      form.dispatchEvent(new Event('submit'));
+      confirmButton.click();
+      result.next(true);
+      result.next(true);
 
       expect(log).toHaveBeenCalledOnce();
       expect(close).toHaveBeenCalledOnce();
@@ -244,9 +309,11 @@ describe('JournalLoggingPage', () => {
       log.mockReturnValue(of(false));
       dialog.showModal();
 
-      const form = dialog.querySelector('form') as HTMLFormElement;
+      const confirmButton = dialog.querySelector(
+        '[data-testid="confirm-log"]',
+      ) as HTMLButtonElement;
 
-      form.dispatchEvent(new Event('submit'));
+      confirmButton.click();
 
       expect(log).toHaveBeenCalledOnce();
       expect(close).not.toHaveBeenCalled();
@@ -254,77 +321,187 @@ describe('JournalLoggingPage', () => {
     });
   });
 
-  describe('date selection', () => {
-    it('writes the date entered by the user to the URL', () => {
-      const dateInput = fixture.nativeElement.querySelector(
-        '[data-testid="date"]',
-      ) as HTMLInputElement;
-
-      dateInput.value = '2026-09-21';
-      dateInput.dispatchEvent(new Event('input'));
-
-      expect(navigate).toHaveBeenCalledOnce();
-      expect(navigate).toHaveBeenCalledWith([], {
-        relativeTo: activatedRoute,
-        queryParams: {
-          date: '2026-09-21',
+  describe('lookup retry', () => {
+    it('retries the lookup for the currently selected date', () => {
+      state.set({
+        logState: { kind: 'idle' },
+        getState: {
+          kind: 'failure',
+          title: 'Unable to get weight measurement',
+          message: 'The measurement could not be loaded.',
         },
-        queryParamsHandling: 'merge',
-        replaceUrl: true,
       });
+      fixture.detectChanges();
+      selectPresenterDate.mockClear();
+
+      const retryButton = fixture.nativeElement.querySelector(
+        '[data-testid="retry-get"]',
+      ) as HTMLButtonElement;
+
+      retryButton.click();
+
+      expect(selectPresenterDate).toHaveBeenCalledOnce();
+      expect(selectPresenterDate).toHaveBeenCalledWith(defaultDate);
     });
   });
 
   describe('rendered state', () => {
-    it('renders no state-specific content while idle', () => {
-      const stateElement = fixture.nativeElement.querySelector(
-        '[aria-live="polite"], article, [role="alert"]',
-      );
-
-      expect(stateElement).toBeNull();
-    });
-
-    it('renders a loading message while logging', () => {
-      state.set({ kind: 'loading' });
-      fixture.detectChanges();
-
-      const loadingElement = fixture.nativeElement.querySelector(
-        '[aria-live="polite"]',
+    it('renders the idle lookup state', () => {
+      const status = fixture.nativeElement.querySelector(
+        '[data-testid="lookup-idle"]',
       ) as HTMLElement | null;
 
-      expect(loadingElement?.textContent).toContain('Loading');
+      expect(status?.textContent).toContain('Preparing your journal');
     });
 
-    it('renders the logged measurement after success', () => {
+    it('hides workflow state when the presenter suppresses it', () => {
+      showPageMainSection.set(false);
+      fixture.detectChanges();
+
+      const status = fixture.nativeElement.querySelector('[data-testid="lookup-idle"]');
+
+      expect(status).toBeNull();
+    });
+
+    it('renders the lookup loading state while the date control is disabled', () => {
+      dateValid.set(false);
       state.set({
-        kind: 'log-successful',
-        view: {
-          date: defaultDate,
-          weightInKg: 72.5,
+        logState: { kind: 'idle' },
+        getState: { kind: 'loading' },
+      });
+      fixture.detectChanges();
+
+      const status = fixture.nativeElement.querySelector(
+        '[data-testid="lookup-loading"]',
+      ) as HTMLElement | null;
+
+      expect(status?.textContent).toContain('Looking for a measurement');
+      expect(status?.querySelector('app-shared-spinner')).not.toBeNull();
+    });
+
+    it('renders an existing measurement', () => {
+      state.set({
+        logState: { kind: 'idle' },
+        getState: {
+          kind: 'found',
+          view: {
+            date: defaultDate,
+            weightInKg: 72.5,
+          },
         },
       });
       fixture.detectChanges();
 
-      const resultElement = fixture.nativeElement.querySelector('article') as HTMLElement | null;
+      const result = fixture.nativeElement.querySelector(
+        '[data-testid="existing-measurement"]',
+      ) as HTMLElement | null;
 
-      expect(resultElement?.textContent).toContain(defaultDate);
-      expect(resultElement?.textContent).toContain('72.5 kg');
+      expect(result?.textContent).toContain(defaultDate);
+      expect(result?.textContent).toContain('72.5 kg');
     });
 
-    it('renders the failure details in the open dialog', () => {
-      dialog.showModal();
+    it('renders the state in which no measurement exists', () => {
       state.set({
-        kind: 'log-failure',
-        problem: 'failure',
-        title: 'Unable to log weight measurement',
-        message: 'The weight measurement could not be logged.',
+        logState: { kind: 'idle' },
+        getState: {
+          kind: 'not-found',
+          title: 'No weight measurement',
+          message: 'No measurement exists for this date.',
+        },
       });
       fixture.detectChanges();
 
-      const failureElement = dialog.querySelector('[role="alert"]') as HTMLElement | null;
+      const result = fixture.nativeElement.querySelector(
+        '[data-testid="missing-measurement"]',
+      ) as HTMLElement | null;
 
-      expect(failureElement?.textContent).toContain('Unable to log weight measurement');
-      expect(failureElement?.textContent).toContain('The weight measurement could not be logged.');
+      expect(result?.textContent).toContain('No weight measurement');
+      expect(result?.textContent).toContain('No measurement exists for this date.');
+    });
+
+    it('renders lookup failure details', () => {
+      state.set({
+        logState: { kind: 'idle' },
+        getState: {
+          kind: 'failure',
+          title: 'Unable to get weight measurement',
+          message: 'The measurement could not be loaded.',
+        },
+      });
+      fixture.detectChanges();
+
+      const failure = fixture.nativeElement.querySelector(
+        '[data-testid="get-measurement-failure"]',
+      ) as HTMLElement | null;
+
+      expect(failure?.textContent).toContain('Unable to get weight measurement');
+      expect(failure?.textContent).toContain('The measurement could not be loaded.');
+    });
+
+    it('renders the log loading state while the controls are disabled', () => {
+      dateValid.set(false);
+      state.set({
+        logState: { kind: 'loading' },
+        getState: {
+          kind: 'not-found',
+          title: 'No weight measurement',
+          message: 'No measurement exists for this date.',
+        },
+      });
+      fixture.detectChanges();
+
+      const status = fixture.nativeElement.querySelector(
+        '[data-testid="log-loading"]',
+      ) as HTMLElement | null;
+
+      expect(status?.textContent).toContain('Logging your measurement');
+      expect(status?.querySelector('app-shared-spinner')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('[data-testid="missing-measurement"]')).toBeNull();
+    });
+
+    it('renders the logged measurement', () => {
+      state.set({
+        logState: {
+          kind: 'logged',
+          view: {
+            date: defaultDate,
+            weightInKg: 72.5,
+          },
+        },
+        getState: { kind: 'idle' },
+      });
+      fixture.detectChanges();
+
+      const result = fixture.nativeElement.querySelector(
+        '[data-testid="logged-measurement"]',
+      ) as HTMLElement | null;
+
+      expect(result?.textContent).toContain(defaultDate);
+      expect(result?.textContent).toContain('72.5 kg');
+    });
+
+    it('renders logging failure details in the dialog', () => {
+      dialog.showModal();
+      state.set({
+        logState: {
+          kind: 'failure',
+          title: 'Unable to log weight measurement',
+          message: 'The weight measurement could not be logged.',
+        },
+        getState: {
+          kind: 'not-found',
+          title: 'No weight measurement',
+          message: 'No measurement exists for this date.',
+        },
+      });
+      fixture.detectChanges();
+
+      const failure = dialog.querySelector(
+        '[data-testid="log-measurement-failure"]',
+      ) as HTMLElement | null;
+
+      expect(failure?.textContent).toContain('Unable to log weight measurement');
+      expect(failure?.textContent).toContain('The weight measurement could not be logged.');
     });
   });
 });

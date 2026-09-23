@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { Weight } from './weight';
 
 describe('Weight', () => {
+  describe('measurementIncrementInKilograms', () => {
+    it('returns the supported measurement increment in kilograms', () => {
+      expect(Weight.measurementIncrementInKilograms()).toBe(0.05);
+    });
+  });
   describe('Weight.of function', () => {
     it('accepts a valid weight', () => {
       expect(Weight.of(70)).toEqual({

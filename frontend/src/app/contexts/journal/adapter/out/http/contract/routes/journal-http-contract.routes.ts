@@ -8,4 +8,8 @@ export class JournalHttpContractRoutes {
   static logWeightMeasurementUrl(): string {
     return JournalHttpContractRoutes.RESSOURCE_URL + '/weight-measurement';
   }
+
+  static getWeightMeasurementByDateUrl(date: string): string {
+    return JournalHttpContractRoutes.RESSOURCE_URL + `/weight-measurement/${date}`;
+  }
 }

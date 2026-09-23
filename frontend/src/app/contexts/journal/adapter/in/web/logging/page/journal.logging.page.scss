@@ -1,3 +1,189 @@
 :host {
   display: block;
 }
+
+.tracker-page-header {
+  max-inline-size: 34rem;
+}
+
+.tracker-page-header h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  line-height: 1.1;
+}
+
+.tracker-form {
+  grid-template-columns: minmax(0, 18rem) max-content;
+  align-items: end;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.tracker-form > .tracker-control-label {
+  grid-column: 1 / -1;
+}
+
+.tracker-form > .tracker-input {
+  grid-column: 1;
+}
+
+.tracker-form > .tracker-actions {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+.tracker-form > .tracker-form-error {
+  grid-column: 1 / -1;
+}
+
+.journal-measurement {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-start: var(--space-5);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.journal-measurement div {
+  grid-template-columns: 5rem minmax(0, 1fr);
+}
+
+.journal-measurement dd {
+  font-weight: var(--font-weight-emphasis);
+}
+
+.journal-measurement div:last-child dd {
+  font-size: 1.25rem;
+}
+
+.tracker-confirmation-form > p {
+  margin-block: 0;
+  color: var(--color-text-muted);
+}
+
+.tracker-confirmation-form .tracker-panel {
+  margin-block-start: var(--space-2);
+}
+
+.journal-dialog {
+  inline-size: min(32rem, calc(100% - 2 * var(--space-4)));
+}
+
+.journal-dialog .tracker-confirmation-form {
+  gap: var(--space-5);
+}
+
+.journal-dialog__header {
+  display: grid;
+  gap: var(--space-2);
+  padding-block-end: var(--space-5);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.journal-dialog__header h2,
+.journal-dialog__header p {
+  margin: 0;
+}
+
+.journal-dialog__header > p:last-child {
+  color: var(--color-text-muted);
+}
+
+.journal-dialog__date {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-information-border);
+  border-radius: var(--radius-control);
+  color: var(--color-information-text) !important;
+  background: var(--color-information-surface);
+}
+
+.journal-dialog__date span {
+  font-weight: var(--font-weight-emphasis);
+}
+
+.journal-dialog__date time {
+  font-variant-numeric: tabular-nums;
+}
+
+.journal-dialog__unit {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-emphasis);
+}
+
+.journal-dialog__error {
+  margin-block-start: 0 !important;
+  padding: var(--space-4);
+  box-shadow: none;
+}
+
+.journal-dialog__error h3 {
+  margin-block: 0 var(--space-2);
+  font-size: 1rem;
+}
+
+.journal-dialog__error p {
+  margin-block: 0;
+}
+
+.journal-dialog__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text) !important;
+  background: var(--color-background);
+  font-weight: var(--font-weight-emphasis);
+}
+
+.journal-dialog__progress app-shared-spinner {
+  --tracker-spinner-size: 1.25rem;
+  --tracker-spinner-border-width: 0.125rem;
+}
+
+.journal-dialog .tracker-confirmation-actions {
+  margin-block-start: 0;
+}
+
+.journal-dialog .tracker-confirmation-actions .tracker-button {
+  min-inline-size: 7rem;
+}
+
+@media (width <= 36rem) {
+  .tracker-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tracker-form > .tracker-input,
+  .tracker-form > .tracker-actions,
+  .tracker-form > .tracker-form-error {
+    grid-row: auto;
+    grid-column: 1;
+  }
+
+  .tracker-form > .tracker-actions,
+  .tracker-form > .tracker-actions .tracker-button {
+    inline-size: 100%;
+  }
+
+  .journal-dialog__date {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .journal-dialog .tracker-confirmation-actions {
+    flex-direction: column;
+  }
+
+  .journal-dialog .tracker-confirmation-actions .tracker-button {
+    inline-size: 100%;
+  }
+}

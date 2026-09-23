@@ -32,7 +32,7 @@
         class="tracker-button"
         data-testid="log"
         type="button"
-        [disabled]="!presenter.validDate()"
+        [disabled]="!presenter.canEditWeightToLog()"
         (click)="openDialog()"
       >
         Log weight measurement
@@ -41,53 +41,212 @@
   </div>
 
   @let currentState = state();
-  @switch (currentState.kind) {
-    @case ('loading') {
-      <p aria-live="polite">Loading…</p>
-    }
-    @case ('log-successful') {
-      <article class="tracker-panel tracker-panel--neutral">
-        <h2>Weight measurement</h2>
 
-        <dl class="tracker-details">
+  @if (presenter.showPageMainSection()) {
+    @switch (currentState.logState.kind) {
+      @case ('loading') {
+        <article
+          class="tracker-panel tracker-panel--neutral tracker-status tracker-status--loading"
+          aria-live="polite"
+          aria-atomic="true"
+          data-testid="log-loading"
+        >
+          <app-shared-spinner />
+
           <div>
-            <dt>Date</dt>
-            <dd>{{ currentState.view.date }}</dd>
+            <p class="tracker-status__eyebrow">Saving</p>
+            <h2>Logging your measurement</h2>
+            <p>Please wait while the weight measurement is saved.</p>
           </div>
+        </article>
+      }
+
+      @case ('logged') {
+        <article
+          class="tracker-panel tracker-status tracker-status--success"
+          aria-live="polite"
+          aria-atomic="true"
+          data-testid="logged-measurement"
+        >
+          <span class="tracker-status__icon" aria-hidden="true">✓</span>
+
           <div>
-            <dt>Weight</dt>
-            <dd>{{ currentState.view.weightInKg }} kg</dd>
+            <p class="tracker-status__eyebrow">Saved</p>
+            <h2>Weight measurement logged</h2>
+            <p>Your measurement is now recorded for this date.</p>
+
+            <dl class="tracker-details journal-measurement">
+              <div>
+                <dt>Date</dt>
+                <dd>
+                  <time [attr.datetime]="currentState.logState.view.date">
+                    {{ currentState.logState.view.date }}
+                  </time>
+                </dd>
+              </div>
+              <div>
+                <dt>Weight</dt>
+                <dd>{{ currentState.logState.view.weightInKg }} kg</dd>
+              </div>
+            </dl>
           </div>
-        </dl>
-      </article>
+        </article>
+      }
+
+      @default {
+        @switch (currentState.getState.kind) {
+          @case ('idle') {
+            <article
+              class="tracker-panel tracker-panel--neutral tracker-status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="lookup-idle"
+            >
+              <span class="tracker-status__icon tracker-status__icon--neutral" aria-hidden="true">
+                …
+              </span>
+
+              <div>
+                <p class="tracker-status__eyebrow">Selected date</p>
+                <h2>Preparing your journal</h2>
+                <p>The selected date will be checked for an existing measurement.</p>
+              </div>
+            </article>
+          }
+
+          @case ('loading') {
+            <article
+              class="tracker-panel tracker-panel--neutral tracker-status tracker-status--loading"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="lookup-loading"
+            >
+              <app-shared-spinner />
+
+              <div>
+                <p class="tracker-status__eyebrow">Checking</p>
+                <h2>Looking for a measurement</h2>
+                <p>Please wait while this date is checked.</p>
+              </div>
+            </article>
+          }
+
+          @case ('found') {
+            <article
+              class="tracker-panel tracker-status tracker-status--information"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="existing-measurement"
+            >
+              <span class="tracker-status__icon" aria-hidden="true">✓</span>
+
+              <div>
+                <p class="tracker-status__eyebrow">Already recorded</p>
+                <h2>Weight measurement</h2>
+                <p>A measurement already exists for this date.</p>
+
+                <dl class="tracker-details journal-measurement">
+                  <div>
+                    <dt>Date</dt>
+                    <dd>
+                      <time [attr.datetime]="currentState.getState.view.date">
+                        {{ currentState.getState.view.date }}
+                      </time>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Weight</dt>
+                    <dd>{{ currentState.getState.view.weightInKg }} kg</dd>
+                  </div>
+                </dl>
+              </div>
+            </article>
+          }
+
+          @case ('not-found') {
+            <article
+              class="tracker-panel tracker-panel--neutral tracker-status tracker-status--empty"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="missing-measurement"
+            >
+              <span class="tracker-status__icon tracker-status__icon--neutral" aria-hidden="true">
+                +
+              </span>
+
+              <div>
+                <p class="tracker-status__eyebrow">Ready to log</p>
+                <h2>{{ currentState.getState.title }}</h2>
+                <p>{{ currentState.getState.message }}</p>
+                <p>Use the button above when you are ready to add it.</p>
+              </div>
+            </article>
+          }
+
+          @case ('failure') {
+            <article
+              class="tracker-panel tracker-panel--danger tracker-status"
+              role="alert"
+              data-testid="get-measurement-failure"
+            >
+              <span class="tracker-status__icon" aria-hidden="true">!</span>
+
+              <div>
+                <p class="tracker-status__eyebrow">Unable to check this date</p>
+                <h2>{{ currentState.getState.title }}</h2>
+                <p>{{ currentState.getState.message }}</p>
+
+                <div class="tracker-panel-action">
+                  <button
+                    class="tracker-button tracker-button--secondary"
+                    data-testid="retry-get"
+                    type="button"
+                    (click)="retryGet()"
+                  >
+                    Try again
+                  </button>
+                </div>
+              </div>
+            </article>
+          }
+        }
+      }
     }
   }
 </section>
 
 <dialog
   #logWeightMeasurementDialog
-  class="tracker-confirmation-dialog"
+  class="tracker-confirmation-dialog journal-dialog"
+  data-testid="log-weight-dialog"
   aria-labelledby="log-weight-title"
+  aria-describedby="log-weight-description"
   (close)="dialogClosed()"
-  [attr.closedby]="presenter.loading ? 'none' : 'any'"
+  [attr.closedby]="presenter.logLoading ? 'none' : 'any'"
 >
   <form
     class="tracker-confirmation-form"
     [formGroup]="presenter.weightForm"
+    [attr.aria-busy]="presenter.logLoading ? 'true' : null"
     (ngSubmit)="submitLog()"
     novalidate
   >
-    <h2 id="log-weight-title">Log weight</h2>
+    <header class="journal-dialog__header">
+      <p class="tracker-status__eyebrow">New measurement</p>
+      <h2 id="log-weight-title">Log a weight measurement</h2>
+      <p id="log-weight-description">Enter the measured weight for the selected calendar date.</p>
+    </header>
 
-    <p>
-      Selected date:
+    <p class="journal-dialog__date">
+      <span>Selected date</span>
       <time [attr.datetime]="presenter.dateControl.value">
         {{ presenter.dateControl.value }}
       </time>
     </p>
 
     <div class="tracker-form-field">
-      <label for="weight-in-kg" class="tracker-control-label"> Weight in kilograms </label>
+      <label for="weight-in-kg" class="tracker-control-label">Weight in kilograms</label>
+
       <div class="tracker-input-and-label">
         <input
           id="weight-in-kg"
@@ -95,7 +254,7 @@
           data-testid="weight-input"
           type="number"
           inputmode="decimal"
-          step="0.05"
+          [step]="presenter.weightStepInKg"
           formControlName="weightInKg"
           aria-describedby="weight-error-required weight-error-not-a-number weight-error-not-positive weight-error-not-multiple-of-grams-unit"
           [attr.aria-invalid]="
@@ -103,7 +262,7 @@
           "
         />
 
-        <span aria-hidden="true">kg</span>
+        <span class="journal-dialog__unit" aria-hidden="true">kg</span>
       </div>
 
       @if (presenter.showWeightErrors() && presenter.weightControl.hasError('required')) {
@@ -126,19 +285,31 @@
     </div>
 
     @if (presenter.state(); as state) {
-      @if (state.kind === 'log-failure') {
-        <div class="tracker-panel tracker-panel--danger" role="alert">
-          <h2>{{ state.title }}</h2>
-          <p>{{ state.message }}</p>
+      @if (state.logState.kind === 'failure') {
+        <div
+          class="tracker-panel tracker-panel--danger journal-dialog__error"
+          role="alert"
+          data-testid="log-measurement-failure"
+        >
+          <p class="tracker-status__eyebrow">Not saved</p>
+          <h3>{{ state.logState.title }}</h3>
+          <p>{{ state.logState.message }}</p>
         </div>
       }
+    }
+
+    @if (presenter.logLoading) {
+      <output class="journal-dialog__progress">
+        <app-shared-spinner />
+        Saving your measurement…
+      </output>
     }
 
     <div class="tracker-actions tracker-confirmation-actions">
       <button
         class="tracker-button tracker-button--secondary"
         type="button"
-        [disabled]="presenter.loading"
+        [disabled]="presenter.logLoading"
         data-testid="cancel-log"
         (click)="cancelLog()"
       >
@@ -149,12 +320,12 @@
         class="tracker-button"
         data-testid="confirm-log"
         type="submit"
-        [disabled]="presenter.loading"
+        [disabled]="presenter.logLoading"
       >
-        @if (presenter.loading) {
-          Logging…
+        @if (presenter.logLoading) {
+          Saving…
         } @else {
-          Log
+          Save measurement
         }
       </button>
     </div>

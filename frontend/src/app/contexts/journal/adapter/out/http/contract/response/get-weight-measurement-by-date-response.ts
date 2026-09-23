@@ -1,11 +1,11 @@
-export interface LogWeightMeasurementResponse {
+export interface GetWeightMeasurementByDateResponse {
   readonly date: string;
   readonly weightInKg: number;
 }
 
-export function isLogWeightMeasurementResponse(
+export function isGetWeightMeasurementByDateResponse(
   response: unknown,
-): response is LogWeightMeasurementResponse {
+): response is GetWeightMeasurementByDateResponse {
   if (typeof response !== 'object' || response === null || Array.isArray(response)) {
     return false;
   }

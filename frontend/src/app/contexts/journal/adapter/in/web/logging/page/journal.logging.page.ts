@@ -15,13 +15,15 @@ import {
   JournalLoggingPresenter,
   type JournalLoggingPresenterFactory,
 } from '../presenter/journal.logging.presenter';
+import { SharedSpinnerPage } from '../../../../../../../shared/api/shared.spinner';
+import { concatMap, map, take } from 'rxjs';
 
 @Component({
   selector: 'app-journal-logging-page',
   templateUrl: './journal.logging.page.html',
   styleUrl: './journal.logging.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SharedSpinnerPage],
   providers: [
     {
       provide: JournalLoggingPresenter,
@@ -42,18 +44,17 @@ export class JournalLoggingPage implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((queryParameters) => {
-        const requestedDate = queryParameters.get('date');
-        if (requestedDate !== null) {
-          this.presenter.selectDate(requestedDate);
-        }
-      });
+      .pipe(
+        map((queryParameters) => queryParameters.get('date') ?? this.presenter.dateControl.value),
+        concatMap((selectedDate) => this.presenter.selectDate(selectedDate).pipe(take(1))),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
   openDialog(): void {
     const dialog = this.logWeightMeasurementDialog.nativeElement;
-    if (this.presenter.validDate() && !dialog.open) {
+    if (!dialog.open) {
       dialog.returnValue = '';
       dialog.showModal();
     }
@@ -76,12 +77,16 @@ export class JournalLoggingPage implements OnInit {
   submitLog(): void {
     this.presenter
       .log()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(take(1))
       .subscribe((logged) => {
         if (logged) {
           this.logWeightMeasurementDialog.nativeElement.close('logged');
         }
       });
+  }
+
+  retryGet(): void {
+    this.presenter.selectDate(this.presenter.dateControl.value).pipe(take(1)).subscribe();
   }
 
   selectDate(newDate: string): void {
