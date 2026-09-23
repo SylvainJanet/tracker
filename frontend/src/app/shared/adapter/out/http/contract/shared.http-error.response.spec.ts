@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gatewayErrorMessage } from './shared.http-error.response';
+import { gatewayErrorMessage, isHttpErrorWithStatus } from './shared.http-error.response';
 import { HttpErrorResponse } from '@angular/common/http';
 
 describe('gatewayErrorMessage', () => {
@@ -30,6 +30,23 @@ describe('gatewayErrorMessage', () => {
     ).toBe('The service is temporarily unavailable');
   });
 
+  it('uses the fallback message for a valid Problem Details response without detail', () => {
+    const error = new HttpErrorResponse({
+      error: {
+        title: 'Service unavailable',
+        status: 503,
+      },
+    });
+
+    expect(gatewayErrorMessage(error)).toBe('An unexpected gateway error occurred.');
+  });
+
+  it('uses the fallback message for a non-HTTP error', () => {
+    expect(gatewayErrorMessage(new Error('Unexpected failure'))).toBe(
+      'An unexpected gateway error occurred.',
+    );
+  });
+
   it.each([
     null,
     'not an object',
@@ -39,7 +56,35 @@ describe('gatewayErrorMessage', () => {
     { status: '503' },
     { detail: { message: 'nested' } },
     { instance: 42 },
-  ])('rejects a malformed Problem Details response', (response) => {
-    expect(gatewayErrorMessage(response)).toBeUndefined();
+  ])('uses the fallback message for a malformed Problem Details response', (response) => {
+    const error = new HttpErrorResponse({
+      error: response,
+    });
+
+    expect(gatewayErrorMessage(error)).toBe('An unexpected gateway error occurred.');
+  });
+});
+
+describe('isHttpErrorWithStatus', () => {
+  it('accepts an HTTP error with the requested status', () => {
+    const error = new HttpErrorResponse({
+      status: 404,
+      statusText: 'Not Found',
+    });
+
+    expect(isHttpErrorWithStatus(error, 404)).toBe(true);
+  });
+
+  it('rejects an HTTP error with another status', () => {
+    const error = new HttpErrorResponse({
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    expect(isHttpErrorWithStatus(error, 404)).toBe(false);
+  });
+
+  it('rejects a non-HTTP error', () => {
+    expect(isHttpErrorWithStatus(new Error('Unexpected failure'), 404)).toBe(false);
   });
 });

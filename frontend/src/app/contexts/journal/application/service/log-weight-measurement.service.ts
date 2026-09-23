@@ -7,21 +7,21 @@ import type {
 import type {
   LogWeightMeasurementInstruction,
   LogWeightMeasurementOutcomeData,
-  LogWeightMeasurementStore,
-} from '../port/out/log-weight-measurement.store';
+  WeightMeasurementStore,
+} from '../port/out/weight-measurement.store';
 import { WeightMeasurement } from '../../domain/weight-measurement';
 import { calendarDate } from '../../domain/calendar-date';
 import { Weight } from '../../domain/weight';
 
 export class LogWeightMeasurementService implements LogWeightMeasurementUseCase {
-  constructor(private readonly store: LogWeightMeasurementStore) {}
+  constructor(private readonly store: WeightMeasurementStore) {}
 
   async log(command: LogWeightMeasurementCommand): Promise<LogWeightMeasurementResult> {
     if (!command) {
       throw new Error('command must not be null');
     }
 
-    const domain = toDomain(command);
+    const domain = commandToDomain(command);
 
     const instruction = toInstruction(domain);
     const outcome = await this.store.log(instruction);
@@ -30,14 +30,20 @@ export class LogWeightMeasurementService implements LogWeightMeasurementUseCase 
       throw new Error('Failed to log weight measurement: ' + outcome.outcomeData.errorMessage);
     }
 
+    const domainResponse = outcomeDataToDomain(outcome.outcomeData);
+
     return {
       kind: 'logged',
-      resultData: toResultData(outcome.outcomeData),
+      resultData: toResultData(domainResponse),
     };
   }
 }
 
-function toDomain(command: LogWeightMeasurementCommand): WeightMeasurement {
+function commandToDomain(command: LogWeightMeasurementCommand): WeightMeasurement {
+  return WeightMeasurement.create(calendarDate(command.date), Weight.of(command.weightInKg));
+}
+
+function outcomeDataToDomain(command: LogWeightMeasurementOutcomeData): WeightMeasurement {
   return WeightMeasurement.create(calendarDate(command.date), Weight.of(command.weightInKg));
 }
 
@@ -48,11 +54,9 @@ function toInstruction(domain: WeightMeasurement): LogWeightMeasurementInstructi
   };
 }
 
-function toResultData(
-  outcomeData: LogWeightMeasurementOutcomeData,
-): LogWeightMeasurementResultData {
+function toResultData(domain: WeightMeasurement): LogWeightMeasurementResultData {
   return {
-    date: outcomeData.date,
-    weightInKg: outcomeData.weightInKg,
+    date: domain.calendarDate,
+    weightInKg: domain.weightInKilograms(),
   };
 }

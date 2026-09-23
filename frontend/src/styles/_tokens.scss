@@ -14,6 +14,14 @@
   --color-danger-border: #b42318;
   --color-danger-surface: #fff1f0;
 
+  --color-success-text: #17613a;
+  --color-success-border: #78ad8c;
+  --color-success-surface: #edf8f1;
+
+  --color-information-text: #244584;
+  --color-information-border: #9eb2dc;
+  --color-information-surface: #f1f5ff;
+
   --color-backdrop: rgb(23 32 51 / 45%);
 
   --space-1: 0.25rem;
@@ -39,4 +47,5 @@
 
   --shadow-navigation: 0 0.125rem 0.5rem rgb(23 32 51 / 8%);
   --shadow-dialog: 0 1rem 3rem rgb(23 32 51 / 25%);
+  --shadow-panel: 0 0.75rem 2rem rgb(23 32 51 / 8%);
 }
