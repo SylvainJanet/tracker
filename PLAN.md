@@ -140,7 +140,9 @@ and the two deferred contexts without contradicting weight ownership.
 - [ ] Mark imported exercise-energy values with spreadsheet provenance and do
       not present them as measured physiological facts.
 - [ ] Add a separate dated weight-prediction aggregate.
-- [ ] Add reading, history, and correction use cases for dated observations.
+- [x] Add weight-measurement lookup by date.
+- [ ] Add remaining reading, history, and correction use cases for dated
+      observations.
 - [ ] Decide whether later Journal use cases require a broader dated aggregate
       or explicit completion concept.
 - [ ] Add date-range queries needed by history and later analysis.
