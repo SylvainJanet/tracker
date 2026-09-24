@@ -1,4 +1,60 @@
-import org.gradle.api.tasks.Exec
+import java.io.ByteArrayOutputStream
+
+abstract class ValidateNodeVersionTask : DefaultTask() {
+  @get:InputFile
+  abstract val nodeVersionFile: RegularFileProperty
+
+  @get:Inject
+  abstract val execOperations: ExecOperations
+
+  @TaskAction
+  fun validateNodeVersion() {
+    val expectedVersion =
+      nodeVersionFile
+        .get()
+        .asFile
+        .readText()
+        .trim()
+    val nodeVersionOutput = ByteArrayOutputStream()
+
+    val actualVersion =
+      try {
+        execOperations.exec {
+          commandLine("node", "--version")
+          standardOutput = nodeVersionOutput
+        }
+
+        nodeVersionOutput
+          .toString(Charsets.UTF_8)
+          .trim()
+          .removePrefix("v")
+      } catch (exception: GradleException) {
+        throw GradleException(
+          """
+          Node.js $expectedVersion is required, but `node --version` could not be executed.
+          Activate the required version before running frontend Gradle tasks.
+          With nvm, run from the repository root:
+            cd frontend && nvm install && nvm use && cd ..
+          Then restart the Gradle daemon so it inherits the updated PATH:
+            ./gradlew --stop
+          """.trimIndent(),
+          exception,
+        )
+      }
+    if (actualVersion != expectedVersion) {
+      throw GradleException(
+        """
+        Node.js $expectedVersion is required, but Node.js $actualVersion is active.
+        Activate the required version before running frontend Gradle tasks.
+        With nvm, run from the repository root:
+          cd frontend && nvm install && nvm use && cd ..
+        Then restart the Gradle daemon so it inherits the updated PATH:
+          ./gradlew --stop
+        """.trimIndent(),
+      )
+    }
+  }
+}
 
 val npmExecutable =
   if (
@@ -12,11 +68,23 @@ val npmExecutable =
     "npm"
   }
 
+val validateNodeVersion =
+  tasks.register<ValidateNodeVersionTask>("validateNodeVersion") {
+    group = "verification"
+    description = "Validates the active Node.js version."
+
+    nodeVersionFile.set(
+      layout.projectDirectory.file(".nvmrc"),
+    )
+  }
+
 val install =
   tasks.register<Exec>("install") {
     group = "frontend"
     description =
       "Installs the frontend dependencies."
+
+    dependsOn(validateNodeVersion)
 
     workingDir(layout.projectDirectory.asFile)
 
