@@ -29,8 +29,10 @@ not already exist, then verify the Gradle wrapper:
 ```
 
 Frontend Gradle tasks invoke the node and npm executables from the current shell;
-Gradle does not activate `frontend/.nvmrc`. Before running a frontend task or a
-repository-wide build, use your Node.js version manager to activate the version
+Gradle does not activate `frontend/.nvmrc`. The frontend task graph validates the
+exact active Node.js version before installing dependencies, and `run.sh`
+performs the same validation before starting the application. Before running
+either entry point, use your Node.js version manager to activate the version
 declared in `frontend/.nvmrc`.
 
 For example, with nvm:
@@ -44,6 +46,9 @@ cd ..
 node --version
 ./gradlew :frontend:install
 ```
+
+If Gradle still observes the previous Node.js installation after switching
+versions, stop its existing daemon with `./gradlew --stop` and rerun the task.
 
 Keep the selected Node.js version active in the same shell when running
 `./gradlew :frontend:*`, `./gradlew build`, or `./gradlew format`.

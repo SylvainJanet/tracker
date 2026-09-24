@@ -49,6 +49,14 @@ presentation model owns meaningful state transitions. When a workflow requires
 asynchronous application coordination or non-trivial reactive state, a presenter
 coordinates it and translates application results into presentation data.
 
+Presentation state may use orthogonal dimensions when workflow concerns can
+vary independently. The model defines its valid state-kind combinations and
+transition edges explicitly. An impossible state or transition is a programming
+error and fails immediately. An event that is admissible but has no effect is
+ignored and preserves the existing model instance. Angular form-control
+validity and other framework-local interaction state remain outside these model
+dimensions unless they represent meaningful workflow state.
+
 The presenter pattern is optional: simple pages may handle local interaction
 directly while respecting the same boundaries. Angular signals remain a
 presentation mechanism and do not become domain state or shared application
