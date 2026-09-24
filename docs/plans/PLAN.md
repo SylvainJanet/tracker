@@ -196,7 +196,7 @@ policy.
 ## Milestone 3 — Import and reconcile spreadsheet history
 
 - [ ] Confirm the source format and mapping without exposing personal values.
-- [ ] Do not inspect or modify `data/` without explicit authorization.
+- [ ] Do not inspect or modify `../../data` without explicit authorization.
 - [ ] Define a versioned source-to-domain mapping.
 - [ ] Keep manual phase and goal entry separate from bulk daily-log import.
 - [ ] Import per-date strategy assignments or exceptions that cannot be derived
