@@ -20,6 +20,41 @@ usage() {
         "  --database=local"
 }
 
+require_node_version() {
+    local expected_node_version
+    local actual_node_version
+
+    expected_node_version="$(<"$PROJECT_DIRECTORY/frontend/.nvmrc")"
+
+    if ! command -v node >/dev/null 2>&1; then
+        printf 'Error: Node.js %s is required, but node was not found in PATH.\n' \
+            "$expected_node_version" >&2
+        printf '%s\n' \
+            "Activate the required version before running this script." \
+            "With nvm, run from the repository root:" \
+            "  cd frontend && nvm install && nvm use && cd .." \
+            "Then restart the Gradle daemon so it inherits the updated PATH:" \
+            "  ./gradlew --stop" >&2
+        exit 2
+    fi
+
+    actual_node_version="$(node --version)"
+    actual_node_version="${actual_node_version#v}"
+
+    if [[ "$actual_node_version" != "$expected_node_version" ]]; then
+        printf 'Error: Node.js %s is required, but Node.js %s is active.\n' \
+            "$expected_node_version" \
+            "$actual_node_version" >&2
+        printf '%s\n' \
+            "Activate the required version before running this script." \
+            "With nvm, run from the repository root:" \
+            "  cd frontend && nvm install && nvm use && cd .." \
+            "Then restart the Gradle daemon so it inherits the updated PATH:" \
+            "  ./gradlew --stop" >&2
+        exit 2
+    fi
+}
+
 fail() {
     printf 'Error: %s\n\n' "$1" >&2
     usage >&2
@@ -93,6 +128,8 @@ case "$database" in
         fail "Unsupported database: $database"
         ;;
 esac
+
+require_node_version
 
 backend_arguments=(
     "--console=plain"
