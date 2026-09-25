@@ -5,8 +5,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class GetWeightMeasurementByDateResultTestBuilder {
+
     private LocalDate date;
     private BigDecimal weightInKg;
+
+    private GetWeightMeasurementByDateResultTestBuilder() {
+        /* This builder should not be instantiated */
+    }
 
     public static GetWeightMeasurementByDateResultTestBuilder aGetWeightMeasurementByDateResult() {
         return new GetWeightMeasurementByDateResultTestBuilder();
