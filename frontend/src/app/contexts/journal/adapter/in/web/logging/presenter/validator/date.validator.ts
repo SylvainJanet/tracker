@@ -1,5 +1,5 @@
 import { type AbstractControl, type ValidationErrors, type ValidatorFn } from '@angular/forms';
-import { isCalendarDate } from '../../../../../../domain/calendar-date';
+import { isCalendarDate } from '../../../../../../../../shared/api/shared.calendar';
 
 export const validCalendarDate: ValidatorFn = (
   control: AbstractControl,
