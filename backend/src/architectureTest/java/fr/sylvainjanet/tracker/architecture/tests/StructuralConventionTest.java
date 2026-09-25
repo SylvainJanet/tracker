@@ -54,6 +54,7 @@ public class StructuralConventionTest {
             Set.of("usecase", "dtos", "exceptions");
     private static final Set<String> ALLOWED_INBOUND_PORT_DTO_PACKAGES =
             Set.of("command", "query", "result");
+    private static final Set<String> ALLOWED_INBOUND_PORT_DTO_RESULT_PACKAGES = Set.of("builder");
 
     private static final Set<String> ALLOWED_OUTBOUND_PORT_PACKAGES = Set.of("gateway", "dtos");
     private static final Set<String> ALLOWED_OUTBOUND_GATEWAY_PACKAGES = Set.of("store");
@@ -97,6 +98,8 @@ public class StructuralConventionTest {
     private static final String COMMANDS = packageTree("application.port.in.dtos.command");
     private static final String QUERIES = packageTree("application.port.in.dtos.query");
     private static final String RESULTS = packageTree("application.port.in.dtos.result");
+    private static final String RESULT_BUILDER =
+            packageTree("application.port.in.dtos.result.builder");
     private static final String INBOUND_PORT_EXCEPTIONS =
             packageTree("application.port.in.exceptions");
     private static final String INBOUND_PORT_USE_CASES = packageTree("application.port.in.usecase");
@@ -844,12 +847,28 @@ public class StructuralConventionTest {
                                                 .class);
 
                         public static final class ResultRules {
+                            @ArchTest
+                            public static final ArchRule resultDtosUseAllowedPackages =
+                                    classes()
+                                            .that()
+                                            .resideInAPackage(RESULTS + "*")
+                                            .should()
+                                            .resideInAnyPackage(
+                                                    allowedSubpackageTrees(
+                                                            RESULTS,
+                                                            ALLOWED_INBOUND_PORT_DTO_RESULT_PACKAGES))
+                                            .allowEmptyShould(true);
 
                             @ArchTest
                             public static final ArchRule resultDtosHaveResultSuffix =
                                     classes()
                                             .that()
                                             .resideInAPackage(RESULTS)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            RESULTS,
+                                                            ALLOWED_INBOUND_PORT_DTO_RESULT_PACKAGES))
                                             .should()
                                             .haveSimpleNameEndingWith("Result")
                                             .allowEmptyShould(true);
@@ -868,11 +887,44 @@ public class StructuralConventionTest {
                                     classes()
                                             .that()
                                             .resideInAPackage(RESULTS)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            RESULTS,
+                                                            ALLOWED_INBOUND_PORT_DTO_RESULT_PACKAGES))
                                             .should()
                                             .beRecords()
                                             .orShould()
                                             .beEnums()
                                             .allowEmptyShould(true);
+
+                            @ArchTest
+                            static final ArchTests resultBuilderRules =
+                                    ArchTests.in(
+                                            StructuralConventionTest.ContextRules.ApplicationRules
+                                                    .PortRules.InboundPortRules.DtosRules
+                                                    .ResultRules.ResultBuilderRules.class);
+
+                            public static final class ResultBuilderRules {
+
+                                @ArchTest
+                                public static final ArchRule resultBuilderHaveBuilderSuffix =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(RESULT_BUILDER)
+                                                .should()
+                                                .haveSimpleNameEndingWith("ResultBuilder")
+                                                .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule resultBuilderShouldBeFinalClasses =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(RESULT_BUILDER)
+                                                .should()
+                                                .haveModifier(JavaModifier.FINAL)
+                                                .allowEmptyShould(true);
+                            }
                         }
                     }
 
