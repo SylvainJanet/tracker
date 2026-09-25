@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WeightMeasurementStore } from '../port/out/weight-measurement.store';
 import { GetWeightMeasurementByDateService } from './get-weight-measurement-by-date.service';
-import { calendarDate } from '../../domain/calendar-date';
+import { calendarDate } from '../../../../shared/api/shared.calendar';
 import type { GetWeightMeasurementByDateQuery } from '../port/in/get-weight-measurement-by-date.use-case';
 
 describe('GetWeightMeasurementByDateService', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { calendarDate } from '../../domain/calendar-date';
+import { calendarDate } from '../../../../shared/api/shared.calendar';
 import { type TodayProvider } from '../port/out/today.provider';
 import { GetDefaultJournalDateService } from './get-default-journal-date.service';
 
