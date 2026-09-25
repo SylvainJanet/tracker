@@ -3,9 +3,12 @@ package fr.sylvainjanet.tracker.architecture.contract.tests;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.classesNamedCommandStayInCommandPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.commandDtosAreRecordsOrEnums;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.commandDtosHaveCommandSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.QueryBuilderRules.queryBuilderHaveBuilderSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.QueryBuilderRules.queryBuilderShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.classesNamedQueryStayInQueryPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.queryDtosAreRecordsOrEnums;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.queryDtosHaveQuerySuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.queryDtosUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.ResultRules.ResultBuilderRules.resultBuilderHaveBuilderSuffix;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.ResultRules.ResultBuilderRules.resultBuilderShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.ResultRules.classesNamedResultStayInResultPackages;
@@ -29,11 +32,15 @@ import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.comm
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.CorrectlyNamedQuery;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.MisconfiguredQueryPayload;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.QueryKindQuery;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.builder.CorrectDtoQueryBuilder;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.builder.InvalidQueryBuilderSuffix;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.builder.NotFinalQueryBuilder;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.unsupported.UnsupportedQueryDtoPackage;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.CorrectlyNamedResult;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.MisconfiguredResultPayload;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.ResultKindResult;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.builder.CorrectDtoResultBuilder;
-import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.builder.InvalidBuilderSuffix;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.builder.InvalidResultBuilderSuffix;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.builder.NotFinalResultBuilder;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.unsupported.UnsupportedResultDtoPackage;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.unsupported.UnsupportedInboundDto;
@@ -128,6 +135,16 @@ public class StructuralInboundApplicationConventionContractTest {
     }
 
     @Test
+    void queryDtosUseAllowedPackages() {
+        ArchitectureRuleContract.assertAccepts(
+                queryDtosUseAllowedPackages, CorrectDtoQueryBuilder.class);
+        ArchitectureRuleContract.assertRejects(
+                queryDtosUseAllowedPackages,
+                "UnsupportedQueryDtoPackage",
+                UnsupportedQueryDtoPackage.class);
+    }
+
+    @Test
     void queryDtosHaveQuerySuffix() {
         ArchitectureRuleContract.assertAccepts(
                 queryDtosHaveQuerySuffix, CorrectlyNamedQuery.class, QueryKindQuery.class);
@@ -153,6 +170,26 @@ public class StructuralInboundApplicationConventionContractTest {
                 queryDtosAreRecordsOrEnums,
                 "MisconfiguredQueryPayload",
                 MisconfiguredQueryPayload.class);
+    }
+
+    @Test
+    void queryBuilderHaveBuilderSuffix() {
+        ArchitectureRuleContract.assertAccepts(
+                queryBuilderHaveBuilderSuffix, CorrectDtoQueryBuilder.class);
+        ArchitectureRuleContract.assertRejects(
+                queryBuilderHaveBuilderSuffix,
+                "InvalidQueryBuilderSuffix",
+                InvalidQueryBuilderSuffix.class);
+    }
+
+    @Test
+    void queryBuilderShouldBeFinalClasses() {
+        ArchitectureRuleContract.assertAccepts(
+                queryBuilderShouldBeFinalClasses, CorrectDtoQueryBuilder.class);
+        ArchitectureRuleContract.assertRejects(
+                queryBuilderShouldBeFinalClasses,
+                "NotFinalQueryBuilder",
+                NotFinalQueryBuilder.class);
     }
 
     @Test
@@ -198,7 +235,9 @@ public class StructuralInboundApplicationConventionContractTest {
         ArchitectureRuleContract.assertAccepts(
                 resultBuilderHaveBuilderSuffix, CorrectDtoResultBuilder.class);
         ArchitectureRuleContract.assertRejects(
-                resultBuilderHaveBuilderSuffix, "InvalidBuilderSuffix", InvalidBuilderSuffix.class);
+                resultBuilderHaveBuilderSuffix,
+                "InvalidResultBuilderSuffix",
+                InvalidResultBuilderSuffix.class);
     }
 
     @Test

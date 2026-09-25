@@ -54,6 +54,7 @@ public class StructuralConventionTest {
             Set.of("usecase", "dtos", "exceptions");
     private static final Set<String> ALLOWED_INBOUND_PORT_DTO_PACKAGES =
             Set.of("command", "query", "result");
+    private static final Set<String> ALLOWED_INBOUND_PORT_DTO_QUERY_PACKAGES = Set.of("builder");
     private static final Set<String> ALLOWED_INBOUND_PORT_DTO_RESULT_PACKAGES = Set.of("builder");
 
     private static final Set<String> ALLOWED_OUTBOUND_PORT_PACKAGES = Set.of("gateway", "dtos");
@@ -97,6 +98,8 @@ public class StructuralConventionTest {
     private static final String INBOUND_PORT_DTOS = packageTree("application.port.in.dtos");
     private static final String COMMANDS = packageTree("application.port.in.dtos.command");
     private static final String QUERIES = packageTree("application.port.in.dtos.query");
+    private static final String QUERY_BUILDER =
+            packageTree("application.port.in.dtos.query.builder");
     private static final String RESULTS = packageTree("application.port.in.dtos.result");
     private static final String RESULT_BUILDER =
             packageTree("application.port.in.dtos.result.builder");
@@ -808,12 +811,28 @@ public class StructuralConventionTest {
                                                 .class);
 
                         public static final class QueryRules {
+                            @ArchTest
+                            public static final ArchRule queryDtosUseAllowedPackages =
+                                    classes()
+                                            .that()
+                                            .resideInAPackage(QUERIES + "*")
+                                            .should()
+                                            .resideInAnyPackage(
+                                                    allowedSubpackageTrees(
+                                                            QUERIES,
+                                                            ALLOWED_INBOUND_PORT_DTO_QUERY_PACKAGES))
+                                            .allowEmptyShould(true);
 
                             @ArchTest
                             public static final ArchRule queryDtosHaveQuerySuffix =
                                     classes()
                                             .that()
                                             .resideInAPackage(QUERIES)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            QUERIES,
+                                                            ALLOWED_INBOUND_PORT_DTO_QUERY_PACKAGES))
                                             .should()
                                             .haveSimpleNameEndingWith("Query")
                                             .allowEmptyShould(true);
@@ -832,11 +851,43 @@ public class StructuralConventionTest {
                                     classes()
                                             .that()
                                             .resideInAPackage(QUERIES)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            QUERIES,
+                                                            ALLOWED_INBOUND_PORT_DTO_QUERY_PACKAGES))
                                             .should()
                                             .beRecords()
                                             .orShould()
                                             .beEnums()
                                             .allowEmptyShould(true);
+
+                            @ArchTest
+                            static final ArchTests queryBuilderRules =
+                                    ArchTests.in(
+                                            StructuralConventionTest.ContextRules.ApplicationRules
+                                                    .PortRules.InboundPortRules.DtosRules.QueryRules
+                                                    .QueryBuilderRules.class);
+
+                            public static final class QueryBuilderRules {
+                                @ArchTest
+                                public static final ArchRule queryBuilderHaveBuilderSuffix =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(QUERY_BUILDER)
+                                                .should()
+                                                .haveSimpleNameEndingWith("QueryBuilder")
+                                                .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule queryBuilderShouldBeFinalClasses =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(QUERY_BUILDER)
+                                                .should()
+                                                .haveModifier(JavaModifier.FINAL)
+                                                .allowEmptyShould(true);
+                            }
                         }
 
                         @ArchTest
