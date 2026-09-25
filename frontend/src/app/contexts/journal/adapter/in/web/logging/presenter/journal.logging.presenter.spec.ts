@@ -10,7 +10,7 @@ import type {
   LogWeightMeasurementResult,
   LogWeightMeasurementUseCase,
 } from '../../../../../application/port/in/log-weight-measurement.use-case';
-import { Weight } from '../../../../../domain/weight';
+import { Weight } from '../../../../../../../shared/api/shared.weight-measurement';
 import { JournalLoggingPresenter } from './journal.logging.presenter';
 
 describe('JournalLoggingPresenter', () => {
