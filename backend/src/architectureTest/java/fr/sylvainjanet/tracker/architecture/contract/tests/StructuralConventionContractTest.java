@@ -1,8 +1,11 @@
 package fr.sylvainjanet.tracker.architecture.contract.tests;
 
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.ServiceRules.ServiceMapperRules.serviceMappersHaveMapperSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.ServiceRules.ServiceMapperRules.serviceMappersShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.ServiceRules.classesNamedServiceStayInServicePackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.ServiceRules.servicesHaveServiceSuffix;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.ServiceRules.servicesShouldBeFinal;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.ServiceRules.servicesUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ConfigurationRules.applicationConfigurationUsesAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ConfigurationRules.configurationClassesHaveAllowedSuffixes;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ConfigurationRules.configurationClassesStayInConfigurationPackage;
@@ -13,6 +16,9 @@ import fr.sylvainjanet.tracker.architecture.contract.ArchitectureRuleContract;
 import fr.sylvainjanet.tracker.architecturefixture.application.service.CorrectlyNamedService;
 import fr.sylvainjanet.tracker.architecturefixture.application.service.MisnamedServiceComponent;
 import fr.sylvainjanet.tracker.architecturefixture.application.service.NonFinalService;
+import fr.sylvainjanet.tracker.architecturefixture.application.service.mapper.InvalidServiceMapperFunction;
+import fr.sylvainjanet.tracker.architecturefixture.application.service.mapper.ValidServiceMapper;
+import fr.sylvainjanet.tracker.architecturefixture.application.service.unsupported.UnsupportedServicePackage;
 import fr.sylvainjanet.tracker.architecturefixture.domain.ConstructorInjectedType;
 import fr.sylvainjanet.tracker.architecturefixture.domain.CorrectlyLocatedDomainType;
 import fr.sylvainjanet.tracker.architecturefixture.domain.FieldInjectedType;
@@ -54,6 +60,17 @@ public class StructuralConventionContractTest {
     }
 
     @Test
+    void servicesUseAllowedPackages() {
+        ArchitectureRuleContract.assertAccepts(
+                servicesUseAllowedPackages, ValidServiceMapper.class);
+
+        ArchitectureRuleContract.assertRejects(
+                servicesUseAllowedPackages,
+                "UnsupportedServicePackage",
+                UnsupportedServicePackage.class);
+    }
+
+    @Test
     void servicesHaveServiceSuffix() {
         ArchitectureRuleContract.assertAccepts(
                 servicesHaveServiceSuffix, CorrectlyNamedService.class);
@@ -81,6 +98,28 @@ public class StructuralConventionContractTest {
 
         ArchitectureRuleContract.assertRejects(
                 servicesShouldBeFinal, "NonFinalService", NonFinalService.class);
+    }
+
+    @Test
+    void serviceMappersHaveMapperSuffix() {
+        ArchitectureRuleContract.assertAccepts(
+                serviceMappersHaveMapperSuffix, ValidServiceMapper.class);
+
+        ArchitectureRuleContract.assertRejects(
+                serviceMappersHaveMapperSuffix,
+                "InvalidServiceMapperFunction",
+                InvalidServiceMapperFunction.class);
+    }
+
+    @Test
+    void serviceMappersShouldBeFinalClasses() {
+        ArchitectureRuleContract.assertAccepts(
+                serviceMappersShouldBeFinalClasses, ValidServiceMapper.class);
+
+        ArchitectureRuleContract.assertRejects(
+                serviceMappersShouldBeFinalClasses,
+                "InvalidServiceMapperFunction",
+                InvalidServiceMapperFunction.class);
     }
 
     @Test

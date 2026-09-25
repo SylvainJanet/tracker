@@ -60,6 +60,8 @@ public class StructuralConventionTest {
     private static final Set<String> ALLOWED_OUTBOUND_PORT_DTO_PACKAGES =
             Set.of("criteria", "instruction", "outcome");
 
+    private static final Set<String> ALLOWED_SERVICE_PACKAGES = Set.of("mapper");
+
     private static final String ADAPTERS = packageTree("adapter");
 
     private static final String INBOUND_ADAPTERS = packageTree("adapter.in");
@@ -108,6 +110,8 @@ public class StructuralConventionTest {
     private static final String STORE = packageTree("application.port.out.gateway.store");
 
     private static final String APPLICATION_SERVICES = packageTree("application.service");
+    private static final String APPLICATION_SERVICES_MAPPER =
+            packageTree("application.service.mapper");
 
     private static final String DOMAIN = packageTree("domain");
 
@@ -1163,6 +1167,18 @@ public class StructuralConventionTest {
                                     .class);
 
             public static final class ServiceRules {
+
+                @ArchTest
+                public static final ArchRule servicesUseAllowedPackages =
+                        classes()
+                                .that()
+                                .resideInAPackage(APPLICATION_SERVICES + "*")
+                                .should()
+                                .resideInAnyPackage(
+                                        allowedSubpackageTrees(
+                                                APPLICATION_SERVICES, ALLOWED_SERVICE_PACKAGES))
+                                .allowEmptyShould(true);
+
                 @ArchTest
                 public static final ArchRule servicesHaveServiceSuffix =
                         classes()
@@ -1170,6 +1186,10 @@ public class StructuralConventionTest {
                                 .resideInAPackage(APPLICATION_SERVICES)
                                 .and()
                                 .areTopLevelClasses()
+                                .and()
+                                .resideOutsideOfPackages(
+                                        allowedSubpackageTrees(
+                                                APPLICATION_SERVICES, ALLOWED_SERVICE_PACKAGES))
                                 .should()
                                 .haveSimpleNameEndingWith("Service")
                                 .allowEmptyShould(true);
@@ -1190,8 +1210,39 @@ public class StructuralConventionTest {
                                 .resideInAPackage(APPLICATION_SERVICES)
                                 .and()
                                 .areTopLevelClasses()
+                                .and()
+                                .resideOutsideOfPackages(
+                                        allowedSubpackageTrees(
+                                                APPLICATION_SERVICES, ALLOWED_SERVICE_PACKAGES))
                                 .should()
                                 .haveModifier(JavaModifier.FINAL);
+
+                @ArchTest
+                static final ArchTests serviceMapperRules =
+                        ArchTests.in(
+                                StructuralConventionTest.ContextRules.ApplicationRules.ServiceRules
+                                        .ServiceMapperRules.class);
+
+                public static final class ServiceMapperRules {
+
+                    @ArchTest
+                    public static final ArchRule serviceMappersHaveMapperSuffix =
+                            classes()
+                                    .that()
+                                    .resideInAPackage(APPLICATION_SERVICES_MAPPER)
+                                    .should()
+                                    .haveSimpleNameEndingWith("Mapper")
+                                    .allowEmptyShould(true);
+
+                    @ArchTest
+                    public static final ArchRule serviceMappersShouldBeFinalClasses =
+                            classes()
+                                    .that()
+                                    .resideInAPackage(APPLICATION_SERVICES_MAPPER)
+                                    .should()
+                                    .haveModifier(JavaModifier.FINAL)
+                                    .allowEmptyShould(true);
+                }
             }
         }
 
