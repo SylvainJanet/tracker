@@ -22,6 +22,7 @@ import java.util.Set;
 public class BoundedContextArchitectureTest {
 
     private static final String ROOT_PACKAGE = "fr.sylvainjanet.tracker";
+    private static final String SHARED_KERNEL_PACKAGE = ROOT_PACKAGE + ".shared";
     private static final Set<String> APPLICATION_LEVEL_PACKAGES = Set.of("configuration");
 
     @ArchTest
@@ -41,6 +42,11 @@ public class BoundedContextArchitectureTest {
                                     for (Dependency dependency :
                                             source.getDirectDependenciesFromSelf()) {
                                         JavaClass target = dependency.getTargetClass();
+
+                                        if (isSharedKernel(target)) {
+                                            continue;
+                                        }
+
                                         Optional<String> targetContext = boundedContextOf(target);
 
                                         if (targetContext.isEmpty()
@@ -123,6 +129,13 @@ public class BoundedContextArchitectureTest {
                 remaining.addLast(target);
             }
         }
+    }
+
+    private static boolean isSharedKernel(JavaClass javaClass) {
+        String packageName = javaClass.getPackageName();
+
+        return packageName.equals(SHARED_KERNEL_PACKAGE)
+                || packageName.startsWith(SHARED_KERNEL_PACKAGE + ".");
     }
 
     private static boolean isUsedByAnotherContext(JavaClass contractType) {
