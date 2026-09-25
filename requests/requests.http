@@ -12,3 +12,8 @@ Content-Type: application/json
 GET {{host}}/api/journal/weight-measurement/2026-09-16
 Content-Type: application/json
 
+
+### GET weight analysis
+GET {{host}}/api/analysis/weight
+Content-Type: application/json
+
