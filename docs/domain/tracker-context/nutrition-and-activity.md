@@ -3,7 +3,7 @@
 ## Purpose
 
 The historical tracker recorded calorie, protein and fibre intake, steps and
-exercise as daily behavioural inputs. Tracking owns these dated observations,
+exercise as daily behavioural inputs. Journal owns these dated observations,
 but their aggregate boundaries and lifecycles remain to be established by
 concrete use cases. Their grouping in a spreadsheet daily row does not establish
 a daily-record aggregate in the application.
@@ -134,7 +134,7 @@ expenditure. The historical tracker recorded grouped durations. The performed
 activity, estimation parameters and derived calories are distinct concepts and
 should remain distinguishable.
 
-Until Training is implemented, Tracking preserves the imported exercise label
+Until Training is implemented, Journal preserves the imported exercise label
 and reported energy estimate with spreadsheet provenance. The stored energy
 value remains an estimate rather than a measured physiological fact.
 

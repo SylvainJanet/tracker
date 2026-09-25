@@ -8,8 +8,10 @@ remain distinct from the observations, predictions, goals and historical
 decisions used to produce them.
 
 Analysis owns calculation-method history and these derived results. It consumes
-explicit representations published by Tracking and Strategy rather than their
-internal domain objects or persistence models.
+explicit representations published by Journal and Strategy rather than their
+internal domain objects or persistence models. Reusable numerical operations may
+be delegated to Statistics without giving that supporting module the business
+meaning of the inputs or results.
 
 The historical tracker and its redesign used several rolling windows because
 short- and long-lived changes have different meanings. Future application use
