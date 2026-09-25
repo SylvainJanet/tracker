@@ -56,6 +56,13 @@ class TrackerOpenApiTest {
                 .andExpect(
                         jsonPath("$.paths['/api/journal/weight-measurement/{date}'].keys()")
                                 .value(containsInAnyOrder("get")))
-                .andExpect(jsonPath("$.paths.length()").value(2));
+                .andExpect(
+                        jsonPath("$.paths['/api/analysis/weight'].get.responses['200']").exists())
+                .andExpect(
+                        jsonPath("$.paths['/api/analysis/weight'].get.responses.length()").value(1))
+                .andExpect(
+                        jsonPath("$.paths['/api/analysis/weight'].keys()")
+                                .value(containsInAnyOrder("get")))
+                .andExpect(jsonPath("$.paths.length()").value(3));
     }
 }

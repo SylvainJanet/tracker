@@ -5,8 +5,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class LogWeightMeasurementOutcomeTestBuilder {
+
     private LocalDate date;
     private BigDecimal weightInKg;
+
+    private LogWeightMeasurementOutcomeTestBuilder() {
+        /* This builder should not be instantiated */
+    }
 
     public static LogWeightMeasurementOutcomeTestBuilder aLogWeightMeasurementOutcome() {
         return new LogWeightMeasurementOutcomeTestBuilder();

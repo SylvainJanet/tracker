@@ -4,7 +4,12 @@ import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightM
 import java.time.LocalDate;
 
 public class GetWeightMeasurementByDateQueryTestBuilder {
+
     private LocalDate date;
+
+    private GetWeightMeasurementByDateQueryTestBuilder() {
+        /* This builder should not be instantiated */
+    }
 
     public static GetWeightMeasurementByDateQueryTestBuilder aGetWeightMeasurementByDateQuery() {
         return new GetWeightMeasurementByDateQueryTestBuilder();

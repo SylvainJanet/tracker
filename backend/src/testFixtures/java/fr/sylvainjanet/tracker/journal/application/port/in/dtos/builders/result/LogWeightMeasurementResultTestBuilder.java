@@ -9,6 +9,10 @@ public class LogWeightMeasurementResultTestBuilder {
     private LocalDate date;
     private BigDecimal weightInKg;
 
+    private LogWeightMeasurementResultTestBuilder() {
+        /* This builder should not be instantiated */
+    }
+
     public static LogWeightMeasurementResultTestBuilder aLogWeightMeasurementResult() {
         return new LogWeightMeasurementResultTestBuilder();
     }

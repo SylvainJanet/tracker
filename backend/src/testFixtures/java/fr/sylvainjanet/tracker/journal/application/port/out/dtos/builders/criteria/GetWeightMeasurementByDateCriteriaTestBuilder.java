@@ -7,6 +7,10 @@ public class GetWeightMeasurementByDateCriteriaTestBuilder {
 
     private LocalDate date;
 
+    private GetWeightMeasurementByDateCriteriaTestBuilder() {
+        /* This builder should not be instantiated */
+    }
+
     public static GetWeightMeasurementByDateCriteriaTestBuilder
             aGetWeightMeasurementByDateCriteria() {
         return new GetWeightMeasurementByDateCriteriaTestBuilder();

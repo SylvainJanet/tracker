@@ -43,7 +43,7 @@ public class HexagonalArchitectureTest {
             "fr.sylvainjanet.tracker.configuration..";
 
     private static final Set<String> ALLOWED_CORE_JDK_PACKAGES =
-            Set.of("java.lang", "java.time", "java.util..", "java.math");
+            Set.of("java.lang", "java.time..", "java.util..", "java.math");
     private static final String[] ALLOWED_DOMAIN_DEPENDENCIES = allowedCoreDependencies(DOMAIN);
     private static final String[] ALLOWED_APPLICATION_DEPENDENCIES =
             allowedCoreDependencies(DOMAIN, APPLICATION);

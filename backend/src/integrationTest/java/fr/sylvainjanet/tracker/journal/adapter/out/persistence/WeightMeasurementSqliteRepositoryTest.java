@@ -11,14 +11,19 @@ import fr.sylvainjanet.tracker.configuration.sqlite.environment.SqliteTestDataba
 import fr.sylvainjanet.tracker.configuration.sqlite.environment.TestSqliteDatabase;
 import fr.sylvainjanet.tracker.journal.adapter.out.persistence.repository.WeightMeasurementSqliteRepository;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.criteria.GetWeightMeasurementByDateCriteria;
+import fr.sylvainjanet.tracker.journal.application.port.out.dtos.criteria.GetWeightMeasurementInDateRangeCriteria;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.instruction.LogWeightMeasurementInstruction;
+import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetFirstWeightMeasurementDateOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementByDateOutcome;
+import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementInDateRangeOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -131,6 +136,98 @@ class WeightMeasurementSqliteRepositoryTest {
             assertThatThrownBy(() -> store.getByDate(null))
                     .isInstanceOf(NullPointerException.class)
                     .hasMessage("criteria must not be null");
+        }
+    }
+
+    @Nested
+    class GetInDateRange {
+
+        @Test
+        void getsTheInclusiveRangeOrderedByDateWithoutMissingPlaceholders() {
+            LocalDate beforeStartDate = LocalDate.of(2026, Month.AUGUST, 31);
+            LocalDate startDate = LocalDate.of(2026, Month.SEPTEMBER, 1);
+            LocalDate middleDate = LocalDate.of(2026, Month.SEPTEMBER, 3);
+            LocalDate endDate = LocalDate.of(2026, Month.SEPTEMBER, 6);
+            LocalDate afterEndDate = LocalDate.of(2026, Month.SEPTEMBER, 7);
+
+            log(afterEndDate, "81.70");
+            log(middleDate, "81.95");
+            log(endDate, "81.80");
+            log(beforeStartDate, "82.30");
+            log(startDate, "82.10");
+
+            GetWeightMeasurementInDateRangeOutcome outcome =
+                    store.getInDateRange(
+                            new GetWeightMeasurementInDateRangeCriteria(startDate, endDate));
+
+            assertThat(outcome)
+                    .isEqualTo(
+                            new GetWeightMeasurementInDateRangeOutcome(
+                                    List.of(
+                                            new GetWeightMeasurementInDateRangeOutcome
+                                                    .WeightMeasurementByDateOutcome(
+                                                    startDate, new BigDecimal("82.10")),
+                                            new GetWeightMeasurementInDateRangeOutcome
+                                                    .WeightMeasurementByDateOutcome(
+                                                    middleDate, new BigDecimal("81.95")),
+                                            new GetWeightMeasurementInDateRangeOutcome
+                                                    .WeightMeasurementByDateOutcome(
+                                                    endDate, new BigDecimal("81.80")))));
+        }
+
+        @Test
+        void returnsAnEmptyCollectionWhenTheRangeContainsNoMeasurement() {
+            LocalDate startDate = LocalDate.of(2026, Month.SEPTEMBER, 1);
+            LocalDate endDate = LocalDate.of(2026, Month.SEPTEMBER, 6);
+
+            GetWeightMeasurementInDateRangeOutcome outcome =
+                    store.getInDateRange(
+                            new GetWeightMeasurementInDateRangeCriteria(startDate, endDate));
+
+            assertThat(outcome).isEqualTo(new GetWeightMeasurementInDateRangeOutcome(List.of()));
+        }
+
+        @Test
+        void rejectsNullDateRangeCriteria() {
+            assertThatThrownBy(() -> store.getInDateRange(null))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessage("criteria must not be null");
+        }
+
+        private void log(LocalDate date, String weightInKg) {
+            store.log(new LogWeightMeasurementInstruction(date, new BigDecimal(weightInKg)));
+        }
+    }
+
+    @Nested
+    class GetFirstWeightMeasurementDate {
+
+        @Test
+        void getsTheEarliestWeightMeasurementDate() {
+            LocalDate earliestDate = LocalDate.of(2026, Month.AUGUST, 25);
+            LocalDate middleDate = LocalDate.of(2026, Month.SEPTEMBER, 3);
+            LocalDate latestDate = LocalDate.of(2026, Month.SEPTEMBER, 7);
+
+            log(latestDate, "81.70");
+            log(earliestDate, "82.10");
+            log(middleDate, "81.95");
+
+            Optional<GetFirstWeightMeasurementDateOutcome> outcome =
+                    store.getFirstWeightMeasurementDate();
+
+            assertThat(outcome).contains(new GetFirstWeightMeasurementDateOutcome(earliestDate));
+        }
+
+        @Test
+        void returnsEmptyWhenNoWeightMeasurementExists() {
+            Optional<GetFirstWeightMeasurementDateOutcome> outcome =
+                    store.getFirstWeightMeasurementDate();
+
+            assertThat(outcome).isEmpty();
+        }
+
+        private void log(LocalDate date, String weightInKg) {
+            store.log(new LogWeightMeasurementInstruction(date, new BigDecimal(weightInKg)));
         }
     }
 }
