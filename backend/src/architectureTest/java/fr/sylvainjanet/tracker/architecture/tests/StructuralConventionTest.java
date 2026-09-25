@@ -39,7 +39,9 @@ public class StructuralConventionTest {
             Set.of("dtos", "validator", "handler", "controller");
     private static final Set<String> ALLOWED_WEB_DTO_PACKAGES = Set.of("request", "response");
     private static final Set<String> ALLOWED_REQUEST_PACKAGES = Set.of("enums");
-    private static final Set<String> ALLOWED_RESPONSE_PACKAGES = Set.of("enums");
+    private static final Set<String> ALLOWED_RESPONSE_PACKAGES =
+            Set.of("builder", "enums", "mapper");
+
     private static final Set<String> ALLOWED_WEB_VALIDATOR_PACKAGES = Set.of("annotation");
 
     private static final Set<String> ALLOWED_OUTBOUND_ADAPTER_PACKAGES = Set.of("persistence");
@@ -72,6 +74,11 @@ public class StructuralConventionTest {
     private static final String WEB_DTOS = packageTree("adapter.in.web.dtos");
     private static final String REQUESTS = packageTree("adapter.in.web.dtos.request");
     private static final String RESPONSES = packageTree("adapter.in.web.dtos.response");
+    private static final String RESPONSE_BUILDERS =
+            packageTree("adapter.in.web.dtos.response.builder");
+    private static final String RESPONSE_MAPPERS =
+            packageTree("adapter.in.web.dtos.response.mapper");
+
     private static final String REQUESTS_ENUMS = packageTree("adapter.in.web.dtos.request.enums");
     private static final String RESPONSES_ENUMS = packageTree("adapter.in.web.dtos.response.enums");
     private static final String WEB_HANDLER = packageTree("adapter.in.web.handler");
@@ -290,6 +297,8 @@ public class StructuralConventionTest {
                                 noClasses()
                                         .that()
                                         .resideInAPackage(WEB_DTOS)
+                                        .and()
+                                        .resideOutsideOfPackage(RESPONSE_MAPPERS)
                                         .should()
                                         .dependOnClassesThat()
                                         .resideInAnyPackage(DOMAIN, APPLICATION)
@@ -320,6 +329,10 @@ public class StructuralConventionTest {
                                     classes()
                                             .that()
                                             .resideInAPackage(REQUESTS)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            REQUESTS, ALLOWED_REQUEST_PACKAGES))
                                             .should()
                                             .haveSimpleNameEndingWith("Request")
                                             .allowEmptyShould(true);
@@ -391,6 +404,10 @@ public class StructuralConventionTest {
                                     classes()
                                             .that()
                                             .resideInAPackage(RESPONSES)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            RESPONSES, ALLOWED_RESPONSE_PACKAGES))
                                             .should()
                                             .haveSimpleNameEndingWith("Response")
                                             .allowEmptyShould(true);
@@ -417,6 +434,81 @@ public class StructuralConventionTest {
                                             .should()
                                             .beRecords()
                                             .allowEmptyShould(true);
+
+                            @ArchTest
+                            static final ArchTests responseBuilderRules =
+                                    ArchTests.in(
+                                            StructuralConventionTest.ContextRules.AdapterRules
+                                                    .AdapterInboundRules.WebAdapterRules.WebDtoRules
+                                                    .ResponseRules.ResponseBuilderRules.class);
+
+                            public static final class ResponseBuilderRules {
+
+                                @ArchTest
+                                public static final ArchRule
+                                        responseBuildersHaveResponseBuilderSuffix =
+                                                classes()
+                                                        .that()
+                                                        .resideInAPackage(RESPONSE_BUILDERS)
+                                                        .should()
+                                                        .haveSimpleNameEndingWith("ResponseBuilder")
+                                                        .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule responseBuildersShouldBeFinalClasses =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(RESPONSE_BUILDERS)
+                                                .should()
+                                                .haveModifier(JavaModifier.FINAL)
+                                                .allowEmptyShould(true);
+                            }
+
+                            @ArchTest
+                            static final ArchTests responseMapperRules =
+                                    ArchTests.in(
+                                            StructuralConventionTest.ContextRules.AdapterRules
+                                                    .AdapterInboundRules.WebAdapterRules.WebDtoRules
+                                                    .ResponseRules.ResponseMapperRules.class);
+
+                            public static final class ResponseMapperRules {
+
+                                @ArchTest
+                                public static final ArchRule
+                                        responseMappersHaveResponseMapperSuffix =
+                                                classes()
+                                                        .that()
+                                                        .resideInAPackage(RESPONSE_MAPPERS)
+                                                        .should()
+                                                        .haveSimpleNameEndingWith("ResponseMapper")
+                                                        .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule responseMappersShouldBeFinalClasses =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(RESPONSE_MAPPERS)
+                                                .should()
+                                                .haveModifier(JavaModifier.FINAL)
+                                                .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule
+                                        responseMappersOnlyDependOnResponsesAndApplicationResults =
+                                                classes()
+                                                        .that()
+                                                        .resideInAPackage(RESPONSE_MAPPERS)
+                                                        .should()
+                                                        .onlyDependOnClassesThat()
+                                                        .resideInAnyPackage(
+                                                                RESPONSES,
+                                                                RESULTS,
+                                                                "java.lang",
+                                                                "java.time..",
+                                                                "java.util..",
+                                                                "java.math")
+                                                        .allowEmptyShould(true);
+                            }
 
                             @ArchTest
                             static final ArchTests responseEnumRules =
