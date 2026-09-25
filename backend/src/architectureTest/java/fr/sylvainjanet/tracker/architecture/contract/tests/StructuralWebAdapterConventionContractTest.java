@@ -10,7 +10,12 @@ import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTes
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.RequestRules.requestDtosUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.RequestRules.webRequestDtosHaveRequestSuffix;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.RequestRules.webRequestDtosShouldBeRecords;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.ResponseBuilderRules.responseBuildersHaveResponseBuilderSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.ResponseBuilderRules.responseBuildersShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.ResponseEnumRules.responseEnumsShouldBeEnums;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.ResponseMapperRules.responseMappersHaveResponseMapperSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.ResponseMapperRules.responseMappersOnlyDependOnResponsesAndApplicationResults;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.ResponseMapperRules.responseMappersShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.classesNamedResponseStayInResponsePackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.responseDtosUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.ResponseRules.webResponseDtosHaveResponseSuffix;
@@ -46,8 +51,14 @@ import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.request.e
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.request.unsupported.UnsupportedNestedRequest;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.CorrectlyNamedResponse;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.MisconfiguredResponsePayload;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.builder.CorrectlyNamedResponseBuilder;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.builder.InvalidResponseBuilderFunction;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.enums.NonEnumResponse;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.enums.ResponseKindResponse;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.mapper.CorrectlyNamedResponseMapper;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.mapper.DomainDependentResponseMapper;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.mapper.InvalidResponseMapperFunction;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.mapper.ResultDependentResponseMapper;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.response.unsupported.UnsupportedNestedResponse;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.handler.CorrectlyNamedHandler;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.handler.MisconfiguredAdvice;
@@ -58,6 +69,7 @@ import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.validator.anno
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.validator.annotation.MisnamedAnnotationService;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.validator.unsupported.UnsupportedValidatorType;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.unsupported.UnsupportedAdapterType;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.result.CorrectlyNamedResult;
 import fr.sylvainjanet.tracker.architecturefixture.domain.CorrectlyLocatedDomainType;
 import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedController;
 import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedHandler;
@@ -161,7 +173,10 @@ public class StructuralWebAdapterConventionContractTest {
     @Test
     void webDataTransferObjectsDoNotDependOnCore() {
         ArchitectureRuleContract.assertAccepts(
-                webDataTransferObjectsDoNotDependOnCore, CorrectlyNamedRequest.class);
+                webDataTransferObjectsDoNotDependOnCore,
+                CorrectlyNamedRequest.class,
+                ResultDependentResponseMapper.class,
+                CorrectlyNamedResult.class);
         ArchitectureRuleContract.assertRejects(
                 webDataTransferObjectsDoNotDependOnCore,
                 "CoreDependentRequest",
@@ -258,6 +273,60 @@ public class StructuralWebAdapterConventionContractTest {
                 webResponseDtosShouldBeRecords,
                 "MisconfiguredResponsePayload",
                 MisconfiguredResponsePayload.class);
+    }
+
+    @Test
+    void responseBuildersHaveResponseBuilderSuffix() {
+        ArchitectureRuleContract.assertAccepts(
+                responseBuildersHaveResponseBuilderSuffix, CorrectlyNamedResponseBuilder.class);
+        ArchitectureRuleContract.assertRejects(
+                responseBuildersHaveResponseBuilderSuffix,
+                "InvalidResponseBuilderFunction",
+                InvalidResponseBuilderFunction.class);
+    }
+
+    @Test
+    void responseBuildersShouldBeFinalClasses() {
+        ArchitectureRuleContract.assertAccepts(
+                responseBuildersShouldBeFinalClasses, CorrectlyNamedResponseBuilder.class);
+        ArchitectureRuleContract.assertRejects(
+                responseBuildersShouldBeFinalClasses,
+                "InvalidResponseBuilderFunction",
+                InvalidResponseBuilderFunction.class);
+    }
+
+    @Test
+    void responseMappersHaveResponseMapperSuffix() {
+        ArchitectureRuleContract.assertAccepts(
+                responseMappersHaveResponseMapperSuffix, CorrectlyNamedResponseMapper.class);
+        ArchitectureRuleContract.assertRejects(
+                responseMappersHaveResponseMapperSuffix,
+                "InvalidResponseMapperFunction",
+                InvalidResponseMapperFunction.class);
+    }
+
+    @Test
+    void responseMappersShouldBeFinalClasses() {
+        ArchitectureRuleContract.assertAccepts(
+                responseMappersShouldBeFinalClasses, CorrectlyNamedResponseMapper.class);
+        ArchitectureRuleContract.assertRejects(
+                responseMappersShouldBeFinalClasses,
+                "InvalidResponseMapperFunction",
+                InvalidResponseMapperFunction.class);
+    }
+
+    @Test
+    void responseMappersOnlyDependOnResponsesAndApplicationResults() {
+        ArchitectureRuleContract.assertAccepts(
+                responseMappersOnlyDependOnResponsesAndApplicationResults,
+                ResultDependentResponseMapper.class,
+                CorrectlyNamedResult.class);
+
+        ArchitectureRuleContract.assertRejects(
+                responseMappersOnlyDependOnResponsesAndApplicationResults,
+                "CorrectlyLocatedDomainType",
+                DomainDependentResponseMapper.class,
+                CorrectlyLocatedDomainType.class);
     }
 
     @Test
