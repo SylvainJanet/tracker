@@ -7,11 +7,13 @@ import fr.sylvainjanet.tracker.architecture.contract.ArchitectureRuleContract;
 import fr.sylvainjanet.tracker.architecturefixture.application.service.InboundContractClient;
 import fr.sylvainjanet.tracker.architecturefixture.application.service.InternalAccessClient;
 import fr.sylvainjanet.tracker.architecturefixture.application.service.LeakingContractClient;
+import fr.sylvainjanet.tracker.architecturefixture.application.service.SharedTechnicalClient;
 import fr.sylvainjanet.tracker.otherarchitecturefixture.application.port.in.dtos.command.LeakingCommand;
 import fr.sylvainjanet.tracker.otherarchitecturefixture.application.port.in.dtos.command.PublishedCommand;
 import fr.sylvainjanet.tracker.otherarchitecturefixture.application.port.in.usecase.LeakingUseCase;
 import fr.sylvainjanet.tracker.otherarchitecturefixture.application.port.in.usecase.PublishedUseCase;
 import fr.sylvainjanet.tracker.otherarchitecturefixture.domain.InternalDomain;
+import fr.sylvainjanet.tracker.technical.utility.SharedTechnicalUtility;
 import org.junit.jupiter.api.Test;
 
 public class BoundedContextArchitectureContractTest {
@@ -22,7 +24,9 @@ public class BoundedContextArchitectureContractTest {
                 contextsOnlyAccessOtherContextsThroughInboundContracts,
                 InboundContractClient.class,
                 PublishedUseCase.class,
-                PublishedCommand.class);
+                PublishedCommand.class,
+                SharedTechnicalClient.class,
+                SharedTechnicalUtility.class);
         ArchitectureRuleContract.assertRejects(
                 contextsOnlyAccessOtherContextsThroughInboundContracts,
                 "InternalDomain",
