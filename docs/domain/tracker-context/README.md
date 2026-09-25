@@ -66,11 +66,11 @@ The concept map above remains a description of the problem space. The accepted
 application ownership is defined in
 [domain modelling decisions](../modelling-decisions.md#bounded-contexts):
 
-- Tracking owns user-entered dated information, including daily observations,
+- Journal owns user-entered dated information, including daily observations,
   measured weights and separate weight predictions;
 - Strategy owns phases, goals, day-type strategies and assignments, and other
   effective-dated policies;
-- Analysis owns calculation methods and derived results;
+- Analysis owns analytical workflows and meaningful derived results;
 - Import translates and coordinates spreadsheet input without owning the
   resulting information;
 - Training and Food Planning are deferred contexts whose boundaries are

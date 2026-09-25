@@ -40,21 +40,29 @@ defined below.
 
 ## Bounded contexts
 
-The initial backend consists of four bounded contexts:
+The accepted near-term backend context map defines four bounded contexts.
+Accepting a boundary records ownership and collaboration decisions; it does not
+require creating an empty module before a concrete use case needs it.
 
 | Context  | Responsibility                                                                                                                                               |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Tracking | User-entered dated information, including weight measurements, weight predictions, nutrition observations, measurement quality, steps and performed exercise |
-| Strategy | Phases, goals, effective-dated policies, day-type strategies and assignments, expected-trajectory definitions, maintenance assumptions and boundary policies |
-| Analysis | Versioned calculation methods and derived values such as expected or resolved weights, thresholds, rolling evaluations, boundaries, signals and explanations |
+| Journal  | User-entered dated information, including weight measurements, weight predictions, nutrition observations, measurement quality, steps and performed exercise |
+| Strategy | Phases, goals, effective-dated policies, day-type strategies and assignments, expected trajectories, maintenance assumptions and gap-resolution policies     |
+| Analysis | Analytical workflows that obtain context-owned data, apply relevant policies, coordinate mathematical operations and publish meaningful dated results        |
 | Import   | Spreadsheet parsing, translation, validation, dry runs, repeatable execution and reconciliation reporting                                                    |
+
+Statistics is a business-agnostic supporting module rather than a bounded
+context. It owns reusable indexed numerical operations and their mathematical
+invariants without knowing the units, provenance or business meaning of its
+inputs. Analysis translates meaningful data into Statistics inputs and
+translates its numerical outputs back into Analysis-owned results.
 
 Training and Food Planning are accepted future bounded contexts. Training will
 own structured exercises, prescriptions, plans and completed sessions. Food
 Planning will own foods, prices, nutritional composition and meal plans. Neither
 context should be introduced until a concrete use case requires its model.
 
-Until Training is implemented, Tracking preserves the historical
+Until Training is implemented, Journal preserves the historical
 performed-exercise label and reported energy estimate. The estimate retains its
 provenance and must not be presented as a measured physiological fact. Later
 translation to structured Training concepts must not discard the imported
@@ -67,24 +75,36 @@ automatically.
 
 ### Context collaboration
 
-Strategy owns day-type definitions, schedules, resolution and per-date
-assignments. Tracking may reference the stable strategy classification
-applicable to a date, but it does not copy or redefine the associated rules.
+Strategy owns day-type definitions, schedules, resolution policies and per-date
+assignments. Journal may reference the stable strategy classification applicable
+to a date, but it does not copy or redefine the associated rules.
 
-Analysis consumes explicit representations published by Tracking and Strategy.
-Its models distinguish observations, predictions, goals, policies, methods and
-derived results rather than sharing another context’s internal domain objects.
+Analysis consumes context-owned representations published by Journal and
+Strategy. It does not reconstruct their domain objects or repeat validation
+owned by the publishing context. It translates published values into
+Analysis-owned inputs and preserves their meaning and provenance in its results.
+
+Journal determines whether a recorded observation is valid. Strategy determines
+which effective-dated policy applies when missing or incomplete information
+requires a decision. Analysis coordinates the application of that policy without
+turning observations, policies or calculated values into a shared domain model.
+
+Analysis delegates reusable numerical work to Statistics. Statistics receives
+only the indexes, values, windows and other mathematical parameters required by
+the requested operation. It does not select eligible business data, resolve
+gaps, attach units or dates, or decide how a numerical result should be
+interpreted.
 
 Contexts collaborate through application contracts and context-owned
-representations. They do not access another context’s repositories or
-persistence representations. Direct synchronous collaboration is preferred
-initially; events should be introduced only when a concrete workflow requires
-independent or asynchronous consumers.
+representations. They do not access another context’s domain objects,
+repositories or persistence representations. Direct synchronous collaboration
+is preferred initially; events should be introduced only when a concrete
+workflow requires independent or asynchronous consumers.
 
 ### Internal capability modules
 
 A bounded context may contain several aggregates and capability modules without
-those modules becoming subordinate bounded contexts. Tracking may, for example,
+those modules becoming subordinate bounded contexts. Journal may, for example,
 contain journaling, nutrition, activity, weight prediction, correction and
 provenance capabilities.
 
@@ -92,6 +112,10 @@ An internal module becomes a candidate for extraction only when it develops
 sufficiently independent terminology, invariants, lifecycle, persistence,
 contracts or rate of change. Internal package symmetry alone is not a reason to
 extract it.
+
+Not every separately packaged capability is therefore a bounded context.
+Statistics is separate because its mathematical language and operations are
+reusable without a business model or lifecycle of their own.
 
 ## Kinds of information
 
@@ -123,10 +147,18 @@ obtaining it implicitly. The current date is an environmental input; domain or
 application rules interpret it rather than owning its acquisition. This keeps
 date-dependent decisions explicit and deterministic in tests.
 
+Analysis defines a timeline day number derived from calendar dates. Day 1 is the
+date of the first recorded weight, and each later number is the elapsed number
+of calendar days from that origin plus one. Missing measurements do not collapse
+or renumber the timeline. Analysis owns this derivation and publishes both the
+calendar date and day number. Presentation clients preserve the published value;
+they may verify its relationship with the date but do not independently replace
+it.
+
 ## Journal observations
 
 Journal composes dated information for recording and review without making it
-one aggregate. Weight measurements are independent observations within Tracking;
+one aggregate. Weight measurements are independent observations within Journal;
 their inclusion does not introduce a general daily-record aggregate or completion
 lifecycle.
 
@@ -134,7 +166,7 @@ Later nutrition, activity or completion use cases must establish their own
 ownership and lifecycle rules rather than inherit them from the spreadsheet
 layout.
 
-Manually entered weight predictions remain a separate Tracking aggregate.
+Manually entered weight predictions remain a separate Journal aggregate.
 Expected, interpolated, carried and otherwise derived weights belong to Analysis.
 
 ## Separate domain lifecycles
@@ -151,31 +183,32 @@ aggregate or transition lifecycle.
 ## Shared concepts and value objects
 
 A domain-specific primitive should become a value object when its meaning,
-validation or operations provide real safety. Calendar date is the current
-example.
+validation or operations provide real safety. Value objects should not be
+introduced solely to wrap every primitive or prepare for imagined reuse.
 
-Value objects should not be introduced solely to wrap every primitive or prepare
-for imagined reuse. The simplest model that preserves established distinctions
-is preferred.
+The contexts deliberately share only a small governed `DateRange` concept,
+representing inclusive, ordered civil-calendar-date bounds.
 
-The application does not initially define a generic shared `Measurement`.
-Measured weight, target weight, expected weight and weight deviation have
-different meanings even though they use the same physical unit. The same
-distinction applies to observed intake, nutritional targets and calculated
-balances.
+Journal owns `Weight` and `WeightMeasurement`. It validates recorded weights
+and owns the lifecycle and identity of weight observations.
 
-Each context initially owns its semantic value objects and business validation.
-Small duplicated guards are preferable to coupling contexts through an
-abstraction whose shared meaning is not yet established. Missing or
-intentionally unmeasured information is represented outside a numeric value
-rather than by constructing a value object with `null`.
+Analysis consumes weight data through published application contracts. It does
+not share or reconstruct Journal’s weight domain objects and does not reapply
+Journal’s measurement rules. Analysis may enforce its own input and result
+requirements, such as coherent ranges, ordered unique indexes, finite positive
+result values and valid analysis windows.
 
-A small governed shared kernel may be proposed later if several contexts
-demonstrate identical requirements for a primitive such as a unit-safe
-quantity. It must contain only genuinely shared representation and operations,
-not provenance, goals, measurement quality, business ranges or context-specific
-validation. Introducing it requires an explicit domain and architecture
-decision.
+Strategy may represent target weights or weight-related policies using
+Strategy-owned concepts. A target, observation and calculated result remain
+different concepts even when they use the same physical unit.
+
+Shared domain objects remain internal implementation concepts. Cross-context
+application contracts and HTTP contracts use context-owned representations and
+do not expose shared-kernel types.
+
+Missing or intentionally unmeasured information is represented outside a
+numeric value rather than by constructing a value object with `null` or using
+numeric zero.
 
 ## Architecture alignment
 
@@ -193,7 +226,7 @@ duplicate either source.
 
 The following areas remain unresolved:
 
-- detailed aggregate boundaries within Tracking and Strategy;
+- detailed aggregate boundaries within Journal and Strategy;
 - aggregate boundaries for structured exercise, foods and meal planning;
 - whether different plans share an abstraction;
 - representation of planned, overridden and resolved day types;
@@ -203,8 +236,6 @@ The following areas remain unresolved:
 - correction of erroneous effective-dated strategy information;
 - failure and consistency rules for operations involving several contexts;
 - translation of historical exercise entries into future Training concepts;
-- whether repeated primitive behaviour eventually justifies a deliberately
-  governed shared kernel.
 
 Agents must not settle these questions incidentally while implementing an
 unrelated feature.

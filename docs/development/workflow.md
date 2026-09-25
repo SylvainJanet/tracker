@@ -12,14 +12,8 @@ implemented capabilities from documentation alone.
 
 ## Setup and data safety
 
-Use the Gradle wrapper for backend and repository tasks. It pins Gradle, while
-the build defines the Java toolchain. Root `settings.gradle.kts` and
-`build.gradle.kts` define project membership and repository-wide orchestration;
-`backend/build.gradle.kts` owns backend plugins, dependencies and tasks;
-`frontend/build.gradle.kts` owns frontend Gradle task orchestration.
-Frontend dependencies are governed by
-`frontend/package.json`, `frontend/package-lock.json` and `frontend/.nvmrc`.
-Use the committed lockfile rather than an unconstrained dependency update.
+Use the Gradle wrapper and committed frontend lockfile. Build files, wrappers
+and lockfiles—not this guide—define tool versions, dependencies and tasks.
 
 From a fresh checkout, create the repository-local `data/` directory if it does
 not already exist, then verify the Gradle wrapper:
@@ -82,24 +76,9 @@ git check-ignore -v <path>
 Inspect the responsible rule before adding a narrow exception; generic `out/`
 rules must not hide source packages named `out`.
 
-## Run locally
+## Local database and debug modes
 
-Use `run.sh` to start the backend and frontend together. By default, it runs in
-normal mode with a disposable snapshot of the personal database:
-
-```bash
-./run.sh
-```
-
-Select the database with `--database`:
-
-```bash
-./run.sh --database=local
-./run.sh --database=empty
-./run.sh --database=real
-```
-
-The database modes are:
+The combined development launcher supports three database modes:
 
 - `local` recreates `backend/build/dev-database/tracker.db` from a consistent
   snapshot of `data/tracker.db`;
@@ -109,119 +88,24 @@ The database modes are:
 
 Only use `--database=real` when changes to the personal database are intended.
 
-Enable backend debugging with `--mode=debug`:
-
-```bash
-./run.sh --mode=debug
-```
-
-The mode and database options can be combined:
-
-```bash
-./run.sh --mode=debug --database=empty
-./run.sh --mode=debug --database=real
-```
-
 In debug mode, the backend JVM listens on `localhost:5005` and remains suspended
 until a remote JVM debugger attaches. The Angular development server starts
 concurrently, but API requests cannot complete until the debugger is attached
 and Spring Boot finishes starting.
 
-The application services are available at:
-
-| Service             | Address                        |
-| ------------------- | ------------------------------ |
-| Angular application | localhost:4200                 |
-| Spring Boot API     | localhost:8080                 |
-| Swagger UI          | localhost:8080/swagger-ui.html |
-
 The Angular development server proxies `/api/**` to `127.0.0.1:8080`. Backend
 addresses belong in proxy or environment configuration, not in components or
 gateways.
 
-Configure the debuggers as follows:
-
-| Application | Debugger configuration                               |
-| ----------- | ---------------------------------------------------- |
-| Backend     | Remote JVM debugger attached to localhost:5005       |
-| Frontend    | Browser JavaScript debugger opened at localhost:4200 |
-
 Frontend application code runs in the browser. The Angular development
 configuration enables source maps, so the browser debugger must not start a
 separate development server while run.sh is running.
-
-The backend and frontend can be started independently when troubleshooting:
-
-```bash
-./gradlew :backend:bootRun
-./gradlew :backend:bootRunEmpty
-./gradlew :backend:bootRunReal
-./gradlew :frontend:start
-```
-
-Append `--debug-jvm` to a backend launch command to wait for a debugger:
-
-```bash
-./gradlew :backend:bootRun --debug-jvm
-```
-
-Stop a combined local run with `Ctrl+C`.
 
 Springdoc generates the OpenAPI description from the running application and
 exposes Swagger UI for inspection. After an HTTP contract change, rebuild or
 restart the backend and review the affected request, response, status, header
 and error documentation. Generated output does not replace deliberate contract
 design.
-
-## Everyday change sequence
-
-1. Identify the owning feature, use case, domain meaning and affected public,
-   persistence or HTTP contracts.
-2. Locate the innermost layer that can own the decision; translate it at adapter
-   boundaries rather than putting business rules in controllers or components.
-3. Add or update the lowest-level test that reliably demonstrates the change. A
-   defect fix normally includes a regression test.
-4. Implement without bypassing ports, leaking transport types inward or mixing
-   unrelated refactoring.
-5. Run focused tests, apply the appropriate formatter and inspect its changes.
-6. Run `./gradlew build` before considering the repository complete.
-7. Review `git status` and `git diff` for generated data, unrelated formatting,
-   debug output, temporary configuration, personal paths and missing tests.
-
-[Testing and quality](testing-and-quality.md) maps change types to suites and
-explains database isolation, reports and test discovery.
-
-## Command reference
-
-| Purpose                                     | Command                                  |
-| ------------------------------------------- | ---------------------------------------- |
-| Run complete application with copied data   | `./run.sh`                               |
-| Run complete application with an empty DB   | `./run.sh --database=empty`              |
-| Run complete application with personal data | `./run.sh --database=real`               |
-| Debug complete application with copied data | `./run.sh --mode=debug`                  |
-| Run backend with copied data                | `./gradlew :backend:bootRun`             |
-| Run backend with empty data                 | `./gradlew :backend:bootRunEmpty`        |
-| Run backend with personal data              | `./gradlew :backend:bootRunReal`         |
-| Debug backend with copied data              | `./gradlew :backend:bootRun --debug-jvm` |
-| Backend unit tests                          | `./gradlew :backend:test`                |
-| Backend integration tests                   | `./gradlew :backend:integrationTest`     |
-| Backend architecture tests                  | `./gradlew :backend:architectureTest`    |
-| Complete backend verification               | `./gradlew :backend:check`               |
-| Build backend                               | `./gradlew :backend:build`               |
-| Format backend                              | `./gradlew :backend:format`              |
-| Install frontend dependencies               | `./gradlew :frontend:install`            |
-| Run frontend                                | `./gradlew :frontend:start`              |
-| Verify frontend                             | `./gradlew :frontend:check`              |
-| Build and verify complete repository        | `./gradlew build`                        |
-| Format complete repository                  | `./gradlew format`                       |
-
-Use `./gradlew tasks` and `npm run` to discover the executable task graph and
-scripts. Filter a Java suite during development with the corresponding Gradle
-task and `--tests`; a filtered run is not complete verification. Use
-`--rerun-tasks` only when an actual rerun is needed.
-
-Formatting commands modify files. `:backend:check`, `:frontend:check` and `check`
-verify formatting without rewriting maintained source.
 
 ## Schema and API changes
 
@@ -246,7 +130,7 @@ Exact structural rules live in the executable backend and frontend architecture
 policies linked from the [architecture overview](../architecture/overview.md).
 Use the guides for rationale rather than as rule inventories.
 
-## Dependencies and CI
+## Dependencies
 
 Add backend dependencies through Gradle and frontend dependencies through npm.
 Prefer existing JDK, Spring, Angular, TypeScript or browser capabilities; choose
@@ -256,14 +140,6 @@ and commit generated lockfile changes. Never edit `package-lock.json` manually.
 Review compatibility and release notes for upgrades. Broad upgrades are separate
 technical changes unless required by the requested feature, and dependency
 changes receive the same full verification as production code.
-
-CI activates the pinned version through `actions/setup-node` before invoking Gradle.
-
-CI runs `./gradlew build --no-daemon` for pushes and pull requests targeting
-`master`. It uses the Gradle wrapper, `frontend/.nvmrc`, the committed npm
-lockfile and isolated test databases. Keep CI aligned with the local command,
-permissions minimal and clean execution independent of caches. Branch protection
-is configured on the hosting platform, not by the workflow alone.
 
 ## Git and documentation
 
@@ -276,28 +152,3 @@ Documentation records durable meanings, decisions and public workflows—not
 progress. Update the owning document when those change or when a durable
 decision is superseded. Issues, pull requests and commit history carry
 progress.
-
-## Troubleshooting
-
-| Symptom                           | Check                                                                                            |
-| --------------------------------- | ------------------------------------------------------------------------------------------------ |
-| SQLite file is absent             | Confirm `data/` exists, the backend connected and Flyway ran from the expected working directory |
-| Source file is ignored            | Run `git check-ignore -v <path>` and inspect `out/` rules before adding an exception             |
-| Gradle shows no test details      | Check task outcome, summary and reports; use `--rerun-tasks` only to force execution             |
-| Frontend cannot reach the backend | Confirm backend port `8080` and the committed proxy target                                       |
-
-Do not silence a lint rule or change committed runtime configuration before
-understanding which boundary or environment assumption is wrong.
-
-## Definition of done
-
-- The behaviour is implemented at its owning boundary.
-- Relevant focused, integration and architecture tests pass.
-- Formatting and frontend lint pass.
-- Backend and frontend production builds pass.
-- `./gradlew build` succeeds.
-- OpenAPI/Swagger UI is reviewed for HTTP changes and migrations for
-  persistence changes.
-- No generated, private or unrelated files are included.
-- The final diff contains only intended changes.
-- Durable documentation and decisions are current.
