@@ -13,7 +13,7 @@ Weight information serves several different purposes in the tracker:
 
 These purposes require several kinds of values that must remain distinguishable.
 
-Tracking owns weight measurements as independent dated observations and owns
+Journal owns weight measurements as independent dated observations and owns
 manually entered predictions as a separate aggregate. Strategy owns the goal
 trajectory definition. Analysis owns expected, interpolated, carried and other
 derived weights.

@@ -11,24 +11,41 @@ The completed experience has this layout:
 3. menu bar containing the displayed range and graph controls;
 4. plot.
 
-When no weight has ever been logged, display exactly:
+When the default analysis is globally empty, display:
 
-> NO WEIGHT LOGGED YET
+> No weight measurement found
+
+followed by:
+
+> Nothing to display: no weight measurement was found.
 
 The feature must preserve the distinction between measured weights, calculated rolling averages, and missing measurements.
 
-## Starting point
+> This is an active ticket plan. It may repeat implemented behaviour to establish
+> the baseline for later tickets. Canonical decisions remain in the domain and
+> architecture guides. Delete this plan when TRACKER-7 is complete.
 
-- Weight measurements are currently owned by the backend Journal package, which implements the Tracking responsibility described by the domain documentation.
-- The existing backend supports logging and retrieving one measurement by date.
-- SQLite already stores one weight measurement per date in grams.
-- The frontend currently contains only the Journal context.
-- The accepted frontend context map assigns analysis workflows to an `analysis` context.
-- No backend Analysis context or date-range weight query exists.
-- No charting dependency is currently installed.
-- The working tree was clean when this plan was prepared, but the checked-out branch was `TRACKER-10-disable-log-button-if-log-already-exists`. Implementation must begin from an appropriate TRACKER-13 branch and base.
+## Current implementation baseline
 
-No existing Flyway migration needs modification for this task.
+- Backend Journal owns weight measurements and supports logging, lookup by date,
+  inclusive range retrieval and retrieval of the first measurement date.
+- Backend Analysis obtains Journal data through application contracts and maps
+  it into Analysis-owned dated values and series.
+- Backend Analysis derives stable timeline day numbers while retaining calendar
+  dates and the represented date range.
+- The Statistics supporting module exposes an indexed rolling-average
+  application contract and is wired into Analysis.
+- Statistics deliberately returns no rolling-average results yet; calculation
+  behaviour belongs to TRACKER-15.
+- `GET /api/analysis/weight` publishes the timeline, range, measurements and an
+  empty `rollingAverages` collection.
+- Frontend Journal owns its weight concepts and validation.
+- Frontend Analysis validates and presents the backend-published result without
+  sharing Journal’s weight domain or reproducing statistical calculations.
+- The initial values and globally empty Analysis experiences are implemented.
+- No charting dependency is installed yet.
+
+No existing Flyway migration needs modification for this feature.
 
 ## Product interpretation
 
@@ -47,11 +64,20 @@ This interpretation prevents a missing day from collapsing time and keeps calend
 
 ### Context ownership
 
-- Tracking continues to own measured weights and range retrieval.
-- Analysis owns rolling-average calculation and its result model.
-- The backend Analysis context consumes published Tracking/Journal inbound use cases; it must not access the weight repository directly.
-- The frontend `analysis` context owns the analysis workflow and may translate the backend result into chart presentation data.
-- ECharts types and configuration remain inside the frontend web adapter. They must not leak into frontend domain, application ports, services, or backend contracts.
+- Journal owns measured weights, their validation and their retrieval.
+- Statistics owns reusable indexed numerical operations. It has no knowledge of
+  weights, calendar dates, journaling rules or presentation.
+- Analysis obtains context-owned data, translates it into Statistics inputs and
+  translates mathematical outputs into meaningful dated analysis results.
+- Strategy will own policies for resolving gaps or determining eligible data
+  when those decisions are introduced; neither Analysis nor Statistics should
+  infer them from Journal data.
+- The frontend Analysis context validates and presents backend-published
+  analysis results. It does not share frontend Journal’s domain, implement
+  Strategy or Statistics, or recalculate backend results.
+- ECharts types and configuration remain inside the frontend web adapter. They
+  must not leak into frontend domain, application ports, services or backend
+  contracts.
 
 ## Charting decision
 
@@ -138,8 +164,9 @@ Keep the conversion boundaries explicit:
    intents such as selecting a measurement date.
 
 The HTTP contract remains independent of the chart library. It transports
-calendar dates and weight values; the frontend derives chart-specific day
-numbers and option objects.
+calendar dates, backend-derived stable day numbers and weight values. The
+frontend preserves those day numbers and derives only chart-specific option
+objects.
 
 ### Testing strategy
 
@@ -243,7 +270,8 @@ Contract rules:
 - `weightMeasurements` contains observations only.
 - `rollingAverages` contains calculated results only.
 - Series names, descriptions, colors, and visibility are frontend concerns.
-- TRACKER-13 may return `rollingAverages: []` until TRACKER-15 implements the calculation.
+- TRACKER-13 returns `rollingAverages: []`; TRACKER-15 extends the contract with
+  calculated series.
 
 ### Globally empty response
 
@@ -258,7 +286,8 @@ Absence is a successful collection result, not a 404:
 }
 ```
 
-This response drives “NO WEIGHT LOGGED YET”.
+This response drives the dedicated globally empty title and message defined in
+the goal.
 
 Once explicit ranges exist, a selected range without points must remain distinguishable from globally having no weight:
 
@@ -276,7 +305,7 @@ Once explicit ranges exist, a selected range without points must remain distingu
 
 The wording for this later selected-range empty state should be decided in TRACKER-22; it must not incorrectly say that no weight has ever been logged.
 
-# Analysis point representation
+## Analysis point representation
 
 Backend Analysis derives and publishes the stable day number for every measured
 or calculated point:
@@ -286,10 +315,13 @@ dayNumber = calendar days between timelineStartDate and point.date + 1
 ```
 
 The calculation uses calendar-date arithmetic and is independent of time zones,
-array positions and selected ranges. The frontend HTTP gateway validates and
-maps the published value; presentation code does not derive it again.
+array positions and selected ranges. The frontend preserves the published day
+number as backend-owned data. Its Analysis domain independently derives the
+expected number only to reject a structurally incoherent result; it neither
+replaces the published value nor becomes authoritative for the analysis.
 
-Use UTC-safe calendar-date arithmetic so daylight-saving changes cannot alter the result.
+Use calendar-date arithmetic without converting dates through instants, local
+times or time zones, so daylight-saving changes cannot alter the result.
 
 Conceptually, the measured dataset becomes:
 
@@ -321,8 +353,10 @@ y = weightInKg or averageWeightInKg
 tooltip/detail identity = date
 ```
 
-The frontend performs only presentation mapping. It does not derive day
-numbers, calculate rolling averages or reconstruct missing observations.
+The frontend maps validated results for presentation. Its coherence check may
+compare a published day number with the point’s calendar position, but it does
+not calculate rolling averages, replace backend values or reconstruct missing
+observations.
 
 ## Shared presentation state
 
@@ -348,16 +382,28 @@ The date-indexed presentation model should also allow TRACKER-17 to find the mea
 
 Before TRACKER-15, explicitly decide:
 
-1. Which windows are required. Historical evidence identifies 7, 14, 28, 60, 180, and 360 calendar days, but the application documentation deliberately leaves its accepted window set open.
-2. Whether a result is calculated for every calendar date or only for dates with a measurement.
-3. Whether missing measurements are excluded from the arithmetic mean or replaced by a separately resolved weight. The recommended basic implementation excludes them and reports the included count.
-4. Whether partial initial windows are suppressed or published as provisional. The recommended implementation publishes them with `completeCalendarWindow: false`.
-5. The precision and rounding method for averages.
-6. How explicitly selected future ranges should behave. The default range ends
-   on today, so later measurements are outside that range without requiring a
+1. Which windows the weight-analysis workflow requests. Historical evidence
+   identifies 7, 14, 28, 60, 180 and 360 calendar days, but the accepted set
+   remains a product decision.
+2. On which timeline indexes Analysis publishes results: every represented day,
+   only measurement dates, or another explicitly defined set.
+3. Which input values are eligible and how gaps are resolved. This is a
+   Strategy-owned decision. Missing values must remain observable to Strategy
+   and must never be silently converted to zero by Analysis or Statistics.
+4. Whether partial initial windows are published and how their coverage is
+   represented.
+5. The mathematical precision and rounding required from Statistics, separately
+   from frontend display formatting.
+6. How explicitly selected future ranges behave. The default range ends on
+   today, so later measurements are outside that range without requiring a
    separate past, present or future classification.
 
-A selected range beginning after the timeline origin must not change the calculated value at its first date. Analysis must obtain enough pre-range input for the largest rolling window, calculate using that lookback, and only then clip published points to the requested display range.
+A selected range beginning after the timeline origin must not change the
+calculated value at its first date. Analysis must obtain enough context-owned
+pre-range input for the largest requested window and translate it into indexed
+Statistics input. Statistics performs the numerical calculation without knowing
+the dates or their business meaning. Analysis then restores the dates and clips
+the published points to the requested display range.
 
 ## Ticket plan
 
@@ -365,37 +411,52 @@ A selected range beginning after the timeline origin must not change the calcula
 
 Backend:
 
-- Add a sorted, inclusive date-range lookup and a parameterless first-logged-date lookup to the existing Journal/Tracking application contracts and
-  store.
-- Move the common weight and weight-measurement values into the governed shared kernel.
-- Add the backend `WeightAnalysis` domain model and a parameterless `GetWeightAnalysis` use case.
-- Have the application service construct the domain model before translating it into the use-case result.
-- Inject the current date through an explicit clock/date provider.
-- Have Analysis request measured weights through the Journal/Tracking inbound use case.
-- Expose `GET /api/analysis/weight`.
-- Return 200 with the globally empty representation when no eligible measurement exists.
-- Update the OpenAPI contract test.
-- Derive each point’s stable day number in the `WeightAnalysis` domain and expose it through the application and HTTP
-  contracts.
+- [x] Add sorted inclusive range retrieval and first-measurement-date retrieval
+      to Journal’s application contracts and store.
+- [x] Keep `Weight` and `WeightMeasurement` owned by Journal.
+- [x] Add Analysis-owned `DatedValue` and `DatedSeries` representations.
+- [x] Add the parameterless `GetWeightAnalysis` use case.
+- [x] Inject the current date through an explicit clock.
+- [x] Have Analysis obtain measurements through Journal inbound use cases rather
+      than accessing Journal persistence or domain objects.
+- [x] Create the Statistics supporting module and its rolling-average application
+      contract.
+- [x] Wire Analysis to Statistics while keeping the Statistics result empty
+      until TRACKER-15.
+- [x] Expose `GET /api/analysis/weight`.
+- [x] Return 200 with the globally empty representation when no eligible
+      measurement exists.
+- [x] Derive stable timeline day numbers in Analysis and expose them through the
+      application and HTTP contracts.
+- [x] Update the OpenAPI contract test.
 
 Frontend:
 
-- Introduce the `analysis` context and Weight navigation destination.
-- Add HTTP response validation and translation.
-- Add explicit loading, data, empty, and failure presentation states.
-- Initially render returned dates and kilogram values as semantic text or a simple list.
-- Render the exact empty message only for the globally empty result.
-- Add a production-route composition test.
-- Validate and preserve backend-provided day numbers through the store, domain, use-case and presenter boundaries.
+- [x] Introduce the Analysis context and Weight navigation destination.
+- [x] Add HTTP response validation and translation.
+- [x] Keep frontend Journal weight concepts separate from frontend Analysis.
+- [x] Validate the published timeline, range, measurement dates, day numbers and
+      positive finite values as one coherent Analysis result.
+- [x] Add explicit loading, data, empty and failure presentation states.
+- [x] Render returned dates and kilogram values as semantic text.
+- [x] Render the dedicated empty title and message only for the globally empty
+      result.
+- [x] Add production-route composition coverage.
+- [x] Preserve backend-provided day numbers through the application and
+      presentation boundaries.
 
 Tests:
 
-- Repository integration tests for ordering, inclusive bounds, and missing dates.
-- Backend domain tests for the coherent analysis dataset and its invariants.
-- Backend application tests for the default range, future-only histories, and empty results.
-- MVC tests for populated and empty responses.
-- Frontend gateway tests for valid, empty, malformed, and failed responses.
-- Presenter and component tests for loading, values, empty message, and failure.
+- [x] Repository integration tests for ordering, inclusive bounds and missing
+      dates.
+- [x] Backend domain tests for dated-series invariants.
+- [x] Backend application tests for the default range, future-only histories,
+      empty results and Statistics collaboration.
+- [x] MVC tests for populated and empty responses.
+- [x] Frontend gateway tests for valid, empty, malformed and failed responses.
+- [x] Frontend domain tests for structural and semantic result coherence.
+- [x] Presenter and component tests for loading, values, empty message and
+      failure.
 
 ### TRACKER-14 — Display weight graph
 
@@ -411,24 +472,45 @@ Tests:
 
 ### TRACKER-15 — Display rolling averages
 
-- Resolve the rolling-average decision gate first.
-- Model rolling results in the backend Analysis context.
-- Calculate them from Tracking’s published measured-weight representation.
-- Keep calculations independent of the selected display range by fetching required lookback data.
-- Include coverage metadata in every published point.
-- Extend the response through `rollingAverages`.
+- Resolve the rolling-average decision gate before implementing calculation
+  behaviour.
+- Define any eligibility or missing-data policy in Strategy rather than
+  embedding it in Analysis or Statistics.
+- Extend Statistics with generic indexed-series and rolling-window domain
+  concepts only where their mathematical invariants require them.
+- Implement rolling-average calculations in Statistics without dates, weights,
+  units, Journal rules or presentation concepts.
+- Have Analysis obtain Journal data and any applicable Strategy decision through
+  their application contracts.
+- Have Analysis translate the selected data and windows into indexed Statistics
+  input.
+- Keep results independent of the selected display range by obtaining the
+  required lookback before requesting the calculation.
+- Translate Statistics indexes and numerical results into Analysis-owned dated
+  rolling-weight results.
+- Include the accepted coverage metadata in every published point.
+- Extend the HTTP response through `rollingAverages`.
+- Extend frontend Analysis validation to accept coherent rolling results without
+  reproducing the calculation.
 - Add one frontend line series per window.
-- Add calculation tests covering:
-  - complete windows;
-  - partial windows;
-  - missing measurements;
+- Test Statistics calculations independently for:
+  - complete and partial windows;
+  - sparse indexes;
   - exact inclusive boundaries;
-  - no eligible measurement;
-  - precision;
+  - empty input;
+  - precision and rounding;
+  - output ordering.
+- Test Analysis orchestration independently for:
+  - Journal and Strategy collaboration;
   - range lookback;
-  - series ordering.
+  - index-to-date translation;
+  - coverage metadata;
+  - response ordering and empty results.
+- Test frontend validation and presentation of valid and incoherent rolling
+  results.
 
-No calculated value should be persisted during this task unless a separate persistence decision is made.
+No calculated value should be persisted during this task unless a separate
+persistence decision is made.
 
 ### TRACKER-16 — Display weight when hovering a graph node
 
