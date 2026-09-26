@@ -1,5 +1,5 @@
-import type { StateTransition } from '../../../../../../../../shared/api/shared.component.model';
-import type { JournalLoggingState } from './journal.logging.model.state';
+import type { StateTransition } from '../../../../../../../../../shared/api/shared.component.model';
+import type { JournalLoggingState } from '../journal.logging.model.state';
 
 export const JournalLoggingStateTransitionKind = [
   'get-load',

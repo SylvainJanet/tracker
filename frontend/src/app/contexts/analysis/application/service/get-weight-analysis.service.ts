@@ -39,7 +39,7 @@ function toResultData(analysis: WeightAnalysis): WeightAnalysisResultData {
       endDate: analysis.range.endDate,
     },
     weightMeasurements: analysis.weightMeasurements.map((measurement) => ({
-      date: measurement.calendarDate,
+      date: measurement.date,
       dayNumber: measurement.dayNumber,
       weightInKg: measurement.weightInKilograms(),
     })),

@@ -1,4 +1,4 @@
-import type { JournalLoggingStateTransition } from '../journal.logging.model.state.transition';
+import type { JournalLoggingStateTransition } from '../transition/journal.logging.model.state.transition';
 
 export const validStateTransitions = new Set<JournalLoggingStateTransition>([
   {

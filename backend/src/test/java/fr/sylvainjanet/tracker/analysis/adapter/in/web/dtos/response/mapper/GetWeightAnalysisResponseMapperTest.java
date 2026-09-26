@@ -1,9 +1,10 @@
 package fr.sylvainjanet.tracker.analysis.adapter.in.web.dtos.response.mapper;
 
-import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.DateRangeResultBuilder.aDateRangeResult;
-import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.WeightMeasurementResultBuilder.aWeightMeasurementResult;
+import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.AnalysisDateRangeResultBuilder.anAnalysisDateRangeResult;
+import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.AnalysisWeightValueResultBuilder.anAnalysisWeightValueResult;
 import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.aGetWeightAnalysisResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fr.sylvainjanet.tracker.analysis.adapter.in.web.dtos.response.GetWeightAnalysisResponse;
 import fr.sylvainjanet.tracker.analysis.adapter.in.web.dtos.response.GetWeightAnalysisResponse.DateRangeResponse;
@@ -25,19 +26,19 @@ class GetWeightAnalysisResponseMapperTest {
         GetWeightAnalysisResult result =
                 aGetWeightAnalysisResult()
                         .withTimelineStartDate(firstDate)
-                        .withRange(
-                                aDateRangeResult()
+                        .withDateRange(
+                                anAnalysisDateRangeResult()
                                         .withStartDate(firstDate)
                                         .withEndDate(endDate)
                                         .build())
-                        .withWeightMeasurements(
+                        .withWeightValues(
                                 List.of(
-                                        aWeightMeasurementResult()
+                                        anAnalysisWeightValueResult()
                                                 .withDate(firstDate)
                                                 .withDayNumber(1L)
                                                 .withWeightInKg(new BigDecimal("82.10"))
                                                 .build(),
-                                        aWeightMeasurementResult()
+                                        anAnalysisWeightValueResult()
                                                 .withDate(secondDate)
                                                 .withDayNumber(4L)
                                                 .withWeightInKg(new BigDecimal("81.90"))
@@ -72,11 +73,19 @@ class GetWeightAnalysisResponseMapperTest {
     @Test
     void mapsAnEmptyWeightAnalysisResultToAnEmptyResponse() {
         GetWeightAnalysisResponse response =
-                GetWeightAnalysisResponseMapper.resultToResponse(GetWeightAnalysisResult.empty());
+                GetWeightAnalysisResponseMapper.resultToResponse(
+                        GetWeightAnalysisResult.noMeasurements());
 
         assertThat(response.timelineStartDate()).isNull();
         assertThat(response.range()).isNull();
         assertThat(response.weightMeasurements()).isEmpty();
         assertThat(response.rollingAverages()).isEmpty();
+    }
+
+    @Test
+    void rejectsANullResult() {
+        assertThatThrownBy(() -> GetWeightAnalysisResponseMapper.resultToResponse(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("result must not be null");
     }
 }

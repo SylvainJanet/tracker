@@ -5,5 +5,6 @@ import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeight
 
 public interface GetWeightMeasurementInDateRangeUseCase {
 
+    /** Returns existing measurements within the inclusive bounds, ordered by ascending date. */
     GetWeightMeasurementInDateRangeResult get(GetWeightMeasurementInDateRangeQuery query);
 }

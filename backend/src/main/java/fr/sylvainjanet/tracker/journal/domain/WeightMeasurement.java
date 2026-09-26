@@ -1,4 +1,4 @@
-package fr.sylvainjanet.tracker.shared.domain;
+package fr.sylvainjanet.tracker.journal.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

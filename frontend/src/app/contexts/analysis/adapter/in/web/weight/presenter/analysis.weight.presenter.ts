@@ -40,6 +40,7 @@ export class AnalysisWeightPresenter {
           model.analysisFinishSuccessful(AnalysisWeightMapper.resultDataToView(result.resultData)),
         );
       }),
+
       catchError((error) => {
         this.model.update((model) => model.analysisFinishFail(error));
         return of();

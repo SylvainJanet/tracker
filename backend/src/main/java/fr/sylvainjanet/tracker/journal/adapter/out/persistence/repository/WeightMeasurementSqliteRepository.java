@@ -11,7 +11,7 @@ import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeig
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementInDateRangeOutcome.WeightMeasurementByDateOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
-import fr.sylvainjanet.tracker.shared.domain.Weight;
+import fr.sylvainjanet.tracker.journal.domain.Weight;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;

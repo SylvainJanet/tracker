@@ -22,7 +22,7 @@ import type {
 } from '../model/view/journal.logging.model.view';
 import { validStateTransitions } from '../model/state/validation/journal.logging.model.state.validation.transition';
 import { canTransition } from '../../../../../../../shared/api/shared.component.model';
-import { Weight } from '../../../../../../../shared/api/shared.weight-measurement';
+import { Weight } from '../../../../../domain/weight';
 
 export class JournalLoggingPresenter {
   private readonly model: WritableSignal<JournalLoggingModel>;

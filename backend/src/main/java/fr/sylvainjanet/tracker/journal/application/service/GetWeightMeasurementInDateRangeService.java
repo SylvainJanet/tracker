@@ -1,7 +1,7 @@
 package fr.sylvainjanet.tracker.journal.application.service;
 
+import static fr.sylvainjanet.tracker.journal.domain.builder.WeightMeasurementBuilder.aWeightMeasurement;
 import static fr.sylvainjanet.tracker.shared.domain.builder.DateRangeBuilder.aDateRange;
-import static fr.sylvainjanet.tracker.shared.domain.builder.WeightMeasurementBuilder.aWeightMeasurement;
 
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightMeasurementInDateRangeQuery;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementInDateRangeResult;
@@ -11,8 +11,8 @@ import fr.sylvainjanet.tracker.journal.application.port.out.dtos.criteria.GetWei
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementInDateRangeOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementInDateRangeOutcome.WeightMeasurementByDateOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
+import fr.sylvainjanet.tracker.journal.domain.WeightMeasurement;
 import fr.sylvainjanet.tracker.shared.domain.DateRange;
-import fr.sylvainjanet.tracker.shared.domain.WeightMeasurement;
 import java.util.List;
 import java.util.Objects;
 

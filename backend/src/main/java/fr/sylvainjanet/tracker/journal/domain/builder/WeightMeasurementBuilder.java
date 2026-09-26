@@ -1,13 +1,15 @@
-package fr.sylvainjanet.tracker.shared.domain.builder;
+package fr.sylvainjanet.tracker.journal.domain.builder;
 
-import fr.sylvainjanet.tracker.shared.domain.Weight;
-import fr.sylvainjanet.tracker.shared.domain.WeightMeasurement;
+import fr.sylvainjanet.tracker.journal.domain.Weight;
+import fr.sylvainjanet.tracker.journal.domain.WeightMeasurement;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public final class WeightMeasurementBuilder {
     private LocalDate date;
     private Weight weight;
+
+    private WeightMeasurementBuilder() {}
 
     public static WeightMeasurementBuilder aWeightMeasurement() {
         return new WeightMeasurementBuilder();

@@ -1,74 +1,121 @@
 package fr.sylvainjanet.tracker.analysis.application.service.mapper;
 
-import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.DateRangeResultBuilder.aDateRangeResult;
-import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.WeightMeasurementResultBuilder.aWeightMeasurementResult;
+import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.AnalysisDateRangeResultBuilder.anAnalysisDateRangeResult;
+import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.AnalysisWeightValueResultBuilder.anAnalysisWeightValueResult;
+import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.WeightRollingAveragePointResultBuilder.aWeightRollingAveragePointResult;
 import static fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.builder.GetWeightAnalysisResultBuilder.aGetWeightAnalysisResult;
 import static fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.builder.GetWeightMeasurementInDateRangeQueryBuilder.aGetWeightMeasurementInDateRangeQuery;
-import static fr.sylvainjanet.tracker.shared.domain.builder.WeightMeasurementBuilder.aWeightMeasurement;
 
 import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult;
-import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.WeightMeasurementResult;
-import fr.sylvainjanet.tracker.analysis.domain.WeightAnalysis;
+import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.AnalysisWeightRollingAverageResult;
+import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.AnalysisWeightValueResult;
+import fr.sylvainjanet.tracker.analysis.domain.DatedSeries;
+import fr.sylvainjanet.tracker.analysis.domain.DatedValue;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightMeasurementInDateRangeQuery;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementInDateRangeResult;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementInDateRangeResult.WeightMeasurementByDateResult;
 import fr.sylvainjanet.tracker.shared.domain.DateRange;
-import fr.sylvainjanet.tracker.shared.domain.WeightMeasurement;
+import fr.sylvainjanet.tracker.statistics.application.port.in.dtos.command.CalculateRollingAveragesCommand;
+import fr.sylvainjanet.tracker.statistics.application.port.in.dtos.command.CalculateRollingAveragesCommand.IndexedValueCommand;
+import fr.sylvainjanet.tracker.statistics.application.port.in.dtos.result.CalculateRollingAveragesResult;
 import java.util.List;
+import java.util.Objects;
+import org.jspecify.annotations.NonNull;
 
 public final class GetWeightAnalysisServiceMapper {
 
     private GetWeightAnalysisServiceMapper() {}
 
-    public static GetWeightMeasurementInDateRangeQuery dateRangeToQuery(DateRange range) {
+    public static GetWeightMeasurementInDateRangeQuery dateRangeToWeightMeasurementQuery(
+            DateRange range) {
+        Objects.requireNonNull(range, "date range must not be null");
         return aGetWeightMeasurementInDateRangeQuery()
                 .withStartDate(range.getStartDate())
                 .withEndDate(range.getEndDate())
                 .build();
     }
 
-    public static List<WeightMeasurement> measurementsToDomain(
+    public static List<DatedValue> weightMeasurementsToDatedValues(
             GetWeightMeasurementInDateRangeResult result) {
+        Objects.requireNonNull(result, "weight measurement result must not be null");
         return result.weightMeasurementsByDate().stream()
-                .map(GetWeightAnalysisServiceMapper::measurementToDomain)
+                .map(GetWeightAnalysisServiceMapper::weightMeasurementToDatedValue)
                 .toList();
     }
 
-    private static WeightMeasurement measurementToDomain(
+    private static DatedValue weightMeasurementToDatedValue(
             WeightMeasurementByDateResult measurement) {
-        return aWeightMeasurement()
-                .withDate(measurement.date())
-                .withWeightInKg(measurement.weightInKg())
-                .build();
+        return new DatedValue(measurement.date(), measurement.weightInKg());
     }
 
-    public static GetWeightAnalysisResult analysisToResult(WeightAnalysis analysis) {
-        List<WeightMeasurementResult> measurements =
-                analysis.weightMeasurements().stream()
-                        .map(
-                                measurement ->
-                                        measurementToResult(
-                                                measurement,
-                                                analysis.dayNumberFor(measurement.date())))
+    public static GetWeightAnalysisResult statisticsToAnalysis(
+            DatedSeries series, CalculateRollingAveragesResult statisticsResult) {
+        Objects.requireNonNull(series, "series must not be null");
+        Objects.requireNonNull(statisticsResult, "statistics result must not be null");
+        List<AnalysisWeightValueResult> measurements =
+                series.values().stream()
+                        .map(value -> valueToResult(value, series.indexFor(value.date())))
+                        .toList();
+
+        List<AnalysisWeightRollingAverageResult> rollingAverages =
+                statisticsResult.rollingAverages().stream()
+                        .map(avg -> statisticsRollingAverageToAnalysis(series, avg))
                         .toList();
 
         return aGetWeightAnalysisResult()
-                .withTimelineStartDate(analysis.timelineStartDate())
-                .withRange(
-                        aDateRangeResult()
-                                .withStartDate(analysis.range().getStartDate())
-                                .withEndDate(analysis.range().getEndDate())
+                .withTimelineStartDate(series.timelineStartDate())
+                .withDateRange(
+                        anAnalysisDateRangeResult()
+                                .withStartDate(series.range().getStartDate())
+                                .withEndDate(series.range().getEndDate())
                                 .build())
-                .withWeightMeasurements(measurements)
+                .withWeightValues(measurements)
+                .withRollingAverages(rollingAverages)
                 .build();
     }
 
-    private static WeightMeasurementResult measurementToResult(
-            WeightMeasurement measurement, long dayNumber) {
-        return aWeightMeasurementResult()
-                .withDate(measurement.date())
-                .withDayNumber(dayNumber)
-                .withWeightInKg(measurement.weightInKilograms())
+    private static AnalysisWeightRollingAverageResult statisticsRollingAverageToAnalysis(
+            DatedSeries series, CalculateRollingAveragesResult.RollingAverageResult avg) {
+        return new AnalysisWeightRollingAverageResult(
+                avg.windowSize(),
+                avg.points().stream()
+                        .map(point -> statisticsRollingAveragePointToAnalysis(series, point))
+                        .toList());
+    }
+
+    private static GetWeightAnalysisResult.@NonNull WeightRollingAveragePointResult
+            statisticsRollingAveragePointToAnalysis(
+                    DatedSeries series,
+                    CalculateRollingAveragesResult.RollingAveragePointResult point) {
+        return aWeightRollingAveragePointResult()
+                .withDate(series.dateForIndex(point.index()))
+                .withDayNumber(point.index())
+                .withAverageWeightInKg(point.average())
                 .build();
+    }
+
+    private static AnalysisWeightValueResult valueToResult(DatedValue value, long index) {
+        return anAnalysisWeightValueResult()
+                .withDate(value.date())
+                .withDayNumber(index)
+                .withWeightInKg(value.value())
+                .build();
+    }
+
+    public static CalculateRollingAveragesCommand analysisToStatisticsCommand(
+            DatedSeries series, List<Integer> windowSizes) {
+        Objects.requireNonNull(series, "series must not be null");
+        Objects.requireNonNull(windowSizes, "window sizes must not be null");
+        List<IndexedValueCommand> values =
+                series.values().stream()
+                        .map(value -> createIndexedValueCommand(series, value))
+                        .toList();
+
+        return new CalculateRollingAveragesCommand(values, windowSizes);
+    }
+
+    private static @NonNull IndexedValueCommand createIndexedValueCommand(
+            DatedSeries series, DatedValue value) {
+        return new IndexedValueCommand(series.indexFor(value.date()), value.value());
     }
 }
