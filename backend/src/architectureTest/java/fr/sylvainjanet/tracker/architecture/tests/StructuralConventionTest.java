@@ -56,6 +56,7 @@ public class StructuralConventionTest {
             Set.of("usecase", "dtos", "exceptions");
     private static final Set<String> ALLOWED_INBOUND_PORT_DTO_PACKAGES =
             Set.of("command", "query", "result");
+    private static final Set<String> ALLOWED_INBOUND_PORT_DTO_COMMAND_PACKAGES = Set.of("builder");
     private static final Set<String> ALLOWED_INBOUND_PORT_DTO_QUERY_PACKAGES = Set.of("builder");
     private static final Set<String> ALLOWED_INBOUND_PORT_DTO_RESULT_PACKAGES = Set.of("builder");
 
@@ -104,6 +105,8 @@ public class StructuralConventionTest {
     private static final String INBOUND_PORTS = packageTree("application.port.in");
     private static final String INBOUND_PORT_DTOS = packageTree("application.port.in.dtos");
     private static final String COMMANDS = packageTree("application.port.in.dtos.command");
+    private static final String COMMAND_BUILDER =
+            packageTree("application.port.in.dtos.command.builder");
     private static final String QUERIES = packageTree("application.port.in.dtos.query");
     private static final String QUERY_BUILDER =
             packageTree("application.port.in.dtos.query.builder");
@@ -866,10 +869,27 @@ public class StructuralConventionTest {
                         public static final class CommandRules {
 
                             @ArchTest
+                            public static final ArchRule commandDtosUseAllowedPackages =
+                                    classes()
+                                            .that()
+                                            .resideInAPackage(COMMANDS + "*")
+                                            .should()
+                                            .resideInAnyPackage(
+                                                    allowedSubpackageTrees(
+                                                            COMMANDS,
+                                                            ALLOWED_INBOUND_PORT_DTO_COMMAND_PACKAGES))
+                                            .allowEmptyShould(true);
+
+                            @ArchTest
                             public static final ArchRule commandDtosHaveCommandSuffix =
                                     classes()
                                             .that()
                                             .resideInAPackage(COMMANDS)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            COMMANDS,
+                                                            ALLOWED_INBOUND_PORT_DTO_COMMAND_PACKAGES))
                                             .should()
                                             .haveSimpleNameEndingWith("Command")
                                             .allowEmptyShould(true);
@@ -888,11 +908,43 @@ public class StructuralConventionTest {
                                     classes()
                                             .that()
                                             .resideInAPackage(COMMANDS)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            COMMANDS,
+                                                            ALLOWED_INBOUND_PORT_DTO_COMMAND_PACKAGES))
                                             .should()
                                             .beRecords()
                                             .orShould()
                                             .beEnums()
                                             .allowEmptyShould(true);
+
+                            @ArchTest
+                            static final ArchTests commandBuilderRules =
+                                    ArchTests.in(
+                                            StructuralConventionTest.ContextRules.ApplicationRules
+                                                    .PortRules.InboundPortRules.DtosRules
+                                                    .CommandRules.CommandBuilderRules.class);
+
+                            public static final class CommandBuilderRules {
+                                @ArchTest
+                                public static final ArchRule commandBuilderHaveBuilderSuffix =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(COMMAND_BUILDER)
+                                                .should()
+                                                .haveSimpleNameEndingWith("CommandBuilder")
+                                                .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule commandBuilderShouldBeFinalClasses =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(COMMAND_BUILDER)
+                                                .should()
+                                                .haveModifier(JavaModifier.FINAL)
+                                                .allowEmptyShould(true);
+                            }
                         }
 
                         @ArchTest
