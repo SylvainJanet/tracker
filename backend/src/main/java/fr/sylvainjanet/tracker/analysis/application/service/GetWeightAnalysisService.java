@@ -1,21 +1,23 @@
 package fr.sylvainjanet.tracker.analysis.application.service;
 
 import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.analysisToResult;
+import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.analysisToStatisticsCommand;
 import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.dateRangeToQuery;
-import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.measurementsToDomain;
-import static fr.sylvainjanet.tracker.analysis.domain.builder.WeightAnalysisBuilder.aWeightAnalysis;
+import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.measurementsToValues;
 import static fr.sylvainjanet.tracker.shared.domain.builder.DateRangeBuilder.aDateRange;
 
 import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult;
 import fr.sylvainjanet.tracker.analysis.application.port.in.usecase.GetWeightAnalysisUseCase;
-import fr.sylvainjanet.tracker.analysis.domain.WeightAnalysis;
+import fr.sylvainjanet.tracker.analysis.domain.DatedSeries;
+import fr.sylvainjanet.tracker.analysis.domain.DatedValue;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightMeasurementInDateRangeQuery;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetFirstWeightMeasurementDateResult;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementInDateRangeResult;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.GetFirstWeightMeasurementDateUseCase;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.GetWeightMeasurementInDateRangeUseCase;
 import fr.sylvainjanet.tracker.shared.domain.DateRange;
-import fr.sylvainjanet.tracker.shared.domain.WeightMeasurement;
+import fr.sylvainjanet.tracker.statistics.application.port.in.dtos.result.CalculateRollingAveragesResult;
+import fr.sylvainjanet.tracker.statistics.application.port.in.usecase.CalculateRollingAveragesUseCase;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,11 +28,13 @@ public final class GetWeightAnalysisService implements GetWeightAnalysisUseCase 
 
     private final GetFirstWeightMeasurementDateUseCase getFirstWeightMeasurementDate;
     private final GetWeightMeasurementInDateRangeUseCase getWeightMeasurementsInRange;
+    private final CalculateRollingAveragesUseCase calculateRollingAverages;
     private final Clock clock;
 
     public GetWeightAnalysisService(
             GetFirstWeightMeasurementDateUseCase getFirstWeightMeasurementDate,
             GetWeightMeasurementInDateRangeUseCase getWeightMeasurementsInRange,
+            CalculateRollingAveragesUseCase calculateRollingAverages,
             Clock clock) {
         this.getFirstWeightMeasurementDate =
                 Objects.requireNonNull(
@@ -40,6 +44,9 @@ public final class GetWeightAnalysisService implements GetWeightAnalysisUseCase 
                 Objects.requireNonNull(
                         getWeightMeasurementsInRange,
                         "get weight measurements in range must not be null");
+        this.calculateRollingAverages =
+                Objects.requireNonNull(
+                        calculateRollingAverages, "calculate rolling averages must not be null");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
     }
 
@@ -61,26 +68,24 @@ public final class GetWeightAnalysisService implements GetWeightAnalysisUseCase 
 
     private GetWeightAnalysisResult analyze(LocalDate timelineStartDate, LocalDate today) {
         DateRange range = aDateRange().withStartDate(timelineStartDate).withEndDate(today).build();
-        List<WeightMeasurement> measurements = loadMeasurements(range);
+        List<DatedValue> values = loadValues(range);
 
-        if (measurements.isEmpty()) {
+        if (values.isEmpty()) {
             return GetWeightAnalysisResult.empty();
         }
 
-        WeightAnalysis analysis =
-                aWeightAnalysis()
-                        .withTimelineStartDate(timelineStartDate)
-                        .withRange(range)
-                        .withWeightMeasurements(measurements)
-                        .build();
+        DatedSeries series = DatedSeries.create(timelineStartDate, today, range, values);
 
-        return analysisToResult(analysis);
+        CalculateRollingAveragesResult statisticsResult =
+                calculateRollingAverages.calculate(analysisToStatisticsCommand(series));
+
+        return analysisToResult(series, statisticsResult);
     }
 
-    private List<WeightMeasurement> loadMeasurements(DateRange range) {
+    private List<DatedValue> loadValues(DateRange range) {
         GetWeightMeasurementInDateRangeQuery query = dateRangeToQuery(range);
         GetWeightMeasurementInDateRangeResult result = getWeightMeasurementsInRange.get(query);
 
-        return measurementsToDomain(result);
+        return measurementsToValues(result);
     }
 }

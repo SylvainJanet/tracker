@@ -1,5 +1,4 @@
 import { type CalendarDate, calendarDate, DateRange } from '../../../shared/api/shared.calendar';
-import { Weight, WeightMeasurement } from '../../../shared/api/shared.weight-measurement';
 
 export interface WeightAnalysisCreation {
   readonly timelineStartDate: string;
@@ -16,24 +15,29 @@ export interface WeightAnalysisCreation {
 
 export class WeightAnalysisMeasurement {
   private constructor(
-    private readonly measurement: WeightMeasurement,
+    readonly calendarDate: CalendarDate,
     readonly dayNumber: number,
+    private readonly weightInKg: number,
   ) {}
 
-  static create(measurement: WeightMeasurement, dayNumber: number): WeightAnalysisMeasurement {
+  static create(
+    calendarDate: CalendarDate,
+    dayNumber: number,
+    weightInKg: number,
+  ): WeightAnalysisMeasurement {
     if (!Number.isSafeInteger(dayNumber) || dayNumber < 1) {
       throw new RangeError('day number must be a positive safe integer');
     }
 
-    return new WeightAnalysisMeasurement(measurement, dayNumber);
-  }
+    if (!Number.isFinite(weightInKg) || weightInKg <= 0) {
+      throw new RangeError('weight must be a positive finite number');
+    }
 
-  get calendarDate(): CalendarDate {
-    return this.measurement.calendarDate;
+    return new WeightAnalysisMeasurement(calendarDate, dayNumber, weightInKg);
   }
 
   weightInKilograms(): number {
-    return this.measurement.weightInKilograms();
+    return this.weightInKg;
   }
 }
 
@@ -55,12 +59,13 @@ export class WeightAnalysis {
     }
     const measurements = creation.weightMeasurements.map((measurement) =>
       WeightAnalysisMeasurement.create(
-        WeightMeasurement.create(calendarDate(measurement.date), Weight.of(measurement.weightInKg)),
+        calendarDate(measurement.date),
         measurement.dayNumber,
+        measurement.weightInKg,
       ),
     );
 
-    validateMeasurements(measurements, range);
+    validateMeasurements(measurements, range, timelineStartDate);
 
     return new WeightAnalysis(timelineStartDate, range, [...measurements]);
   }
@@ -69,6 +74,7 @@ export class WeightAnalysis {
 function validateMeasurements(
   measurements: readonly WeightAnalysisMeasurement[],
   range: DateRange,
+  timelineStartDate: CalendarDate,
 ): void {
   let previousDate: CalendarDate | undefined;
 
@@ -77,10 +83,20 @@ function validateMeasurements(
       throw new RangeError('weight measurement must be inside the represented range');
     }
 
+    if (measurement.dayNumber !== dayNumberFor(timelineStartDate, measurement.calendarDate)) {
+      throw new RangeError('day number must match the measurement date on the timeline');
+    }
+
     if (previousDate !== undefined && measurement.calendarDate <= previousDate) {
       throw new RangeError('weight measurements must be ordered by unique ascending dates');
     }
 
     previousDate = measurement.calendarDate;
   }
+}
+
+function dayNumberFor(timelineStartDate: CalendarDate, date: CalendarDate): number {
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+  return (Date.parse(date) - Date.parse(timelineStartDate)) / millisecondsPerDay + 1;
 }

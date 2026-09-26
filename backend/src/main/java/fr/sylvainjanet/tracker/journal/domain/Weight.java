@@ -1,6 +1,6 @@
-package fr.sylvainjanet.tracker.shared.domain;
+package fr.sylvainjanet.tracker.journal.domain;
 
-import fr.sylvainjanet.tracker.shared.domain.error.WeightValidationError;
+import fr.sylvainjanet.tracker.journal.domain.error.WeightValidationError;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;

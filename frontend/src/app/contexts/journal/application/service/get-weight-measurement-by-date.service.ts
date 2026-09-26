@@ -10,8 +10,8 @@ import type {
   GetWeightMeasurementByDateResultData,
   GetWeightMeasurementByDateUseCase,
 } from '../port/in/get-weight-measurement-by-date.use-case';
-import { WeightMeasurement } from '../../../../shared/api/shared.weight-measurement';
-import { Weight } from '../../../../shared/api/shared.weight-measurement';
+import { Weight } from '../../domain/weight';
+import { WeightMeasurement } from '../../domain/weight-measurement';
 
 export class GetWeightMeasurementByDateService implements GetWeightMeasurementByDateUseCase {
   constructor(private readonly store: WeightMeasurementStore) {}

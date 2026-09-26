@@ -117,7 +117,7 @@ describe('WeightAnalysis', () => {
     ).toThrow(RangeError);
   });
 
-  it.each([Number.NaN, Number.POSITIVE_INFINITY, 0, -1, 82.11])(
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0, -1])(
     'rejects an invalid measured weight: %s',
     (weightInKg) => {
       expect(() =>
@@ -134,6 +134,21 @@ describe('WeightAnalysis', () => {
       ).toThrow(RangeError);
     },
   );
+
+  it('accepts a positive finite value that does not follow Journal weight increments', () => {
+    const analysis = WeightAnalysis.create({
+      ...validData(),
+      weightMeasurements: [
+        {
+          date: '2026-09-20',
+          dayNumber: 1,
+          weightInKg: 82.11,
+        },
+      ],
+    });
+
+    expect(analysis.weightMeasurements[0]?.weightInKilograms()).toBe(82.11);
+  });
 
   it.each([Number.NaN, Number.POSITIVE_INFINITY, 0, -1, 1.5])(
     'rejects an invalid day number: %s',
@@ -193,6 +208,20 @@ describe('WeightAnalysis', () => {
       ).toThrow(RangeError);
     },
   );
+  it('rejects a day number that does not match its date on the timeline', () => {
+    expect(() =>
+      WeightAnalysis.create({
+        ...validData(),
+        weightMeasurements: [
+          {
+            date: '2026-09-23',
+            dayNumber: 3,
+            weightInKg: 82.1,
+          },
+        ],
+      }),
+    ).toThrow('day number must match the measurement date on the timeline');
+  });
 });
 
 function validData() {

@@ -2,21 +2,19 @@ package fr.sylvainjanet.tracker.analysis.application.service.mapper;
 
 import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.analysisToResult;
 import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.dateRangeToQuery;
-import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.measurementsToDomain;
-import static fr.sylvainjanet.tracker.analysis.domain.builder.WeightAnalysisBuilder.aWeightAnalysis;
+import static fr.sylvainjanet.tracker.analysis.application.service.mapper.GetWeightAnalysisServiceMapper.measurementsToValues;
 import static fr.sylvainjanet.tracker.shared.domain.builder.DateRangeBuilder.aDateRange;
-import static fr.sylvainjanet.tracker.shared.domain.builder.WeightMeasurementBuilder.aWeightMeasurement;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult;
 import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.DateRangeResult;
 import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.WeightMeasurementResult;
-import fr.sylvainjanet.tracker.analysis.domain.WeightAnalysis;
+import fr.sylvainjanet.tracker.analysis.domain.DatedSeries;
+import fr.sylvainjanet.tracker.analysis.domain.DatedValue;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightMeasurementInDateRangeQuery;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementInDateRangeResult;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementInDateRangeResult.WeightMeasurementByDateResult;
 import fr.sylvainjanet.tracker.shared.domain.DateRange;
-import fr.sylvainjanet.tracker.shared.domain.WeightMeasurement;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -39,48 +37,36 @@ class GetWeightAnalysisServiceMapperTest {
     }
 
     @Test
-    void mapsMeasurementResultsToDomainMeasurements() {
+    void mapsJournalMeasurementResultsToAnalysisValues() {
         GetWeightMeasurementInDateRangeResult result =
                 new GetWeightMeasurementInDateRangeResult(
                         List.of(
                                 new WeightMeasurementByDateResult(
-                                        FIRST_DATE, new BigDecimal("82.10")),
+                                        FIRST_DATE, new BigDecimal("12.34")),
                                 new WeightMeasurementByDateResult(
-                                        SECOND_DATE, new BigDecimal("81.90"))));
+                                        SECOND_DATE, new BigDecimal("56.78"))));
 
-        List<WeightMeasurement> measurements = measurementsToDomain(result);
+        List<DatedValue> values = measurementsToValues(result);
 
-        assertThat(measurements).hasSize(2);
-
-        WeightMeasurement firstMeasurement = measurements.get(0);
-        assertThat(firstMeasurement.date()).isEqualTo(FIRST_DATE);
-        assertThat(firstMeasurement.weightInKilograms()).isEqualByComparingTo("82.10");
-
-        WeightMeasurement secondMeasurement = measurements.get(1);
-        assertThat(secondMeasurement.date()).isEqualTo(SECOND_DATE);
-        assertThat(secondMeasurement.weightInKilograms()).isEqualByComparingTo("81.90");
+        assertThat(values)
+                .containsExactly(
+                        new DatedValue(FIRST_DATE, new BigDecimal("12.34")),
+                        new DatedValue(SECOND_DATE, new BigDecimal("56.78")));
     }
 
     @Test
-    void mapsAWeightAnalysisToAResult() {
+    void mapsADatedSeriesToAWeightAnalysisResult() {
         DateRange range = aDateRange().withStartDate(FIRST_DATE).withEndDate(END_DATE).build();
-        WeightAnalysis analysis =
-                aWeightAnalysis()
-                        .withTimelineStartDate(FIRST_DATE)
-                        .withRange(range)
-                        .withWeightMeasurements(
-                                List.of(
-                                        aWeightMeasurement()
-                                                .withDate(FIRST_DATE)
-                                                .withWeightInKg(new BigDecimal("82.10"))
-                                                .build(),
-                                        aWeightMeasurement()
-                                                .withDate(SECOND_DATE)
-                                                .withWeightInKg(new BigDecimal("81.90"))
-                                                .build()))
-                        .build();
+        DatedSeries series =
+                DatedSeries.create(
+                        FIRST_DATE,
+                        END_DATE,
+                        range,
+                        List.of(
+                                new DatedValue(FIRST_DATE, new BigDecimal("82.10")),
+                                new DatedValue(SECOND_DATE, new BigDecimal("81.90"))));
 
-        GetWeightAnalysisResult result = analysisToResult(analysis);
+        GetWeightAnalysisResult result = analysisToResult(series);
 
         assertThat(result.timelineStartDate()).isEqualTo(FIRST_DATE);
 

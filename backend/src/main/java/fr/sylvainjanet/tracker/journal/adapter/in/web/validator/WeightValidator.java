@@ -1,8 +1,8 @@
 package fr.sylvainjanet.tracker.journal.adapter.in.web.validator;
 
 import fr.sylvainjanet.tracker.journal.adapter.in.web.validator.annotation.WeightValid;
-import fr.sylvainjanet.tracker.shared.domain.Weight;
-import fr.sylvainjanet.tracker.shared.domain.error.WeightValidationError;
+import fr.sylvainjanet.tracker.journal.domain.Weight;
+import fr.sylvainjanet.tracker.journal.domain.error.WeightValidationError;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.math.BigDecimal;
