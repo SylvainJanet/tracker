@@ -7,7 +7,7 @@ therefore distinguished calculation-method history from the histories of
 observations, goals and policies.
 
 Analysis owns calculation-method history and the derived results produced by
-those methods. Tracking owns observations and predictions, while Strategy owns
+those methods. Journal owns observations and predictions, while Strategy owns
 goals and policies.
 
 It also retained method identities, resolved configuration and useful

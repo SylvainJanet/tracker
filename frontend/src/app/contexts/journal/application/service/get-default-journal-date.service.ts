@@ -4,7 +4,7 @@ import type {
   GetDefaultJournalDateResultData,
   GetDefaultJournalDateUseCase,
 } from '../port/in/get-default-journal-date.use-case';
-import { calendarDate, type CalendarDate } from '../../domain/calendar-date';
+import { calendarDate, type CalendarDate } from '../../../../shared/api/shared.calendar';
 
 export class GetDefaultJournalDateService implements GetDefaultJournalDateUseCase {
   constructor(private readonly provider: TodayProvider) {}

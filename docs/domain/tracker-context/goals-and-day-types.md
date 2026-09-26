@@ -191,7 +191,7 @@ a planned exceptional day can remain incomplete, and a permitted exceptional
 day can be complete but unmeasured. Neither plans nor observations may
 rewrite or fabricate the other.
 
-Tracking may reference the stable Strategy classification applied to a daily
+Journal may reference the stable Strategy classification applied to a daily
 record, but Strategy remains responsible for its definition, resolution and
 history.
 

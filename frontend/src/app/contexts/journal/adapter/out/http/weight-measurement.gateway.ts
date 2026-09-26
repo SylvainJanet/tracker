@@ -18,6 +18,7 @@ import {
 } from '../../../../../shared/api/shared.http.response';
 import type { GetWeightMeasurementByDateRequest } from './contract/request/get-weight-measurement-by-date-request';
 import { isGetWeightMeasurementByDateResponse } from './contract/response/get-weight-measurement-by-date-response';
+import { invalidBackendResponseErrorMessage } from '../../../../../shared/api/shared.http.response';
 
 export class WeightMeasurementGateway implements WeightMeasurementStore {
   constructor(private readonly httpClient: HttpClient) {}
@@ -40,7 +41,7 @@ export class WeightMeasurementGateway implements WeightMeasurementStore {
         return {
           kind: 'failed',
           outcomeData: {
-            errorMessage: 'The backend returned an invalid response.',
+            errorMessage: invalidBackendResponseErrorMessage,
           },
         };
       }
@@ -93,7 +94,7 @@ export class WeightMeasurementGateway implements WeightMeasurementStore {
         return {
           kind: 'failed',
           outcomeData: {
-            errorMessage: 'The backend returned an invalid response.',
+            errorMessage: invalidBackendResponseErrorMessage,
           },
         };
       }

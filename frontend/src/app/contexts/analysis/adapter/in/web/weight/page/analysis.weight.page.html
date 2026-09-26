@@ -1,0 +1,153 @@
+<section class="tracker-page">
+  <header class="tracker-page-header">
+    <h1>Weight analysis</h1>
+    <p>Review your recorded weight measurements across the current analysis period.</p>
+  </header>
+
+  @let currentState = state();
+
+  @switch (currentState.analysisState.kind) {
+    @case ('loading') {
+      <article
+        class="tracker-panel tracker-panel--neutral tracker-status tracker-status--loading"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="loading-weight-analysis"
+      >
+        <app-shared-spinner />
+
+        <div>
+          <p class="tracker-status__eyebrow">Analyzing</p>
+          <h2>Loading weight analysis</h2>
+          <p>Please wait while the recorded measurements are retrieved.</p>
+        </div>
+      </article>
+    }
+
+    @case ('analyzed') {
+      <article
+        class="tracker-panel tracker-panel--neutral analysis-results"
+        aria-labelledby="weight-analysis-results-title"
+      >
+        <header class="analysis-results__header">
+          <p class="tracker-status__eyebrow">Analysis results</p>
+          <h2 id="weight-analysis-results-title">Recorded weight measurements</h2>
+          <p>Measurements available for the current analysis period.</p>
+        </header>
+
+        <dl class="tracker-details analysis-summary" data-testid="weight-analysis-summary">
+          <div>
+            <dt>Timeline begins</dt>
+            <dd>
+              <time [attr.datetime]="currentState.analysisState.view.timelineStartDate">
+                {{ currentState.analysisState.view.timelineStartDate }}
+              </time>
+            </dd>
+          </div>
+
+          <div>
+            <dt>Analysis period</dt>
+            <dd>
+              <time [attr.datetime]="currentState.analysisState.view.range.startDate">
+                {{ currentState.analysisState.view.range.startDate }}
+              </time>
+              <span aria-hidden="true">to</span>
+              <time [attr.datetime]="currentState.analysisState.view.range.endDate">
+                {{ currentState.analysisState.view.range.endDate }}
+              </time>
+            </dd>
+          </div>
+
+          <div>
+            <dt>Measurements</dt>
+            <dd>{{ currentState.analysisState.view.weightMeasurements.length }}</dd>
+          </div>
+        </dl>
+
+        <div
+          class="analysis-table-region"
+          role="region"
+          aria-labelledby="weight-measurements-caption"
+          tabindex="0"
+        >
+          <table class="analysis-table">
+            <caption id="weight-measurements-caption">
+              Recorded weight measurements by analysis day
+            </caption>
+
+            <thead>
+              <tr>
+                <th scope="col">Day</th>
+                <th scope="col">Date</th>
+                <th scope="col">Weight</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (
+                measurement of currentState.analysisState.view.weightMeasurements;
+                track measurement.date
+              ) {
+                <tr>
+                  <td>{{ measurement.dayNumber }}</td>
+                  <th scope="row">
+                    <time [attr.datetime]="measurement.date">
+                      {{ measurement.date }}
+                    </time>
+                  </th>
+                  <td>{{ measurement.weightInKg }} kg</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </article>
+    }
+
+    @case ('empty') {
+      <article
+        class="tracker-panel tracker-panel--neutral tracker-status tracker-status--empty"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="empty-weight-analysis"
+      >
+        <span class="tracker-status__icon tracker-status__icon--neutral" aria-hidden="true">
+          —
+        </span>
+
+        <div>
+          <p class="tracker-status__eyebrow">No data</p>
+          <h2>{{ currentState.analysisState.title }}</h2>
+          <p>{{ currentState.analysisState.message }}</p>
+        </div>
+      </article>
+    }
+
+    @case ('failure') {
+      <article
+        class="tracker-panel tracker-panel--danger tracker-status"
+        role="alert"
+        data-testid="weight-analysis-failure"
+      >
+        <span class="tracker-status__icon" aria-hidden="true">!</span>
+
+        <div>
+          <p class="tracker-status__eyebrow">Analysis unavailable</p>
+          <h2>{{ currentState.analysisState.title }}</h2>
+          <p>{{ currentState.analysisState.message }}</p>
+
+          <div class="tracker-panel-action">
+            <button
+              class="tracker-button tracker-button--secondary"
+              data-testid="retry-analysis"
+              type="button"
+              (click)="retry()"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </article>
+    }
+  }
+</section>

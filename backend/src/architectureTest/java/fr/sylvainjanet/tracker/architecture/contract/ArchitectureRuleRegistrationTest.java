@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 class ArchitectureRuleRegistrationTest {
 
-    private static final int EXPECTED_RULE_COUNT = 90;
+    private static final int EXPECTED_RULE_COUNT = 104;
 
     private static final List<Class<?>> ARCHITECTURE_POLICY_CLASSES =
             List.of(

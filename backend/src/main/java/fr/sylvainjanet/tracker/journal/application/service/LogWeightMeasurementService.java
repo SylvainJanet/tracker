@@ -1,12 +1,13 @@
 package fr.sylvainjanet.tracker.journal.application.service;
 
+import static fr.sylvainjanet.tracker.journal.domain.builder.WeightMeasurementBuilder.aWeightMeasurement;
+
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.command.LogWeightMeasurementCommand;
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.LogWeightMeasurementResult;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.LogWeightMeasurementUseCase;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.instruction.LogWeightMeasurementInstruction;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
-import fr.sylvainjanet.tracker.journal.domain.Weight;
 import fr.sylvainjanet.tracker.journal.domain.WeightMeasurement;
 import java.util.Objects;
 
@@ -32,7 +33,10 @@ public final class LogWeightMeasurementService implements LogWeightMeasurementUs
     }
 
     private WeightMeasurement commandToDomain(LogWeightMeasurementCommand command) {
-        return WeightMeasurement.create(command.date(), Weight.of(command.weightInKg()));
+        return aWeightMeasurement()
+                .withDate(command.date())
+                .withWeightInKg(command.weightInKg())
+                .build();
     }
 
     private LogWeightMeasurementInstruction toInstruction(WeightMeasurement weightMeasurement) {
@@ -46,6 +50,9 @@ public final class LogWeightMeasurementService implements LogWeightMeasurementUs
     }
 
     private WeightMeasurement outcomeToDomain(LogWeightMeasurementOutcome outcome) {
-        return WeightMeasurement.create(outcome.date(), Weight.of(outcome.weightInKg()));
+        return aWeightMeasurement()
+                .withDate(outcome.date())
+                .withWeightInKg(outcome.weightInKg())
+                .build();
     }
 }

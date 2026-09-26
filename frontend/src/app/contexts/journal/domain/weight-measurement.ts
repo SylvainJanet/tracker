@@ -1,5 +1,5 @@
 import { type Weight } from './weight';
-import type { CalendarDate } from './calendar-date';
+import type { CalendarDate } from '../../../shared/api/shared.calendar';
 
 export class WeightMeasurement {
   constructor(

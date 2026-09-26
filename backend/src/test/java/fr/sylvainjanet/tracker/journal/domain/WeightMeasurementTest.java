@@ -1,6 +1,6 @@
 package fr.sylvainjanet.tracker.journal.domain;
 
-import static fr.sylvainjanet.tracker.journal.domain.builders.WeightMeasurementTestBuilder.aWeightMeasurement;
+import static fr.sylvainjanet.tracker.journal.domain.builder.WeightMeasurementBuilder.aWeightMeasurement;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

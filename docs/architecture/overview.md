@@ -2,28 +2,10 @@
 
 ## Authority and use
 
-Production code and behavioural tests define implemented behaviour. For exact
-package, file, naming, declaration and dependency restrictions, use these sources
-in order:
-
-1. the executable architecture policy and its contract tests;
-2. the diagnostic produced by the current failing architecture check;
-3. this documentation.
-
-If they disagree, the documentation is stale. The guides record intent and
-decisions that static checks cannot express; they are not rule inventories.
-
-| Need                                          | Backend authority                                                                                                                                          | Frontend authority                                                                                                                  |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Structure and conventions                     | [`StructuralConventionTest`](../../backend/src/architectureTest/java/fr/sylvainjanet/tracker/architecture/tests/StructuralConventionTest.java)             | [`architecture.js`](../../frontend/eslint/architecture/architecture.js) and its [`rules`](../../frontend/eslint/architecture/rules) |
-| Dependency direction and technical boundaries | [`HexagonalArchitectureTest`](../../backend/src/architectureTest/java/fr/sylvainjanet/tracker/architecture/tests/HexagonalArchitectureTest.java)           | [`architecture.js`](../../frontend/eslint/architecture/architecture.js) and [`eslint.config.js`](../../frontend/eslint.config.js)   |
-| Context and module access                     | [`BoundedContextArchitectureTest`](../../backend/src/architectureTest/java/fr/sylvainjanet/tracker/architecture/tests/BoundedContextArchitectureTest.java) | [`module-boundaries.js`](../../frontend/eslint/architecture/rules/module-boundaries.js)                                             |
-| Policy contract coverage                      | [`architecture/contract`](../../backend/src/architectureTest/java/fr/sylvainjanet/tracker/architecture/contract)                                           | [`architecture/test`](../../frontend/eslint/architecture/test)                                                                      |
-
-Run backend policy with `./gradlew :backend:architectureTest`. Frontend production
-source is checked by `./gradlew :frontend:lint`; `./gradlew
-:frontend:architectureTest` verifies the custom policy implementation. The
-frontend `check` task runs both.
+Executable architecture policies and their contract tests define exact
+structural restrictions. Start with their current diagnostic when a rule fails.
+These guides instead record intent and decisions that static analysis cannot
+express; they are not a second rule inventory.
 
 ## Shared intent
 
@@ -71,9 +53,14 @@ meaningful facts whose consumers should remain independent; they describe what
 happened rather than disguise commands. Presentation may compose contexts without
 merging their models or ownership.
 
-Generic technical utilities may be shared without becoming a domain shared
-kernel. A shared kernel is reserved for a small, explicitly governed concept with
-the same meaning for all participants.
+Backend technical mechanisms that have no bounded-context owner live under the
+`technical` namespace and remain organised by architectural role. Bounded
+contexts may reuse them directly, while technical code may access a bounded
+context only through its inbound contracts. This namespace contains no business
+concepts and is distinct from the domain shared kernel.
+
+A shared kernel is reserved for a small, explicitly governed concept with the
+same meaning for all participants.
 
 ## Restraint
 

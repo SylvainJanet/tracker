@@ -31,15 +31,14 @@ public final class WeightMeasurement {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        return other instanceof WeightMeasurement that && date.equals(that.date);
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        WeightMeasurement that = (WeightMeasurement) o;
+        return Objects.equals(date, that.date);
     }
 
     @Override
     public int hashCode() {
-        return date.hashCode();
+        return Objects.hashCode(date);
     }
 }

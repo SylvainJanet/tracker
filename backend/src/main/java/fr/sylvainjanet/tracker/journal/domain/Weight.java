@@ -81,7 +81,7 @@ public final class Weight {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Weight weight = (Weight) o;
-        return Objects.equals(grams, weight.grams);
+        return grams == weight.grams;
     }
 
     @Override
