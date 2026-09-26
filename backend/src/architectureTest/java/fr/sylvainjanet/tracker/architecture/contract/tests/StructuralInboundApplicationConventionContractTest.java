@@ -1,8 +1,11 @@
 package fr.sylvainjanet.tracker.architecture.contract.tests;
 
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.CommandBuilderRules.commandBuilderHaveBuilderSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.CommandBuilderRules.commandBuilderShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.classesNamedCommandStayInCommandPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.commandDtosAreRecordsOrEnums;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.commandDtosHaveCommandSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.CommandRules.commandDtosUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.QueryBuilderRules.queryBuilderHaveBuilderSuffix;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.QueryBuilderRules.queryBuilderShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.ApplicationRules.PortRules.InboundPortRules.DtosRules.QueryRules.classesNamedQueryStayInQueryPackages;
@@ -29,6 +32,10 @@ import fr.sylvainjanet.tracker.architecture.contract.ArchitectureRuleContract;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.command.CommandKindCommand;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.command.CorrectlyNamedCommand;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.command.MisconfiguredCommandPayload;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.command.builder.CorrectDtoCommandBuilder;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.command.builder.InvalidCommandBuilderSuffix;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.command.builder.NotFinalCommandBuilder;
+import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.command.unsupported.UnsupportedCommandDtoPackage;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.CorrectlyNamedQuery;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.MisconfiguredQueryPayload;
 import fr.sylvainjanet.tracker.architecturefixture.application.port.in.dtos.query.QueryKindQuery;
@@ -101,6 +108,18 @@ public class StructuralInboundApplicationConventionContractTest {
     }
 
     @Test
+    void commandDtosUseAllowedPackages() {
+        ArchitectureRuleContract.assertAccepts(
+                commandDtosUseAllowedPackages,
+                CorrectlyNamedCommand.class,
+                CommandKindCommand.class);
+        ArchitectureRuleContract.assertRejects(
+                commandDtosUseAllowedPackages,
+                "UnsupportedCommandDtoPackage",
+                UnsupportedCommandDtoPackage.class);
+    }
+
+    @Test
     void commandDtosHaveCommandSuffix() {
         ArchitectureRuleContract.assertAccepts(
                 commandDtosHaveCommandSuffix,
@@ -132,6 +151,26 @@ public class StructuralInboundApplicationConventionContractTest {
                 commandDtosAreRecordsOrEnums,
                 "MisconfiguredCommandPayload",
                 MisconfiguredCommandPayload.class);
+    }
+
+    @Test
+    void commandBuilderHaveBuilderSuffix() {
+        ArchitectureRuleContract.assertAccepts(
+                commandBuilderHaveBuilderSuffix, CorrectDtoCommandBuilder.class);
+        ArchitectureRuleContract.assertRejects(
+                commandBuilderHaveBuilderSuffix,
+                "InvalidCommandBuilderSuffix",
+                InvalidCommandBuilderSuffix.class);
+    }
+
+    @Test
+    void commandBuilderShouldBeFinalClasses() {
+        ArchitectureRuleContract.assertAccepts(
+                commandBuilderShouldBeFinalClasses, CorrectDtoCommandBuilder.class);
+        ArchitectureRuleContract.assertRejects(
+                commandBuilderShouldBeFinalClasses,
+                "NotFinalCommandBuilder",
+                NotFinalCommandBuilder.class);
     }
 
     @Test
