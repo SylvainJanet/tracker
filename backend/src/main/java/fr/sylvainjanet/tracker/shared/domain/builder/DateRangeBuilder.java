@@ -8,6 +8,8 @@ public class DateRangeBuilder {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    private DateRangeBuilder() {}
+
     public static DateRangeBuilder aDateRange() {
         return new DateRangeBuilder();
     }

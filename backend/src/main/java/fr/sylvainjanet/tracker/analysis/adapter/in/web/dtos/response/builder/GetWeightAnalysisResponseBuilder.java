@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class GetWeightAnalysisResponseBuilder {
 
@@ -92,7 +93,7 @@ public final class GetWeightAnalysisResponseBuilder {
         }
 
         public RollingAverageResponseBuilder withPoints(List<RollingAveragePointResponse> points) {
-            this.points.addAll(points);
+            this.points.addAll(Objects.requireNonNull(points, "points must not be null"));
             return this;
         }
 
@@ -106,8 +107,6 @@ public final class GetWeightAnalysisResponseBuilder {
         private LocalDate date;
         private long dayNumber;
         private BigDecimal averageWeightInKg;
-        private int includedMeasurementCount;
-        private boolean completeCalendarWindow;
 
         private RollingAveragePointResponseBuilder() {}
 
@@ -131,25 +130,8 @@ public final class GetWeightAnalysisResponseBuilder {
             return this;
         }
 
-        public RollingAveragePointResponseBuilder withIncludedMeasurementCount(
-                int includedMeasurementCount) {
-            this.includedMeasurementCount = includedMeasurementCount;
-            return this;
-        }
-
-        public RollingAveragePointResponseBuilder withCompleteCalendarWindow(
-                boolean completeCalendarWindow) {
-            this.completeCalendarWindow = completeCalendarWindow;
-            return this;
-        }
-
         public RollingAveragePointResponse build() {
-            return new RollingAveragePointResponse(
-                    date,
-                    dayNumber,
-                    averageWeightInKg,
-                    includedMeasurementCount,
-                    completeCalendarWindow);
+            return new RollingAveragePointResponse(date, dayNumber, averageWeightInKg);
         }
     }
 
@@ -171,13 +153,15 @@ public final class GetWeightAnalysisResponseBuilder {
 
     public GetWeightAnalysisResponseBuilder withWeightMeasurements(
             List<WeightMeasurementResponse> weightMeasurements) {
-        this.weightMeasurements.addAll(weightMeasurements);
+        this.weightMeasurements.addAll(
+                Objects.requireNonNull(weightMeasurements, "weight measurements must not be null"));
         return this;
     }
 
     public GetWeightAnalysisResponseBuilder withRollingAverages(
             List<RollingAverageResponse> rollingAverages) {
-        this.rollingAverages.addAll(rollingAverages);
+        this.rollingAverages.addAll(
+                Objects.requireNonNull(rollingAverages, "rolling averages must not be null"));
         return this;
     }
 

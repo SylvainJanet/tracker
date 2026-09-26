@@ -1,4 +1,4 @@
-package fr.sylvainjanet.tracker.shared.domain.error;
+package fr.sylvainjanet.tracker.journal.domain.error;
 
 public record WeightValidationError(Kind kind, Integer gramsUnit) {
     public enum Kind {

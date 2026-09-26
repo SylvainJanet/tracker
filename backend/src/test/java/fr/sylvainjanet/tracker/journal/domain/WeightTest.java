@@ -1,10 +1,10 @@
-package fr.sylvainjanet.tracker.shared.domain;
+package fr.sylvainjanet.tracker.journal.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import fr.sylvainjanet.tracker.shared.domain.error.WeightValidationError;
+import fr.sylvainjanet.tracker.journal.domain.error.WeightValidationError;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Set;

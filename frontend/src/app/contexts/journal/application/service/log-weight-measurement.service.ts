@@ -9,9 +9,9 @@ import type {
   LogWeightMeasurementOutcomeData,
   WeightMeasurementStore,
 } from '../port/out/weight-measurement.store';
-import { WeightMeasurement } from '../../../../shared/api/shared.weight-measurement';
 import { calendarDate } from '../../../../shared/api/shared.calendar';
-import { Weight } from '../../../../shared/api/shared.weight-measurement';
+import { WeightMeasurement } from '../../domain/weight-measurement';
+import { Weight } from '../../domain/weight';
 
 export class LogWeightMeasurementService implements LogWeightMeasurementUseCase {
   constructor(private readonly store: WeightMeasurementStore) {}

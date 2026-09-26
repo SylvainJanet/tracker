@@ -5,5 +5,6 @@ import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.LogWeight
 
 public interface LogWeightMeasurementUseCase {
 
+    /** Creates or replaces the weight measurement for the command's date. */
     LogWeightMeasurementResult log(LogWeightMeasurementCommand command);
 }

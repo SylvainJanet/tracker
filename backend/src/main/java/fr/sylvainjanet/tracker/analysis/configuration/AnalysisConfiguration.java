@@ -4,6 +4,7 @@ import fr.sylvainjanet.tracker.analysis.application.port.in.usecase.GetWeightAna
 import fr.sylvainjanet.tracker.analysis.application.service.GetWeightAnalysisService;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.GetFirstWeightMeasurementDateUseCase;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.GetWeightMeasurementInDateRangeUseCase;
+import fr.sylvainjanet.tracker.statistics.application.port.in.usecase.CalculateRollingAveragesUseCase;
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +21,9 @@ public class AnalysisConfiguration {
     GetWeightAnalysisUseCase getWeightAnalysisUseCase(
             GetFirstWeightMeasurementDateUseCase getFirstDate,
             GetWeightMeasurementInDateRangeUseCase getMeasurementsInRange,
+            CalculateRollingAveragesUseCase calculateRollingAverages,
             Clock clock) {
-        return new GetWeightAnalysisService(getFirstDate, getMeasurementsInRange, clock);
+        return new GetWeightAnalysisService(
+                getFirstDate, getMeasurementsInRange, calculateRollingAverages, clock);
     }
 }

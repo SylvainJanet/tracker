@@ -1,6 +1,7 @@
 package fr.sylvainjanet.tracker.configuration.openApi;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,6 +59,43 @@ class TrackerOpenApiTest {
                                 .value(containsInAnyOrder("get")))
                 .andExpect(
                         jsonPath("$.paths['/api/analysis/weight'].get.responses['200']").exists())
+                .andExpect(
+                        jsonPath("$.paths['/api/analysis/weight'].get.summary")
+                                .value("Get weight analysis"))
+                .andExpect(
+                        jsonPath("$.paths['/api/analysis/weight'].get.responses['200'].description")
+                                .value("Weight analysis retrieved"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/analysis/weight'].get.responses['200']"
+                                                + ".content['application/json'].examples.keys()")
+                                .value(
+                                        containsInAnyOrder(
+                                                "withMeasurements", "withoutMeasurements")))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/analysis/weight'].get.responses['200']"
+                                                + ".content['application/json'].examples"
+                                                + "['withoutMeasurements'].value.timelineStartDate")
+                                .value(nullValue()))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/analysis/weight'].get.responses['200']"
+                                                + ".content['application/json'].examples"
+                                                + "['withoutMeasurements'].value.range")
+                                .value(nullValue()))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/analysis/weight'].get.responses['200']"
+                                                + ".content['application/json'].examples"
+                                                + "['withoutMeasurements'].value.weightMeasurements")
+                                .isEmpty())
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/analysis/weight'].get.responses['200']"
+                                                + ".content['application/json'].examples"
+                                                + "['withoutMeasurements'].value.rollingAverages")
+                                .isEmpty())
                 .andExpect(
                         jsonPath("$.paths['/api/analysis/weight'].get.responses.length()").value(1))
                 .andExpect(

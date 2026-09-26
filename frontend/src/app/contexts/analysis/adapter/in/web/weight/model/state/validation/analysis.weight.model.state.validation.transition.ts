@@ -1,4 +1,4 @@
-import type { AnalysisStateTransition } from '../analysis.weight.model.state.transition';
+import type { AnalysisStateTransition } from '../transition/analysis.weight.model.state.transition';
 
 export const validStateTransitions = new Set<AnalysisStateTransition>([
   {

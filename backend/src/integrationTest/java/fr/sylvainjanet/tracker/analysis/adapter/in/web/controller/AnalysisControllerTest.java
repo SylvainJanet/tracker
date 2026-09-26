@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult;
-import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.DateRangeResult;
-import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.WeightMeasurementResult;
+import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.AnalysisDateRangeResult;
+import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.AnalysisWeightValueResult;
 import fr.sylvainjanet.tracker.analysis.application.port.in.usecase.GetWeightAnalysisUseCase;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,12 +40,13 @@ class AnalysisControllerTest {
                 .willReturn(
                         new GetWeightAnalysisResult(
                                 firstDate,
-                                new DateRangeResult(firstDate, endDate),
+                                new AnalysisDateRangeResult(firstDate, endDate),
                                 List.of(
-                                        new WeightMeasurementResult(
+                                        new AnalysisWeightValueResult(
                                                 firstDate, 1L, new BigDecimal("82.10")),
-                                        new WeightMeasurementResult(
-                                                secondDate, 4L, new BigDecimal("81.90")))));
+                                        new AnalysisWeightValueResult(
+                                                secondDate, 4L, new BigDecimal("81.90"))),
+                                List.of()));
 
         mockMvc.perform(get("/api/analysis/weight"))
                 .andExpect(status().isOk())
@@ -72,7 +73,7 @@ class AnalysisControllerTest {
 
     @Test
     void getsAnEmptyWeightAnalysis() throws Exception {
-        given(getWeightAnalysisUseCase.get()).willReturn(GetWeightAnalysisResult.empty());
+        given(getWeightAnalysisUseCase.get()).willReturn(GetWeightAnalysisResult.noMeasurements());
 
         mockMvc.perform(get("/api/analysis/weight"))
                 .andExpect(status().isOk())

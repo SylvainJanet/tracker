@@ -27,6 +27,6 @@ export class AnalysisWeightPage {
   readonly state = this.presenter.state;
 
   retry(): void {
-    void this.presenter.analyze().pipe(take(1)).subscribe();
+    this.presenter.analyze().pipe(take(1)).subscribe();
   }
 }

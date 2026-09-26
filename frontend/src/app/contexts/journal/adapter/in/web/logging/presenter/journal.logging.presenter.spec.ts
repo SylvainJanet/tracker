@@ -10,8 +10,8 @@ import type {
   LogWeightMeasurementResult,
   LogWeightMeasurementUseCase,
 } from '../../../../../application/port/in/log-weight-measurement.use-case';
-import { Weight } from '../../../../../../../shared/api/shared.weight-measurement';
 import { JournalLoggingPresenter } from './journal.logging.presenter';
+import { Weight } from '../../../../../domain/weight';
 
 describe('JournalLoggingPresenter', () => {
   const defaultDate = '2026-09-20';

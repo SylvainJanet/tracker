@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Weight } from './weight';
 import { WeightMeasurement } from './weight-measurement';
-import { calendarDate } from '../api/shared.calendar';
+import { calendarDate } from '../../../shared/api/shared.calendar';
 
 describe('WeightMeasurement', () => {
   describe('WeightMeasurement.create function', () => {
