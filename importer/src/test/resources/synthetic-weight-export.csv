@@ -1,5 +1,5 @@
 Notes;Date;;Weight;Day;Rolling average
-"synthetic; first";01/11/25;ignored;70,1;Saturday;70,1
+"synthetic; first";01/11/25;ignored;71,1;Saturday;70,1
 synthetic blank;02/11/25;ignored;;Sunday;70,0
-synthetic last;03/11/25;ignored;69,9;Monday;70,0
+synthetic last;03/11/25;ignored;68,9;Monday;70,0
 synthetic prediction;04/11/25;ignored;69,8;Tuesday;69,9
