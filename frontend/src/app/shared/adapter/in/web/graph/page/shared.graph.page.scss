@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.shared-graph {
+  inline-size: 100%;
+  block-size: clamp(18rem, 50vw, 32rem);
+  min-block-size: 18rem;
+}
