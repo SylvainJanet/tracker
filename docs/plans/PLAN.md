@@ -342,7 +342,9 @@ explains differences caused by deliberately changed rules.
 - [ ] Build a summary dashboard from Analysis queries.
 - [ ] Show current strategy and progress.
 - [ ] Show recent and longer-window nutrition results.
-- [ ] Show weight trajectory and boundary signals.
+- [x] Establish reusable frontend graph presentation and show the measured-weight
+      trajectory.
+- [ ] Show rolling-weight trends and boundary signals.
 - [ ] Make important results expandable into explanations.
 - [ ] Distinguish missing, unmeasured, provisional, and complete information.
 - [ ] Keep presentation composition outside domain ownership.
