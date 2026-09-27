@@ -21,6 +21,7 @@ spotless {
             "*.gradle.kts",
             "backend/*.gradle.kts",
             "frontend/*.gradle.kts",
+            "importer/*.gradle.kts",
         )
         ktlint()
         trimTrailingWhitespace()
@@ -36,6 +37,7 @@ tasks.register("format") {
         "spotlessApply",
         ":backend:format",
         ":frontend:format",
+        ":importer:format",
     )
 }
 
@@ -46,6 +48,7 @@ tasks.named("check") {
         "spotlessCheck",
         ":backend:check",
         ":frontend:check",
+        ":importer:check",
     )
 }
 
@@ -55,5 +58,6 @@ tasks.named("build") {
     dependsOn(
         ":backend:build",
         ":frontend:build",
+        ":importer:build",
     )
 }

@@ -8,3 +8,4 @@ rootProject.name = "tracker"
 
 include("backend")
 include("frontend")
+include("importer")
