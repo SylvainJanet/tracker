@@ -64,9 +64,16 @@ dependency and must not leak into domain models, application contracts or the
 backend API.
 
 Application-owned views and intents remain independent of the chart library.
-Series meaning, labels, visibility and colours belong to the application rather
-than the library. The graph must remain responsive and provide an accessible
-representation of its data.
+Feature contexts provide library-independent graph inputs to a shared,
+input-driven graph component in the frontend web adapter. The shared adapter
+owns their conversion to ECharts options.
+
+The implemented baseline supports one line series of numeric points. Series
+meaning, labels, visibility, colours and accessible descriptions remain
+application-owned. The graph is responsive, and the Analysis page retains a
+semantic table as a non-chart representation of the same measurements. Later
+tickets may extend the shared contract with multiple series and interactions
+without exposing ECharts types outside the adapter.
 
 Exact dependency versions, module registration, loading configuration and adapter
 structure are owned by executable configuration and production code.
@@ -110,20 +117,6 @@ the published points to the requested display range.
 
 ## Ticket plan
 
-### TRACKER-14 — Display weight graph
-
-- Install the pinned ECharts and Angular wrapper dependencies and update the lockfile.
-- Register only required ECharts modules.
-- Create a chart-specific adapter that converts the presenter’s view to ECharts options.
-- Plot stable timeline day numbers against measured weights.
-- Keep point symbols visible.
-- Preserve horizontal gaps between non-consecutive dates.
-- Make the graph responsive.
-- Provide a concise accessible description and a non-chart representation of the
-  underlying values.
-- Verify application-owned series mapping, missing-date gaps and page bindings
-  without testing chart-library rendering internals.
-
 ### TRACKER-15 — Display rolling averages
 
 - Resolve the rolling-average decision gate before implementing calculation
@@ -146,7 +139,9 @@ the published points to the requested display range.
 - Extend the HTTP response through `rollingAverages`.
 - Extend frontend Analysis validation to accept coherent rolling results without
   reproducing the calculation.
-- Add one frontend line series per window.
+- Evolve the shared graph input from its current single-series contract to
+  support the measured-weight series plus one line series per rolling window,
+  without exposing ECharts types outside the shared web adapter.
 - Test Statistics calculations independently for:
   - complete and partial windows;
   - sparse indexes;
@@ -197,7 +192,10 @@ persistence decision is made.
 - Format values without changing calculation precision.
 - Ensure title and axis names are also represented in the accessible description.
 
-This work is technically small and may be developed with TRACKER-14 while remaining a separately verifiable ticket.
+TRACKER-14 deliberately left graph titles, axis labels, units and value
+formatting to this separately verifiable ticket. Extend the shared graph input
+with the chosen presentation metadata without exposing ECharts types outside
+the shared web adapter.
 
 ### TRACKER-19 — Dynamic graph range and axis labels
 
