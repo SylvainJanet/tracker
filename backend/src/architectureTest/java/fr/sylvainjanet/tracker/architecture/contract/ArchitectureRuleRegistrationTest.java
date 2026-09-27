@@ -1,12 +1,14 @@
 package fr.sylvainjanet.tracker.architecture.contract;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchTests;
 import com.tngtech.archunit.lang.ArchRule;
 import fr.sylvainjanet.tracker.architecture.contract.tests.BoundedContextArchitectureContractTest;
+import fr.sylvainjanet.tracker.architecture.contract.tests.DomainContractArchitectureContractTest;
 import fr.sylvainjanet.tracker.architecture.contract.tests.HexagonalArchitectureContractTest;
 import fr.sylvainjanet.tracker.architecture.contract.tests.StructuralConventionContractTest;
 import fr.sylvainjanet.tracker.architecture.contract.tests.StructuralInboundApplicationConventionContractTest;
@@ -14,6 +16,7 @@ import fr.sylvainjanet.tracker.architecture.contract.tests.StructuralOutboundApp
 import fr.sylvainjanet.tracker.architecture.contract.tests.StructuralPersistenceConventionContractTest;
 import fr.sylvainjanet.tracker.architecture.contract.tests.StructuralWebAdapterConventionContractTest;
 import fr.sylvainjanet.tracker.architecture.tests.BoundedContextArchitectureTest;
+import fr.sylvainjanet.tracker.architecture.tests.DomainContractArchitectureTest;
 import fr.sylvainjanet.tracker.architecture.tests.HexagonalArchitectureTest;
 import fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest;
 import java.lang.reflect.Field;
@@ -26,17 +29,19 @@ import org.junit.jupiter.api.Test;
 
 class ArchitectureRuleRegistrationTest {
 
-    private static final int EXPECTED_RULE_COUNT = 107;
+    private static final int EXPECTED_RULE_COUNT = 128;
 
     private static final List<Class<?>> ARCHITECTURE_POLICY_CLASSES =
             List.of(
                     BoundedContextArchitectureTest.class,
+                    DomainContractArchitectureTest.class,
                     HexagonalArchitectureTest.class,
                     StructuralConventionTest.class);
 
     private static final List<Class<?>> ARCHITECTURE_CONTRACT_CLASSES =
             List.of(
                     BoundedContextArchitectureContractTest.class,
+                    DomainContractArchitectureContractTest.class,
                     HexagonalArchitectureContractTest.class,
                     StructuralConventionContractTest.class,
                     StructuralInboundApplicationConventionContractTest.class,
@@ -60,7 +65,7 @@ class ArchitectureRuleRegistrationTest {
     void everyArchitectureRuleGroupIsRegistered() {
         List<Field> groupFields = fieldsOfType(ArchTests.class);
 
-        assertTrue(!groupFields.isEmpty());
+        assertFalse(groupFields.isEmpty());
         for (Field groupField : groupFields) {
             assertTrue(
                     groupField.isAnnotationPresent(ArchTest.class),

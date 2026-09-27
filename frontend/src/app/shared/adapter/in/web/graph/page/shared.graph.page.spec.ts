@@ -36,14 +36,16 @@ describe('SharedGraphPage', () => {
   });
 
   it('binds its graph input to a responsive ECharts container', () => {
-    const graph = new SharedGraphModel('Measured weight on analysis days 1 through 4.', {
-      label: 'Measured weight',
-      color: '#2563eb',
-      points: [
-        { x: 1, y: 82.1 },
-        { x: 4, y: 81.9 },
-      ],
-    });
+    const graph = new SharedGraphModel('Measured weight on analysis days 1 through 4.', [
+      {
+        label: 'Measured weight',
+        color: '#2563eb',
+        points: [
+          { x: 1, y: 82.1 },
+          { x: 4, y: 81.9 },
+        ],
+      },
+    ]);
     const fixture = TestBed.createComponent(SharedGraphPage);
 
     fixture.componentRef.setInput('graph', graph);
@@ -56,22 +58,39 @@ describe('SharedGraphPage', () => {
     expect(directive?.options()).toEqual(SharedGraphMapper.modelToOptions(graph));
     expect(directive?.autoResize()).toBe(true);
   });
-  it('binds its graph input and resolves its shared colour token', () => {
-    const graph = new SharedGraphModel('Measured weight on analysis days 1 through 4.', {
-      label: 'Measured weight',
-      color: '--color-action',
-      points: [
-        { x: 1, y: 82.1 },
-        { x: 4, y: 81.9 },
-      ],
-    });
-    const resolvedGraph = new SharedGraphModel(graph.accessibleDescription, {
-      ...graph.series,
-      color: '#2563eb',
-    });
+  it('resolves every series colour token', () => {
+    const graph = new SharedGraphModel('Measured weight and 7-day rolling average.', [
+      {
+        label: 'Measured weight',
+        color: '--color-action',
+        points: [
+          { x: 1, y: 82.1 },
+          { x: 4, y: 81.9 },
+        ],
+      },
+      {
+        label: '7-day rolling average',
+        color: '--color-average',
+        points: [
+          { x: 1, y: 82.1, intensity: 0.5 },
+          { x: 4, y: 82, intensity: 1 },
+        ],
+      },
+    ]);
+    const resolvedGraph = new SharedGraphModel(graph.accessibleDescription, [
+      {
+        ...graph.series[0]!,
+        color: '#2563eb',
+      },
+      {
+        ...graph.series[1]!,
+        color: '#dc2626',
+      },
+    ]);
     const fixture = TestBed.createComponent(SharedGraphPage);
 
     fixture.nativeElement.style.setProperty('--color-action', '#2563eb');
+    fixture.nativeElement.style.setProperty('--color-average', '#dc2626');
     fixture.componentRef.setInput('graph', graph);
     fixture.detectChanges();
 

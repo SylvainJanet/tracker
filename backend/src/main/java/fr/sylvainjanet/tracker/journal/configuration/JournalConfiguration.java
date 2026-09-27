@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 @Configuration(proxyBeanMethods = false)
-public class JournalConfiguration {
+public final class JournalConfiguration {
 
     @Bean
     WeightMeasurementStore logWeightMeasurementStore(JdbcClient jdbcClient) {

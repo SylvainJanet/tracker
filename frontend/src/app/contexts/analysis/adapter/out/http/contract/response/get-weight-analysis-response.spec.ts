@@ -13,28 +13,59 @@ describe('isGetWeightAnalysisResponse', () => {
         timelineStartDate: null,
         range: null,
         weightMeasurements: [],
-        rollingAverages: [],
+        rollingAverageSeries: [],
       }),
     ).toBe(true);
   });
 
   it('limits validation to transport structure', () => {
     expect(
-      isGetWeightAnalysisResponse({
-        timelineStartDate: 'not-a-calendar-date',
-        range: {
-          startDate: 'also-not-a-calendar-date',
-          endDate: '',
-        },
-        weightMeasurements: [
-          {
-            date: 'invalid-domain-date',
-            dayNumber: -1.5,
-            weightInKg: -82.123,
+      isGetWeightAnalysisResponse(
+        populatedResponse({
+          timelineStartDate: 'not-a-calendar-date',
+          range: {
+            startDate: 'also-not-a-calendar-date',
+            endDate: '',
           },
-        ],
-        rollingAverages: [],
-      }),
+          weightMeasurements: [
+            weightMeasurement({
+              date: 'invalid-domain-date',
+              dayNumber: -1.5,
+              weightInKg: -82.123,
+            }),
+          ],
+          rollingAverageSeries: [
+            rollingAverageSeries({
+              windowSize: -7.5,
+              rollingAverages: [
+                rollingAveragePoint({
+                  date: 'invalid-domain-date',
+                  dayNumber: -4.5,
+                  includedValues: [
+                    weightMeasurement({
+                      date: 'invalid-domain-date',
+                      dayNumber: -1.5,
+                      weightInKg: -82.123,
+                    }),
+                  ],
+                  rollingAverage: rollingAverageValue({
+                    exactValue: {
+                      numerator: -82.123,
+                      denominator: -1.5,
+                    },
+                    approximations: [
+                      {
+                        value: -82.123,
+                        rounding: 'PRETTY',
+                      },
+                    ],
+                  }),
+                }),
+              ],
+            }),
+          ],
+        }),
+      ),
     ).toBe(true);
   });
 
@@ -57,7 +88,7 @@ describe('isGetWeightAnalysisResponse', () => {
           endDate: '2026-09-25',
         },
         weightMeasurements: [],
-        rollingAverages: [],
+        rollingAverageSeries: [],
       },
     ],
     [
@@ -66,7 +97,7 @@ describe('isGetWeightAnalysisResponse', () => {
         timelineStartDate: '2026-09-20',
         range: null,
         weightMeasurements: [],
-        rollingAverages: [],
+        rollingAverageSeries: [],
       },
     ],
     [
@@ -74,14 +105,17 @@ describe('isGetWeightAnalysisResponse', () => {
       {
         timelineStartDate: null,
         range: null,
-        weightMeasurements: [
-          {
-            date: '2026-09-20',
-            dayNumber: 1,
-            weightInKg: 82.1,
-          },
-        ],
-        rollingAverages: [],
+        weightMeasurements: [weightMeasurement()],
+        rollingAverageSeries: [],
+      },
+    ],
+    [
+      'rolling averages in a globally empty response',
+      {
+        timelineStartDate: null,
+        range: null,
+        weightMeasurements: [],
+        rollingAverageSeries: [rollingAverageSeries()],
       },
     ],
   ])('rejects %s', (_description, response) => {
@@ -91,117 +125,232 @@ describe('isGetWeightAnalysisResponse', () => {
   it.each([
     [
       'a non-string timeline start',
-      {
-        ...populatedResponse(),
+      populatedResponse({
         timelineStartDate: 42,
-      },
+      }),
     ],
     [
       'a non-record range',
-      {
-        ...populatedResponse(),
+      populatedResponse({
         range: [],
-      },
+      }),
     ],
     [
       'a non-string range start',
-      {
-        ...populatedResponse(),
+      populatedResponse({
         range: {
           startDate: 42,
           endDate: '2026-09-25',
         },
-      },
+      }),
     ],
     [
       'a non-string range end',
-      {
-        ...populatedResponse(),
+      populatedResponse({
         range: {
           startDate: '2026-09-20',
           endDate: 42,
         },
-      },
+      }),
     ],
     [
       'a non-array measurement collection',
-      {
-        ...populatedResponse(),
+      populatedResponse({
         weightMeasurements: {},
-      },
+      }),
     ],
     [
       'a measurement with a non-string date',
-      {
-        ...populatedResponse(),
-        weightMeasurements: [
-          {
-            date: 42,
-            dayNumber: 1,
-            weightInKg: 82.1,
-          },
-        ],
-      },
+      populatedResponse({
+        weightMeasurements: [weightMeasurement({ date: 42 })],
+      }),
     ],
     [
       'a measurement with a non-numeric day number',
-      {
-        ...populatedResponse(),
-        weightMeasurements: [
-          {
-            date: '2026-09-20',
-            dayNumber: '1',
-            weightInKg: 82.1,
-          },
-        ],
-      },
+      populatedResponse({
+        weightMeasurements: [weightMeasurement({ dayNumber: '1' })],
+      }),
     ],
     [
       'a measurement with a non-numeric weight',
+      populatedResponse({
+        weightMeasurements: [weightMeasurement({ weightInKg: '82.1' })],
+      }),
+    ],
+    [
+      'the legacy rolling-average property',
       {
-        ...populatedResponse(),
-        weightMeasurements: [
+        timelineStartDate: '2026-09-20',
+        range: {
+          startDate: '2026-09-20',
+          endDate: '2026-09-25',
+        },
+        weightMeasurements: [],
+        rollingAverages: [],
+      },
+    ],
+    [
+      'a non-array rolling-average series collection',
+      populatedResponse({
+        rollingAverageSeries: {},
+      }),
+    ],
+    [
+      'a series with a non-numeric window size',
+      populatedResponse({
+        rollingAverageSeries: [rollingAverageSeries({ windowSize: '7' })],
+      }),
+    ],
+    [
+      'a series with a non-array rolling-average collection',
+      populatedResponse({
+        rollingAverageSeries: [rollingAverageSeries({ rollingAverages: {} })],
+      }),
+    ],
+    ['a rolling-average point with a non-string date', responseWithRollingPoint({ date: 42 })],
+    [
+      'a rolling-average point with a non-numeric day number',
+      responseWithRollingPoint({ dayNumber: '4' }),
+    ],
+    [
+      'a rolling-average point with a non-array included-value collection',
+      responseWithRollingPoint({ includedValues: {} }),
+    ],
+    [
+      'a rolling-average point with an invalid included value',
+      responseWithRollingPoint({
+        includedValues: [weightMeasurement({ weightInKg: '82.1' })],
+      }),
+    ],
+    [
+      'a rolling-average point with a non-record value',
+      responseWithRollingPoint({ rollingAverage: [] }),
+    ],
+    [
+      'a rolling-average value with a non-record exact value',
+      responseWithRollingValue({ exactValue: [] }),
+    ],
+    [
+      'an exact value with a non-numeric numerator',
+      responseWithRollingValue({
+        exactValue: {
+          numerator: '164.00',
+          denominator: 2,
+        },
+      }),
+    ],
+    [
+      'an exact value with a non-numeric denominator',
+      responseWithRollingValue({
+        exactValue: {
+          numerator: 164,
+          denominator: '2',
+        },
+      }),
+    ],
+    [
+      'a rolling-average value with a non-array approximation collection',
+      responseWithRollingValue({ approximations: {} }),
+    ],
+    [
+      'an approximation with a non-numeric value',
+      responseWithRollingValue({
+        approximations: [
           {
-            date: '2026-09-20',
-            dayNumber: 1,
-            weightInKg: '82.1',
+            value: '82.00',
+            rounding: 'PRETTY',
           },
         ],
-      },
+      }),
+    ],
+    [
+      'an approximation with an unknown rounding',
+      responseWithRollingValue({
+        approximations: [
+          {
+            value: 82,
+            rounding: 'UNKNOWN',
+          },
+        ],
+      }),
     ],
   ])('rejects %s', (_description, response) => {
     expect(isGetWeightAnalysisResponse(response)).toBe(false);
   });
-
-  it('rejects rolling averages until that response is supported', () => {
-    expect(
-      isGetWeightAnalysisResponse({
-        ...populatedResponse(),
-        rollingAverages: [
-          {
-            windowInDays: 7,
-            points: [],
-          },
-        ],
-      }),
-    ).toBe(false);
-  });
 });
 
-function populatedResponse() {
+function populatedResponse(overrides: Record<string, unknown> = {}) {
   return {
     timelineStartDate: '2026-09-20',
     range: {
       startDate: '2026-09-20',
       endDate: '2026-09-25',
     },
-    weightMeasurements: [
+    weightMeasurements: [weightMeasurement()],
+    rollingAverageSeries: [rollingAverageSeries()],
+    ...overrides,
+  };
+}
+
+function weightMeasurement(overrides: Record<string, unknown> = {}) {
+  return {
+    date: '2026-09-20',
+    dayNumber: 1,
+    weightInKg: 82.1,
+    ...overrides,
+  };
+}
+
+function rollingAverageSeries(overrides: Record<string, unknown> = {}) {
+  return {
+    windowSize: 7,
+    rollingAverages: [rollingAveragePoint()],
+    ...overrides,
+  };
+}
+
+function rollingAveragePoint(overrides: Record<string, unknown> = {}) {
+  return {
+    date: '2026-09-23',
+    dayNumber: 4,
+    includedValues: [weightMeasurement(), weightMeasurement({ date: '2026-09-23', dayNumber: 4 })],
+    rollingAverage: rollingAverageValue(),
+    ...overrides,
+  };
+}
+
+function rollingAverageValue(overrides: Record<string, unknown> = {}) {
+  return {
+    exactValue: {
+      numerator: 164,
+      denominator: 2,
+    },
+    approximations: [
       {
-        date: '2026-09-20',
-        dayNumber: 1,
-        weightInKg: 82.1,
+        value: 82,
+        rounding: 'PRETTY',
+      },
+      {
+        value: 82,
+        rounding: 'PRECISE',
       },
     ],
-    rollingAverages: [],
+    ...overrides,
   };
+}
+
+function responseWithRollingPoint(overrides: Record<string, unknown>) {
+  return populatedResponse({
+    rollingAverageSeries: [
+      rollingAverageSeries({
+        rollingAverages: [rollingAveragePoint(overrides)],
+      }),
+    ],
+  });
+}
+
+function responseWithRollingValue(overrides: Record<string, unknown>) {
+  return responseWithRollingPoint({
+    rollingAverage: rollingAverageValue(overrides),
+  });
 }

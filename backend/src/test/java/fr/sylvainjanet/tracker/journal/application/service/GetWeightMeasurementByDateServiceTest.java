@@ -1,22 +1,18 @@
 package fr.sylvainjanet.tracker.journal.application.service;
 
-import static fr.sylvainjanet.tracker.journal.application.port.in.dtos.builders.query.GetWeightMeasurementByDateQueryTestBuilder.aGetWeightMeasurementByDateQuery;
-import static fr.sylvainjanet.tracker.journal.application.port.out.dtos.builders.criteria.GetWeightMeasurementByDateCriteriaTestBuilder.aGetWeightMeasurementByDateCriteria;
-import static fr.sylvainjanet.tracker.journal.application.port.out.dtos.builders.outcome.GetWeightMeasurementByDateOutcomeTestBuilder.aGetWeightMeasurementByDateOutcome;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.BY_DATE_CRITERIA;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.BY_DATE_QUERY;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.INVALID_OUTCOME;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.START_OUTCOME;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.START_RESULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightMeasurementByDateQuery;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementByDateResult;
-import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementByDateOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.Month;
+import fr.sylvainjanet.tracker.technical.domain.contract.error.exception.DomainValidationException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,53 +33,32 @@ class GetWeightMeasurementByDateServiceTest {
     }
 
     @Test
-    void getALoggedWeightMeasurementByDate() {
-        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        BigDecimal weight = BigDecimal.valueOf(123.0f).setScale(2, RoundingMode.UNNECESSARY);
+    void returnsWeightMeasurementForDate() {
+        when(store.getByDate(BY_DATE_CRITERIA)).thenReturn(Optional.of(START_OUTCOME));
 
-        GetWeightMeasurementByDateQuery query =
-                aGetWeightMeasurementByDateQuery().withDate(date).build();
-        GetWeightMeasurementByDateOutcome outcome =
-                aGetWeightMeasurementByDateOutcome().withDate(date).withWeightInKg(weight).build();
-        when(store.getByDate(any())).thenReturn(Optional.ofNullable(outcome));
+        assertThat(service.get(BY_DATE_QUERY)).contains(START_RESULT);
 
-        Optional<GetWeightMeasurementByDateResult> result = service.get(query);
-
-        verify(store).getByDate(aGetWeightMeasurementByDateCriteria().withDate(date).build());
-        assertThat(result).isPresent();
-        assertThat(result.get().date()).isEqualTo(date);
-        assertThat(result.get().weightInKg()).isEqualTo(weight);
+        verify(store).getByDate(BY_DATE_CRITERIA);
     }
 
     @Test
-    void doesNotFindAMissingWeightMeasurementByDate() {
-        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
+    void returnsEmptyWhenNoWeightMeasurementExistsForDate() {
+        when(store.getByDate(BY_DATE_CRITERIA)).thenReturn(Optional.empty());
 
-        GetWeightMeasurementByDateQuery query =
-                aGetWeightMeasurementByDateQuery().withDate(date).build();
-        when(store.getByDate(any())).thenReturn(Optional.empty());
+        assertThat(service.get(BY_DATE_QUERY)).isEmpty();
 
-        Optional<GetWeightMeasurementByDateResult> result = service.get(query);
-
-        verify(store).getByDate(aGetWeightMeasurementByDateCriteria().withDate(date).build());
-        assertThat(result).isEmpty();
+        verify(store).getByDate(BY_DATE_CRITERIA);
     }
 
     @Test
-    void shouldRejectInvalidOutcome() {
-        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        BigDecimal weight = BigDecimal.valueOf(-123.0f).setScale(2, RoundingMode.UNNECESSARY);
+    void rejectsInvalidStoreOutcome() {
+        when(store.getByDate(BY_DATE_CRITERIA)).thenReturn(Optional.of(INVALID_OUTCOME));
 
-        GetWeightMeasurementByDateQuery query =
-                aGetWeightMeasurementByDateQuery().withDate(date).build();
-        GetWeightMeasurementByDateOutcome outcome =
-                aGetWeightMeasurementByDateOutcome().withDate(date).withWeightInKg(weight).build();
-        when(store.getByDate(any())).thenReturn(Optional.ofNullable(outcome));
+        assertThatThrownBy(() -> service.get(BY_DATE_QUERY))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("Weight must be positive");
 
-        assertThatThrownBy(() -> service.get(query))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(
-                        "weight must be a positive number of grams that is a multiple of 50 grams");
+        verify(store).getByDate(BY_DATE_CRITERIA);
     }
 
     @Test
@@ -91,6 +66,8 @@ class GetWeightMeasurementByDateServiceTest {
         assertThatThrownBy(() -> service.get(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("query must not be null");
+
+        verifyNoInteractions(store);
     }
 
     @Test
