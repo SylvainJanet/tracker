@@ -17,9 +17,13 @@ export class SharedGraphMapper {
       },
       xAxis: {
         type: 'value',
+        min: 'dataMin',
+        max: 'dataMax',
       },
       yAxis: {
         type: 'value',
+        min: 'dataMin',
+        max: 'dataMax',
       },
       series: [
         {
