@@ -1,3 +1,5 @@
+import type { SharedGraphModel } from '../../../../../../../../shared/api/shared.graph';
+
 export interface AnalysisWeightDateRangeView {
   readonly startDate: string;
   readonly endDate: string;
@@ -13,4 +15,5 @@ export interface AnalysisWeightView {
   readonly timelineStartDate: string;
   readonly range: AnalysisWeightDateRangeView;
   readonly weightMeasurements: readonly AnalysisWeightMeasurementView[];
+  readonly graph: SharedGraphModel;
 }

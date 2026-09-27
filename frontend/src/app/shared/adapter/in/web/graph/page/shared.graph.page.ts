@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+} from '@angular/core';
 import { LineChart } from 'echarts/charts';
 import { AriaComponent, GridComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
@@ -19,6 +26,32 @@ echarts.use([LineChart, GridComponent, AriaComponent, CanvasRenderer]);
   providers: [provideEchartsCore({ echarts })],
 })
 export class SharedGraphPage {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
   readonly graph = input.required<SharedGraphModel>();
-  readonly options = computed(() => SharedGraphMapper.modelToOptions(this.graph()));
+  readonly options = computed(() => {
+    const graph = this.graph();
+
+    return SharedGraphMapper.modelToOptions({
+      ...graph,
+      series: {
+        ...graph.series,
+        color: this.resolveColor(graph.series.color),
+      },
+    });
+  });
+
+  private resolveColor(color: string): string {
+    if (!color.startsWith('--')) {
+      return color;
+    }
+
+    const resolvedColor = getComputedStyle(this.host.nativeElement).getPropertyValue(color).trim();
+
+    if (resolvedColor.length === 0) {
+      throw new Error(`Shared graph color token "${color}" is not defined.`);
+    }
+
+    return resolvedColor;
+  }
 }

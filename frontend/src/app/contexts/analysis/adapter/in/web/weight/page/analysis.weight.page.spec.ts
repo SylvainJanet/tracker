@@ -1,8 +1,9 @@
-import { signal, type WritableSignal } from '@angular/core';
+import { Component, input, signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
+import { SharedGraphModel, SharedGraphPage } from '../../../../../../../shared/api/shared.graph';
 import type { AnalysisWeightState } from '../model/state/analysis.weight.model.state';
 import {
   ANALYSIS_WEIGHT_PRESENTER_FACTORY,
@@ -10,6 +11,13 @@ import {
 } from '../presenter/analysis.weight.presenter';
 import { AnalysisWeightPage } from './analysis.weight.page';
 
+@Component({
+  selector: 'app-shared-graph',
+  template: '',
+})
+class SharedGraphPageStub {
+  readonly graph = input.required<SharedGraphModel>();
+}
 describe('AnalysisWeightPage', () => {
   let currentState: WritableSignal<AnalysisWeightState>;
   let analyze: ReturnType<typeof vi.fn<AnalysisWeightPresenter['analyze']>>;
@@ -33,7 +41,16 @@ describe('AnalysisWeightPage', () => {
           useValue: () => presenter,
         },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(AnalysisWeightPage, {
+        remove: {
+          imports: [SharedGraphPage],
+        },
+        add: {
+          imports: [SharedGraphPageStub],
+        },
+      })
+      .compileComponents();
   });
 
   it('presents an accessible loading state', () => {
@@ -52,6 +69,17 @@ describe('AnalysisWeightPage', () => {
   });
 
   it('renders the analysis summary and measurements as semantic data', () => {
+    const graph = new SharedGraphModel(
+      'Line graph of 2 measured weights from analysis day 1 to analysis day 4.',
+      {
+        label: 'Measured weight',
+        color: '--color-action',
+        points: [
+          { x: 1, y: 82.1 },
+          { x: 4, y: 81.9 },
+        ],
+      },
+    );
     currentState.set({
       analysisState: {
         kind: 'analyzed',
@@ -73,12 +101,19 @@ describe('AnalysisWeightPage', () => {
               weightInKg: 81.9,
             },
           ],
+          graph,
         },
       },
     });
 
     const fixture = TestBed.createComponent(AnalysisWeightPage);
     fixture.detectChanges();
+
+    const graphElement = fixture.debugElement.query(By.directive(SharedGraphPageStub));
+    const graphPage = graphElement?.injector.get(SharedGraphPageStub);
+
+    expect(graphElement).not.toBeNull();
+    expect(graphPage?.graph()).toBe(graph);
 
     const summary = fixture.nativeElement.querySelector(
       '[data-testid="weight-analysis-summary"]',
