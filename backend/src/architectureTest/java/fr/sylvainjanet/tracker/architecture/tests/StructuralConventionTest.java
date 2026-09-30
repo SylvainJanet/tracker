@@ -37,6 +37,7 @@ public class StructuralConventionTest {
     private static final Set<String> ALLOWED_INBOUND_ADAPTER_PACKAGES = Set.of("web");
     private static final Set<String> ALLOWED_WEB_PACKAGES =
             Set.of("dtos", "validator", "handler", "controller");
+    private static final Set<String> ALLOWED_WEB_CONTROLLER_PACKAGES = Set.of("mapper");
     private static final Set<String> ALLOWED_WEB_DTO_PACKAGES = Set.of("request", "response");
     private static final Set<String> ALLOWED_REQUEST_PACKAGES = Set.of("enums");
     private static final Set<String> ALLOWED_RESPONSE_PACKAGES =
@@ -47,6 +48,7 @@ public class StructuralConventionTest {
     private static final Set<String> ALLOWED_OUTBOUND_ADAPTER_PACKAGES = Set.of("persistence");
     private static final Set<String> ALLOWED_PERSISTENCE_PACKAGES =
             Set.of("exceptions", "repository");
+    private static final Set<String> ALLOWED_PERSISTENCE_REPOSITORY_PACKAGES = Set.of("mapper");
 
     private static final Set<String> ALLOWED_APPLICATION_PACKAGES = Set.of("port", "service");
 
@@ -64,6 +66,11 @@ public class StructuralConventionTest {
     private static final Set<String> ALLOWED_OUTBOUND_GATEWAY_PACKAGES = Set.of("store");
     private static final Set<String> ALLOWED_OUTBOUND_PORT_DTO_PACKAGES =
             Set.of("criteria", "instruction", "outcome");
+    private static final Set<String> ALLOWED_OUTBOUND_PORT_DTO_CRITERIA_PACKAGES =
+            Set.of("builder");
+    private static final Set<String> ALLOWED_OUTBOUND_PORT_DTO_INSTRUCTION_PACKAGES =
+            Set.of("builder");
+    private static final Set<String> ALLOWED_OUTBOUND_PORT_DTO_OUTCOME_PACKAGES = Set.of("builder");
 
     private static final Set<String> ALLOWED_SERVICE_PACKAGES = Set.of("mapper");
 
@@ -72,6 +79,8 @@ public class StructuralConventionTest {
     private static final String INBOUND_ADAPTERS = packageTree("adapter.in");
     private static final String WEB = packageTree("adapter.in.web");
     private static final String WEB_CONTROLLER = packageTree("adapter.in.web.controller");
+    private static final String WEB_CONTROLLER_MAPPER =
+            packageTree("adapter.in.web.controller.mapper");
     private static final String WEB_DTOS = packageTree("adapter.in.web.dtos");
     private static final String REQUESTS = packageTree("adapter.in.web.dtos.request");
     private static final String RESPONSES = packageTree("adapter.in.web.dtos.response");
@@ -93,6 +102,8 @@ public class StructuralConventionTest {
             packageTree("adapter.out.persistence.exceptions");
     private static final String PERSISTENCE_REPOSITORY =
             packageTree("adapter.out.persistence.repository");
+    private static final String PERSISTENCE_REPOSITORY_MAPPER =
+            packageTree("adapter.out.persistence.repository.mapper");
 
     private static final String APPLICATION_CONFIGURATION = ROOT_PACKAGE + ".configuration..";
     private static final String CONTEXT_CONFIGURATION = packageTree("configuration");
@@ -120,8 +131,14 @@ public class StructuralConventionTest {
     private static final String OUTBOUND_PORTS = packageTree("application.port.out");
     private static final String OUTBOUND_PORT_DTOS = packageTree("application.port.out.dtos");
     private static final String CRITERIA = packageTree("application.port.out.dtos.criteria");
+    private static final String CRITERIA_BUILDER =
+            packageTree("application.port.out.dtos.criteria.builder");
     private static final String INSTRUCTION = packageTree("application.port.out.dtos.instruction");
+    private static final String INSTRUCTION_BUILDER =
+            packageTree("application.port.out.dtos.instruction.builder");
     private static final String OUTCOME = packageTree("application.port.out.dtos.outcome");
+    private static final String OUTCOME_BUILDER =
+            packageTree("application.port.out.dtos.outcome.builder");
     private static final String OUTBOUND_GATEWAYS = packageTree("application.port.out.gateway");
     private static final String STORE = packageTree("application.port.out.gateway.store");
 
@@ -130,6 +147,7 @@ public class StructuralConventionTest {
             packageTree("application.service.mapper");
 
     private static final String DOMAIN = packageTree("domain");
+    private static final String TECHNICAL_DOMAIN = ROOT_PACKAGE + ".technical.domain..";
 
     @ArchTest static final ArchTests contextRules = ArchTests.in(ContextRules.class);
 
@@ -213,10 +231,27 @@ public class StructuralConventionTest {
                     public static final class WebControllerRules {
 
                         @ArchTest
+                        public static final ArchRule webControllersUseAllowedPackages =
+                                classes()
+                                        .that()
+                                        .resideInAPackage(WEB_CONTROLLER + "*")
+                                        .should()
+                                        .resideInAnyPackage(
+                                                allowedSubpackageTrees(
+                                                        WEB_CONTROLLER,
+                                                        ALLOWED_WEB_CONTROLLER_PACKAGES))
+                                        .allowEmptyShould(true);
+
+                        @ArchTest
                         public static final ArchRule webControllersShouldHaveControllerSuffix =
                                 classes()
                                         .that()
                                         .resideInAPackage(WEB_CONTROLLER)
+                                        .and()
+                                        .resideOutsideOfPackages(
+                                                allowedSubpackageTrees(
+                                                        WEB_CONTROLLER,
+                                                        ALLOWED_WEB_CONTROLLER_PACKAGES))
                                         .and()
                                         .areTopLevelClasses()
                                         .should()
@@ -239,6 +274,11 @@ public class StructuralConventionTest {
                                         .that()
                                         .resideInAPackage(WEB_CONTROLLER)
                                         .and()
+                                        .resideOutsideOfPackages(
+                                                allowedSubpackageTrees(
+                                                        WEB_CONTROLLER,
+                                                        ALLOWED_WEB_CONTROLLER_PACKAGES))
+                                        .and()
                                         .areTopLevelClasses()
                                         .should()
                                         .haveModifier(JavaModifier.FINAL)
@@ -250,6 +290,11 @@ public class StructuralConventionTest {
                                         classes()
                                                 .that()
                                                 .resideInAPackage(WEB_CONTROLLER)
+                                                .and()
+                                                .resideOutsideOfPackages(
+                                                        allowedSubpackageTrees(
+                                                                WEB_CONTROLLER,
+                                                                ALLOWED_WEB_CONTROLLER_PACKAGES))
                                                 .and()
                                                 .areTopLevelClasses()
                                                 .should()
@@ -274,6 +319,35 @@ public class StructuralConventionTest {
                                                 .beAnnotatedWith(
                                                         "io.swagger.v3.oas.annotations.responses.ApiResponses")
                                                 .allowEmptyShould(true);
+
+                        @ArchTest
+                        static final ArchTests webControllerMapperRules =
+                                ArchTests.in(WebControllerMapperRules.class);
+
+                        public static final class WebControllerMapperRules {
+
+                            @ArchTest
+                            public static final ArchRule webControllerMappersHaveMapperSuffix =
+                                    classes()
+                                            .that()
+                                            .resideInAPackage(WEB_CONTROLLER_MAPPER)
+                                            .and()
+                                            .areTopLevelClasses()
+                                            .should()
+                                            .haveSimpleNameEndingWith("Mapper")
+                                            .allowEmptyShould(true);
+
+                            @ArchTest
+                            public static final ArchRule webControllerMappersShouldBeFinalClasses =
+                                    classes()
+                                            .that()
+                                            .resideInAPackage(WEB_CONTROLLER_MAPPER)
+                                            .and()
+                                            .areTopLevelClasses()
+                                            .should()
+                                            .haveModifier(JavaModifier.FINAL)
+                                            .allowEmptyShould(true);
+                        }
                     }
 
                     @ArchTest
@@ -436,6 +510,10 @@ public class StructuralConventionTest {
                                                             RESPONSES, ALLOWED_RESPONSE_PACKAGES))
                                             .should()
                                             .beRecords()
+                                            .orShould()
+                                            .beEnums()
+                                            .orShould()
+                                            .beInterfaces()
                                             .allowEmptyShould(true);
 
                             @ArchTest
@@ -639,6 +717,8 @@ public class StructuralConventionTest {
                                 classes()
                                         .that()
                                         .haveSimpleNameEndingWith("Validator")
+                                        .and()
+                                        .resideOutsideOfPackage(TECHNICAL_DOMAIN)
                                         .should()
                                         .resideInAPackage(WEB_VALIDATOR)
                                         .allowEmptyShould(true);
@@ -753,10 +833,27 @@ public class StructuralConventionTest {
                     public static final class PersistenceRepositoryRules {
 
                         @ArchTest
+                        public static final ArchRule persistenceRepositoriesUseAllowedPackages =
+                                classes()
+                                        .that()
+                                        .resideInAPackage(PERSISTENCE_REPOSITORY + "*")
+                                        .should()
+                                        .resideInAnyPackage(
+                                                allowedSubpackageTrees(
+                                                        PERSISTENCE_REPOSITORY,
+                                                        ALLOWED_PERSISTENCE_REPOSITORY_PACKAGES))
+                                        .allowEmptyShould(true);
+
+                        @ArchTest
                         public static final ArchRule persistenceRepositoriesHaveRepositorySuffix =
                                 classes()
                                         .that()
                                         .resideInAPackage(PERSISTENCE_REPOSITORY)
+                                        .and()
+                                        .resideOutsideOfPackages(
+                                                allowedSubpackageTrees(
+                                                        PERSISTENCE_REPOSITORY,
+                                                        ALLOWED_PERSISTENCE_REPOSITORY_PACKAGES))
                                         .should()
                                         .haveSimpleNameEndingWith("Repository")
                                         .allowEmptyShould(true);
@@ -776,9 +873,45 @@ public class StructuralConventionTest {
                                 classes()
                                         .that()
                                         .resideInAPackage(PERSISTENCE_REPOSITORY)
+                                        .and()
+                                        .resideOutsideOfPackages(
+                                                allowedSubpackageTrees(
+                                                        PERSISTENCE_REPOSITORY,
+                                                        ALLOWED_PERSISTENCE_REPOSITORY_PACKAGES))
                                         .should()
                                         .haveModifier(JavaModifier.FINAL)
                                         .allowEmptyShould(true);
+
+                        @ArchTest
+                        static final ArchTests persistenceRepositoryMapperRules =
+                                ArchTests.in(PersistenceRepositoryMapperRules.class);
+
+                        public static final class PersistenceRepositoryMapperRules {
+
+                            @ArchTest
+                            public static final ArchRule
+                                    persistenceRepositoryMappersHaveMapperSuffix =
+                                            classes()
+                                                    .that()
+                                                    .resideInAPackage(PERSISTENCE_REPOSITORY_MAPPER)
+                                                    .and()
+                                                    .areTopLevelClasses()
+                                                    .should()
+                                                    .haveSimpleNameEndingWith("Mapper")
+                                                    .allowEmptyShould(true);
+
+                            @ArchTest
+                            public static final ArchRule
+                                    persistenceRepositoryMappersShouldBeFinalClasses =
+                                            classes()
+                                                    .that()
+                                                    .resideInAPackage(PERSISTENCE_REPOSITORY_MAPPER)
+                                                    .and()
+                                                    .areTopLevelClasses()
+                                                    .should()
+                                                    .haveModifier(JavaModifier.FINAL)
+                                                    .allowEmptyShould(true);
+                        }
                     }
                 }
             }
@@ -1091,6 +1224,8 @@ public class StructuralConventionTest {
                                             .beRecords()
                                             .orShould()
                                             .beEnums()
+                                            .orShould()
+                                            .beInterfaces()
                                             .allowEmptyShould(true);
 
                             @ArchTest
@@ -1238,10 +1373,27 @@ public class StructuralConventionTest {
                         public static final class CriteriaRules {
 
                             @ArchTest
+                            public static final ArchRule criteriaDtosUseAllowedPackages =
+                                    classes()
+                                            .that()
+                                            .resideInAPackage(CRITERIA + "*")
+                                            .should()
+                                            .resideInAnyPackage(
+                                                    allowedSubpackageTrees(
+                                                            CRITERIA,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_CRITERIA_PACKAGES))
+                                            .allowEmptyShould(true);
+
+                            @ArchTest
                             public static final ArchRule criteriaDtosHaveCriteriaSuffix =
                                     classes()
                                             .that()
                                             .resideInAPackage(CRITERIA)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            CRITERIA,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_CRITERIA_PACKAGES))
                                             .should()
                                             .haveSimpleNameEndingWith("Criteria")
                                             .allowEmptyShould(true);
@@ -1261,11 +1413,41 @@ public class StructuralConventionTest {
                                     classes()
                                             .that()
                                             .resideInAPackage(CRITERIA)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            CRITERIA,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_CRITERIA_PACKAGES))
                                             .should()
                                             .beRecords()
                                             .orShould()
                                             .beEnums()
                                             .allowEmptyShould(true);
+
+                            @ArchTest
+                            static final ArchTests criteriaBuilderRules =
+                                    ArchTests.in(CriteriaBuilderRules.class);
+
+                            public static final class CriteriaBuilderRules {
+
+                                @ArchTest
+                                public static final ArchRule criteriaBuildersHaveBuilderSuffix =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(CRITERIA_BUILDER)
+                                                .should()
+                                                .haveSimpleNameEndingWith("CriteriaBuilder")
+                                                .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule criteriaBuildersShouldBeFinalClasses =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(CRITERIA_BUILDER)
+                                                .should()
+                                                .haveModifier(JavaModifier.FINAL)
+                                                .allowEmptyShould(true);
+                            }
                         }
 
                         @ArchTest
@@ -1278,10 +1460,27 @@ public class StructuralConventionTest {
                         public static final class InstructionRules {
 
                             @ArchTest
+                            public static final ArchRule instructionDtosUseAllowedPackages =
+                                    classes()
+                                            .that()
+                                            .resideInAPackage(INSTRUCTION + "*")
+                                            .should()
+                                            .resideInAnyPackage(
+                                                    allowedSubpackageTrees(
+                                                            INSTRUCTION,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_INSTRUCTION_PACKAGES))
+                                            .allowEmptyShould(true);
+
+                            @ArchTest
                             public static final ArchRule instructionDtosHaveInstructionSuffix =
                                     classes()
                                             .that()
                                             .resideInAPackage(INSTRUCTION)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            INSTRUCTION,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_INSTRUCTION_PACKAGES))
                                             .should()
                                             .haveSimpleNameEndingWith("Instruction")
                                             .allowEmptyShould(true);
@@ -1301,11 +1500,42 @@ public class StructuralConventionTest {
                                     classes()
                                             .that()
                                             .resideInAPackage(INSTRUCTION)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            INSTRUCTION,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_INSTRUCTION_PACKAGES))
                                             .should()
                                             .beRecords()
                                             .orShould()
                                             .beEnums()
                                             .allowEmptyShould(true);
+
+                            @ArchTest
+                            static final ArchTests instructionBuilderRules =
+                                    ArchTests.in(InstructionBuilderRules.class);
+
+                            public static final class InstructionBuilderRules {
+
+                                @ArchTest
+                                public static final ArchRule instructionBuildersHaveBuilderSuffix =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(INSTRUCTION_BUILDER)
+                                                .should()
+                                                .haveSimpleNameEndingWith("InstructionBuilder")
+                                                .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule
+                                        instructionBuildersShouldBeFinalClasses =
+                                                classes()
+                                                        .that()
+                                                        .resideInAPackage(INSTRUCTION_BUILDER)
+                                                        .should()
+                                                        .haveModifier(JavaModifier.FINAL)
+                                                        .allowEmptyShould(true);
+                            }
                         }
 
                         @ArchTest
@@ -1318,10 +1548,27 @@ public class StructuralConventionTest {
                         public static final class OutcomeRules {
 
                             @ArchTest
+                            public static final ArchRule outcomeDtosUseAllowedPackages =
+                                    classes()
+                                            .that()
+                                            .resideInAPackage(OUTCOME + "*")
+                                            .should()
+                                            .resideInAnyPackage(
+                                                    allowedSubpackageTrees(
+                                                            OUTCOME,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_OUTCOME_PACKAGES))
+                                            .allowEmptyShould(true);
+
+                            @ArchTest
                             public static final ArchRule outcomeDtosHaveOutcomeSuffix =
                                     classes()
                                             .that()
                                             .resideInAPackage(OUTCOME)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            OUTCOME,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_OUTCOME_PACKAGES))
                                             .should()
                                             .haveSimpleNameEndingWith("Outcome")
                                             .allowEmptyShould(true);
@@ -1340,11 +1587,41 @@ public class StructuralConventionTest {
                                     classes()
                                             .that()
                                             .resideInAPackage(OUTCOME)
+                                            .and()
+                                            .resideOutsideOfPackages(
+                                                    allowedSubpackageTrees(
+                                                            OUTCOME,
+                                                            ALLOWED_OUTBOUND_PORT_DTO_OUTCOME_PACKAGES))
                                             .should()
                                             .beRecords()
                                             .orShould()
                                             .beEnums()
                                             .allowEmptyShould(true);
+
+                            @ArchTest
+                            static final ArchTests outcomeBuilderRules =
+                                    ArchTests.in(OutcomeBuilderRules.class);
+
+                            public static final class OutcomeBuilderRules {
+
+                                @ArchTest
+                                public static final ArchRule outcomeBuildersHaveBuilderSuffix =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(OUTCOME_BUILDER)
+                                                .should()
+                                                .haveSimpleNameEndingWith("OutcomeBuilder")
+                                                .allowEmptyShould(true);
+
+                                @ArchTest
+                                public static final ArchRule outcomeBuildersShouldBeFinalClasses =
+                                        classes()
+                                                .that()
+                                                .resideInAPackage(OUTCOME_BUILDER)
+                                                .should()
+                                                .haveModifier(JavaModifier.FINAL)
+                                                .allowEmptyShould(true);
+                            }
                         }
                     }
 
@@ -1477,6 +1754,8 @@ public class StructuralConventionTest {
                             classes()
                                     .that()
                                     .resideInAPackage(APPLICATION_SERVICES_MAPPER)
+                                    .and()
+                                    .areTopLevelClasses()
                                     .should()
                                     .haveSimpleNameEndingWith("Mapper")
                                     .allowEmptyShould(true);
@@ -1486,6 +1765,8 @@ public class StructuralConventionTest {
                             classes()
                                     .that()
                                     .resideInAPackage(APPLICATION_SERVICES_MAPPER)
+                                    .and()
+                                    .areTopLevelClasses()
                                     .should()
                                     .haveModifier(JavaModifier.FINAL)
                                     .allowEmptyShould(true);

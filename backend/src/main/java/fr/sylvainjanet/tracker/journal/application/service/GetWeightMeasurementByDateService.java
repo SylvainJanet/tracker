@@ -1,15 +1,13 @@
 package fr.sylvainjanet.tracker.journal.application.service;
 
-import static fr.sylvainjanet.tracker.journal.domain.builder.WeightMeasurementBuilder.aWeightMeasurement;
-
 import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightMeasurementByDateQuery;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementByDateResult;
+import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.WeightMeasurementResult;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.GetWeightMeasurementByDateUseCase;
-import fr.sylvainjanet.tracker.journal.application.port.out.dtos.criteria.GetWeightMeasurementByDateCriteria;
-import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementByDateOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
-import fr.sylvainjanet.tracker.journal.domain.WeightMeasurement;
-import java.time.LocalDate;
+import fr.sylvainjanet.tracker.journal.application.service.mapper.criteria.GetWeightMeasurementByDateCriteriaMapper;
+import fr.sylvainjanet.tracker.journal.application.service.mapper.outcome.WeightMeasurementOutcomeMapper;
+import fr.sylvainjanet.tracker.journal.application.service.mapper.query.GetWeightMeasurementByDateQueryMapper;
+import fr.sylvainjanet.tracker.journal.application.service.mapper.result.WeightMeasurementResultMapper;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -22,35 +20,13 @@ public final class GetWeightMeasurementByDateService implements GetWeightMeasure
     }
 
     @Override
-    public Optional<GetWeightMeasurementByDateResult> get(GetWeightMeasurementByDateQuery query) {
+    public Optional<WeightMeasurementResult> get(GetWeightMeasurementByDateQuery query) {
         Objects.requireNonNull(query, "query must not be null");
-        LocalDate date = queryToDomain(query);
 
-        Optional<GetWeightMeasurementByDateOutcome> outcomeOptional =
-                store.getByDate(toInstruction(date));
-
-        Optional<WeightMeasurement> domainOptional = outcomeOptional.map(this::outcomeToDomain);
-
-        return domainOptional.map(this::toResult);
-    }
-
-    private GetWeightMeasurementByDateResult toResult(WeightMeasurement measurement) {
-        return new GetWeightMeasurementByDateResult(
-                measurement.date(), measurement.weightInKilograms());
-    }
-
-    private GetWeightMeasurementByDateCriteria toInstruction(LocalDate date) {
-        return new GetWeightMeasurementByDateCriteria(date);
-    }
-
-    private LocalDate queryToDomain(GetWeightMeasurementByDateQuery query) {
-        return query.date();
-    }
-
-    private WeightMeasurement outcomeToDomain(GetWeightMeasurementByDateOutcome outcome) {
-        return aWeightMeasurement()
-                .withDate(outcome.date())
-                .withWeightInKg(outcome.weightInKg())
-                .build();
+        return store.getByDate(
+                        GetWeightMeasurementByDateCriteriaMapper.dateCriteria(
+                                GetWeightMeasurementByDateQueryMapper.localDate(query)))
+                .map(WeightMeasurementOutcomeMapper::measurement)
+                .map(WeightMeasurementResultMapper::result);
     }
 }

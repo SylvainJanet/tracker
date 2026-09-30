@@ -94,7 +94,7 @@ class TrackerOpenApiTest {
                         jsonPath(
                                         "$.paths['/api/analysis/weight'].get.responses['200']"
                                                 + ".content['application/json'].examples"
-                                                + "['withoutMeasurements'].value.rollingAverages")
+                                                + "['withoutMeasurements'].value.rollingAverageSeries")
                                 .isEmpty())
                 .andExpect(
                         jsonPath("$.paths['/api/analysis/weight'].get.responses.length()").value(1))

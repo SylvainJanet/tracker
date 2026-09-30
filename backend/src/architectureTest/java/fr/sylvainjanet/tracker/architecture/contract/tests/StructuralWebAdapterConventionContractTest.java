@@ -1,10 +1,13 @@
 package fr.sylvainjanet.tracker.architecture.contract.tests;
 
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebControllerRules.WebControllerMapperRules.webControllerMappersHaveMapperSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebControllerRules.WebControllerMapperRules.webControllerMappersShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebControllerRules.classesNamedControllerStayInControllerPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebControllerRules.webControllerEndpointsShouldDeclareOpenApiResponses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebControllerRules.webControllersShouldBeAnnotatedWithRestController;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebControllerRules.webControllersShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebControllerRules.webControllersShouldHaveControllerSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebControllerRules.webControllersUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.RequestRules.RequestEnumRules.requestEnumsShouldBeEnums;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.RequestRules.classesNamedRequestStayInRequestPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterInboundRules.WebAdapterRules.WebDtoRules.RequestRules.requestDtosUseAllowedPackages;
@@ -42,6 +45,9 @@ import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.controller.Cor
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.controller.DocumentedEndpointController;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.controller.MisconfiguredEndpoint;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.controller.UndocumentedEndpointController;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.controller.mapper.CorrectlyNamedControllerMapper;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.controller.mapper.InvalidControllerMapperFunction;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.controller.unsupported.UnsupportedControllerType;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.UnsupportedWebDto;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.request.CoreDependentRequest;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.in.web.dtos.request.CorrectlyNamedRequest;
@@ -107,6 +113,36 @@ public class StructuralWebAdapterConventionContractTest {
                 webAdaptersUseAllowedPackages,
                 "UnsupportedWebAdapterType",
                 UnsupportedWebAdapterType.class);
+    }
+
+    @Test
+    void webControllersUseAllowedPackages() {
+        ArchitectureRuleContract.assertAccepts(
+                webControllersUseAllowedPackages, CorrectlyNamedControllerMapper.class);
+        ArchitectureRuleContract.assertRejects(
+                webControllersUseAllowedPackages,
+                "UnsupportedControllerType",
+                UnsupportedControllerType.class);
+    }
+
+    @Test
+    void webControllerMappersHaveMapperSuffix() {
+        ArchitectureRuleContract.assertAccepts(
+                webControllerMappersHaveMapperSuffix, CorrectlyNamedControllerMapper.class);
+        ArchitectureRuleContract.assertRejects(
+                webControllerMappersHaveMapperSuffix,
+                "InvalidControllerMapperFunction",
+                InvalidControllerMapperFunction.class);
+    }
+
+    @Test
+    void webControllerMappersShouldBeFinalClasses() {
+        ArchitectureRuleContract.assertAccepts(
+                webControllerMappersShouldBeFinalClasses, CorrectlyNamedControllerMapper.class);
+        ArchitectureRuleContract.assertRejects(
+                webControllerMappersShouldBeFinalClasses,
+                "InvalidControllerMapperFunction",
+                InvalidControllerMapperFunction.class);
     }
 
     @Test

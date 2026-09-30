@@ -9,7 +9,7 @@ HTTP API.
 
 Export the spreadsheet as its original UTF-8, semicolon-delimited CSV.
 
-- Keep the exact `Date` and `Weight` headers.
+- Keep the exact `DateIdentifier` and `Weight` headers.
 - Other columns, including unnamed columns, are ignored.
 - Dates use `dd/MM/yy`; years are interpreted as 2000–2099.
 - Weights use kilograms with a decimal comma.
@@ -55,7 +55,7 @@ curl --fail --silent \
 
 Before importing into the personal database:
 
-1. Confirm the export contains the exact `Weight` and `Date` headers.
+1. Confirm the export contains the exact `Weight` and `DateIdentifier` headers.
 2. Place it below the ignored `data/` directory without removing or rearranging
    columns.
 3. Confirm the last genuinely measured date for `--through`.
@@ -66,10 +66,10 @@ Before importing into the personal database:
 Run the importer from the repository root:
 
 ```bash
-./gradlew :importer:run --args="\
+`./gradlew :importer:run --args="\
 --input data/legacy-spreadsheet.csv \
 --base-url http://127.0.0.1:8080 \
---through YYYY-MM-DD"
+--through YYYY-MM-DD"`
 ```
 
 Use `./gradlew :backend:bootRunReal` only after explicit authorization to modify

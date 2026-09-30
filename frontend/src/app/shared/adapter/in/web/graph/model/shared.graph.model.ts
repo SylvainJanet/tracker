@@ -1,6 +1,7 @@
 export interface SharedGraphPointView {
   readonly x: number;
   readonly y: number;
+  readonly intensity?: number;
 }
 
 export interface SharedGraphSeriesView {
@@ -12,6 +13,6 @@ export interface SharedGraphSeriesView {
 export class SharedGraphModel {
   constructor(
     readonly accessibleDescription: string,
-    readonly series: SharedGraphSeriesView,
+    readonly series: readonly SharedGraphSeriesView[],
   ) {}
 }

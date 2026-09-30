@@ -43,5 +43,27 @@ function toResultData(analysis: WeightAnalysis): WeightAnalysisResultData {
       dayNumber: measurement.dayNumber,
       weightInKg: measurement.weightInKilograms(),
     })),
+    rollingAverages: analysis.rollingAverages.map((rollingAverage) => ({
+      windowInDays: rollingAverage.windowInDays,
+      points: rollingAverage.points.map((point) => ({
+        date: point.date,
+        dayNumber: point.dayNumber,
+        includedValues: point.includedValues.map((includedValue) => ({
+          date: includedValue.date,
+          dayNumber: includedValue.dayNumber,
+          weightInKg: includedValue.weightInKilograms(),
+        })),
+        rollingAverage: {
+          exactValue: {
+            numerator: point.rollingAverage.exactValue.numerator,
+            denominator: point.rollingAverage.exactValue.denominator,
+          },
+          approximations: point.rollingAverage.approximations.map((approximation) => ({
+            value: approximation.value,
+            rounding: approximation.rounding,
+          })),
+        },
+      })),
+    })),
   };
 }

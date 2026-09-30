@@ -7,7 +7,7 @@ import {
   input,
 } from '@angular/core';
 import { LineChart } from 'echarts/charts';
-import { AriaComponent, GridComponent } from 'echarts/components';
+import { AriaComponent, GridComponent, VisualMapComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
@@ -15,7 +15,7 @@ import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
 import type { SharedGraphModel } from '../model/shared.graph.model';
 import { SharedGraphMapper } from '../presenter/mapper/shared.graph.mapper';
 
-echarts.use([LineChart, GridComponent, AriaComponent, CanvasRenderer]);
+echarts.use([LineChart, GridComponent, VisualMapComponent, AriaComponent, CanvasRenderer]);
 
 @Component({
   selector: 'app-shared-graph',
@@ -34,10 +34,10 @@ export class SharedGraphPage {
 
     return SharedGraphMapper.modelToOptions({
       ...graph,
-      series: {
-        ...graph.series,
-        color: this.resolveColor(graph.series.color),
-      },
+      series: graph.series.map((series) => ({
+        ...series,
+        color: this.resolveColor(series.color),
+      })),
     });
   });
 

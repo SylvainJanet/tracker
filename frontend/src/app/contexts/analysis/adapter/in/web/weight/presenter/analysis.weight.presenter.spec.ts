@@ -27,6 +27,7 @@ describe('AnalysisWeightPresenter', () => {
         weightInKg: 81.9,
       },
     ],
+    rollingAverages: [],
   };
 
   const dataResult: GetWeightAnalysisResult = {
@@ -81,17 +82,21 @@ describe('AnalysisWeightPresenter', () => {
               weightInKg: 81.9,
             },
           ],
+
+          rollingAverages: [],
           graph: {
             accessibleDescription:
               'Line graph of 2 measured weights from analysis day 1 to analysis day 4.',
-            series: {
-              label: 'Measured weight',
-              color: '--color-action',
-              points: [
-                { x: 1, y: 82.1 },
-                { x: 4, y: 81.9 },
-              ],
-            },
+            series: [
+              {
+                label: 'Measured weight',
+                color: '--color-action',
+                points: [
+                  { x: 1, y: 82.1 },
+                  { x: 4, y: 81.9 },
+                ],
+              },
+            ],
           },
         },
       },
@@ -177,14 +182,16 @@ describe('AnalysisWeightPresenter', () => {
           graph: {
             accessibleDescription:
               'Line graph of 2 measured weights from analysis day 1 to analysis day 4.',
-            series: {
-              label: 'Measured weight',
-              color: '--color-action',
-              points: [
-                { x: 1, y: 82.1 },
-                { x: 4, y: 81.9 },
-              ],
-            },
+            series: [
+              {
+                label: 'Measured weight',
+                color: '--color-action',
+                points: [
+                  { x: 1, y: 82.1 },
+                  { x: 4, y: 81.9 },
+                ],
+              },
+            ],
           },
         },
       },

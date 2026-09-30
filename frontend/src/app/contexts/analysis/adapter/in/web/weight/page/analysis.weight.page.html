@@ -68,12 +68,55 @@
           <app-shared-graph [graph]="currentState.analysisState.view.graph" />
         </div>
 
-        <div
-          class="analysis-table-region"
-          role="region"
-          aria-labelledby="weight-measurements-caption"
-          tabindex="0"
-        >
+        @if (currentState.analysisState.view.rollingAverages.length > 0) {
+          <section class="analysis-table-region" aria-labelledby="weight-rolling-averages-caption">
+            <table class="analysis-table" data-testid="weight-rolling-averages">
+              <caption id="weight-rolling-averages-caption">
+                Rolling averages by analysis day
+              </caption>
+
+              <thead>
+                <tr>
+                  <th scope="col">Window</th>
+                  <th scope="col">Day</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Average</th>
+                  <th scope="col">Coverage</th>
+                  <th scope="col">Calendar window</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (
+                  rollingAverage of currentState.analysisState.view.rollingAverages;
+                  track rollingAverage.windowInDays
+                ) {
+                  @for (point of rollingAverage.points; track point.date) {
+                    <tr>
+                      <th scope="row">{{ rollingAverage.windowInDays }} days</th>
+                      <td>{{ point.dayNumber }}</td>
+                      <td>
+                        <time [attr.datetime]="point.date">
+                          {{ point.date }}
+                        </time>
+                      </td>
+                      <td>{{ point.averageWeightInKgApproximation }} kg</td>
+                      <td>
+                        {{ point.includedMeasurementCount }} of
+                        {{ rollingAverage.windowInDays }} days
+                      </td>
+                      <td>
+                        {{ point.completeCalendarWindow ? 'Complete' : 'Partial' }}
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </section>
+        }
+
+        <section class="analysis-table-region" aria-labelledby="weight-measurements-caption">
           <table class="analysis-table">
             <caption id="weight-measurements-caption">
               Recorded weight measurements by analysis day
@@ -104,7 +147,7 @@
               }
             </tbody>
           </table>
-        </div>
+        </section>
       </article>
     }
 
@@ -128,7 +171,7 @@
     }
 
     @case ('failure') {
-      <article
+      <div
         class="tracker-panel tracker-panel--danger tracker-status"
         role="alert"
         data-testid="weight-analysis-failure"
@@ -151,7 +194,7 @@
             </button>
           </div>
         </div>
-      </article>
+      </div>
     }
   }
 </section>

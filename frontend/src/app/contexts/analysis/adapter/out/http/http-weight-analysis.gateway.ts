@@ -7,10 +7,14 @@ import {
 } from '../../../../../shared/api/shared.http.response';
 import type {
   GetWeightAnalysisOutcome,
+  RollingAverageOutcomeData,
   WeightAnalysisOutcomeData,
   WeightAnalysisStore,
 } from '../../../application/port/out/weight-analysis.store';
-import { isGetWeightAnalysisResponse } from './contract/response/get-weight-analysis-response';
+import {
+  isGetWeightAnalysisResponse,
+  type RollingAverageResponse,
+} from './contract/response/get-weight-analysis-response';
 import { AnalysisHttpContractRoutes } from './contract/routes/analysis-http-contract.routes';
 
 export class HttpWeightAnalysisGateway implements WeightAnalysisStore {
@@ -43,6 +47,7 @@ export class HttpWeightAnalysisGateway implements WeightAnalysisStore {
           dayNumber: measurement.dayNumber,
           weightInKg: measurement.weightInKg,
         })),
+        rollingAverages: response.rollingAverageSeries.map(toRollingAverageOutcomeData),
       };
 
       return {
@@ -58,6 +63,31 @@ export class HttpWeightAnalysisGateway implements WeightAnalysisStore {
       };
     }
   }
+}
+
+function toRollingAverageOutcomeData(response: RollingAverageResponse): RollingAverageOutcomeData {
+  return {
+    windowInDays: response.windowSize,
+    points: response.rollingAverages.map((point) => ({
+      date: point.date,
+      dayNumber: point.dayNumber,
+      includedValues: point.includedValues.map((includedValue) => ({
+        date: includedValue.date,
+        dayNumber: includedValue.dayNumber,
+        weightInKg: includedValue.weightInKg,
+      })),
+      rollingAverage: {
+        exactValue: {
+          numerator: point.rollingAverage.exactValue.numerator,
+          denominator: point.rollingAverage.exactValue.denominator,
+        },
+        approximations: point.rollingAverage.approximations.map((approximation) => ({
+          value: approximation.value,
+          rounding: approximation.rounding,
+        })),
+      },
+    })),
+  };
 }
 
 function invalidResponse(): GetWeightAnalysisOutcome {

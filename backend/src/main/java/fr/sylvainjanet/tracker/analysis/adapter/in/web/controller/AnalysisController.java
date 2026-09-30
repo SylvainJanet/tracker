@@ -1,7 +1,7 @@
 package fr.sylvainjanet.tracker.analysis.adapter.in.web.controller;
 
+import fr.sylvainjanet.tracker.analysis.adapter.in.web.controller.mapper.GetWeightAnalysisResponseMapper;
 import fr.sylvainjanet.tracker.analysis.adapter.in.web.dtos.response.GetWeightAnalysisResponse;
-import fr.sylvainjanet.tracker.analysis.adapter.in.web.dtos.response.mapper.GetWeightAnalysisResponseMapper;
 import fr.sylvainjanet.tracker.analysis.application.port.in.usecase.GetWeightAnalysisUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,10 +30,12 @@ public final class AnalysisController {
             summary = "Get weight analysis",
             description =
                     """
-                    Returns measurements from the first logged weight through today, ordered by date.
-                    Day numbers are one-based calendar-day offsets from the timeline start; missing
-                    dates are omitted. When no measurement is available, the timeline and range are
-                    null and both value collections are empty. Rolling averages are currently empty.
+                    Returns measurements and 7, 14, 28, 60, 180 and 360-day rolling-average series
+                    from the first logged weight through today. Day numbers are one-based calendar-day
+                    offsets from the timeline start. Missing dates are omitted from weightMeasurements;
+                    a rolling-average point is present while its trailing window contains at least one
+                    measurement. When no measurement is available, the timeline and range are null and
+                    both value collections are empty.
                     """)
     @ApiResponse(
             responseCode = "200",
@@ -49,24 +51,212 @@ public final class AnalysisController {
                                         value =
                                                 """
                                             {
-                                              "timelineStartDate": "2026-09-20",
+                                              "timelineStartDate": "2026-09-25",
                                               "range": {
-                                                "startDate": "2026-09-20",
+                                                "startDate": "2026-09-25",
                                                 "endDate": "2026-09-25"
                                               },
                                               "weightMeasurements": [
                                                 {
-                                                  "date": "2026-09-20",
+                                                  "date": "2026-09-25",
                                                   "dayNumber": 1,
                                                   "weightInKg": 82.10
-                                                },
-                                                {
-                                                  "date": "2026-09-23",
-                                                  "dayNumber": 4,
-                                                  "weightInKg": 81.90
                                                 }
                                               ],
-                                              "rollingAverages": []
+                                              "rollingAverageSeries": [
+                                                {
+                                                  "windowSize": 7,
+                                                  "rollingAverages": [
+                                                    {
+                                                      "date": "2026-09-25",
+                                                      "dayNumber": 1,
+                                                      "includedValues": [
+                                                        {
+                                                          "date": "2026-09-25",
+                                                          "dayNumber": 1,
+                                                          "weightInKg": 82.10
+                                                        }
+                                                      ],
+                                                      "rollingAverage": {
+                                                        "exactValue": {
+                                                          "numerator": 82.10,
+                                                          "denominator": 1
+                                                        },
+                                                        "approximations": [
+                                                          {
+                                                            "value": 82.10,
+                                                            "rounding": "PRETTY"
+                                                          },
+                                                          {
+                                                            "value": 82.10000000000000000000,
+                                                            "rounding": "PRECISE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "windowSize": 14,
+                                                  "rollingAverages": [
+                                                    {
+                                                      "date": "2026-09-25",
+                                                      "dayNumber": 1,
+                                                      "includedValues": [
+                                                        {
+                                                          "date": "2026-09-25",
+                                                          "dayNumber": 1,
+                                                          "weightInKg": 82.10
+                                                        }
+                                                      ],
+                                                      "rollingAverage": {
+                                                        "exactValue": {
+                                                          "numerator": 82.10,
+                                                          "denominator": 1
+                                                        },
+                                                        "approximations": [
+                                                          {
+                                                            "value": 82.10,
+                                                            "rounding": "PRETTY"
+                                                          },
+                                                          {
+                                                            "value": 82.10000000000000000000,
+                                                            "rounding": "PRECISE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "windowSize": 28,
+                                                  "rollingAverages": [
+                                                    {
+                                                      "date": "2026-09-25",
+                                                      "dayNumber": 1,
+                                                      "includedValues": [
+                                                        {
+                                                          "date": "2026-09-25",
+                                                          "dayNumber": 1,
+                                                          "weightInKg": 82.10
+                                                        }
+                                                      ],
+                                                      "rollingAverage": {
+                                                        "exactValue": {
+                                                          "numerator": 82.10,
+                                                          "denominator": 1
+                                                        },
+                                                        "approximations": [
+                                                          {
+                                                            "value": 82.10,
+                                                            "rounding": "PRETTY"
+                                                          },
+                                                          {
+                                                            "value": 82.10000000000000000000,
+                                                            "rounding": "PRECISE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "windowSize": 60,
+                                                  "rollingAverages": [
+                                                    {
+                                                      "date": "2026-09-25",
+                                                      "dayNumber": 1,
+                                                      "includedValues": [
+                                                        {
+                                                          "date": "2026-09-25",
+                                                          "dayNumber": 1,
+                                                          "weightInKg": 82.10
+                                                        }
+                                                      ],
+                                                      "rollingAverage": {
+                                                        "exactValue": {
+                                                          "numerator": 82.10,
+                                                          "denominator": 1
+                                                        },
+                                                        "approximations": [
+                                                          {
+                                                            "value": 82.10,
+                                                            "rounding": "PRETTY"
+                                                          },
+                                                          {
+                                                            "value": 82.10000000000000000000,
+                                                            "rounding": "PRECISE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "windowSize": 180,
+                                                  "rollingAverages": [
+                                                    {
+                                                      "date": "2026-09-25",
+                                                      "dayNumber": 1,
+                                                      "includedValues": [
+                                                        {
+                                                          "date": "2026-09-25",
+                                                          "dayNumber": 1,
+                                                          "weightInKg": 82.10
+                                                        }
+                                                      ],
+                                                      "rollingAverage": {
+                                                        "exactValue": {
+                                                          "numerator": 82.10,
+                                                          "denominator": 1
+                                                        },
+                                                        "approximations": [
+                                                          {
+                                                            "value": 82.10,
+                                                            "rounding": "PRETTY"
+                                                          },
+                                                          {
+                                                            "value": 82.10000000000000000000,
+                                                            "rounding": "PRECISE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "windowSize": 360,
+                                                  "rollingAverages": [
+                                                    {
+                                                      "date": "2026-09-25",
+                                                      "dayNumber": 1,
+                                                      "includedValues": [
+                                                        {
+                                                          "date": "2026-09-25",
+                                                          "dayNumber": 1,
+                                                          "weightInKg": 82.10
+                                                        }
+                                                      ],
+                                                      "rollingAverage": {
+                                                        "exactValue": {
+                                                          "numerator": 82.10,
+                                                          "denominator": 1
+                                                        },
+                                                        "approximations": [
+                                                          {
+                                                            "value": 82.10,
+                                                            "rounding": "PRETTY"
+                                                          },
+                                                          {
+                                                            "value": 82.10000000000000000000,
+                                                            "rounding": "PRECISE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              ]
                                             }
                                             """),
                                 @ExampleObject(
@@ -78,7 +268,7 @@ public final class AnalysisController {
                                               "timelineStartDate": null,
                                               "range": null,
                                               "weightMeasurements": [],
-                                              "rollingAverages": []
+                                              "rollingAverageSeries": []
                                             }
                                             """)
                             }))
