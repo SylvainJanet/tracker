@@ -360,7 +360,7 @@ describe('project architecture', () => {
     assert.deepEqual(
       match('src/app/contexts/daily-record/application/service/' + 'create-daily-record.service.ts')
         .metadata.allowedDependencyLayers,
-      ['domain', 'application/port/in', 'application/port/out'],
+      ['domain', 'application/service', 'application/port/in', 'application/port/out'],
     );
 
     assert.deepEqual(
