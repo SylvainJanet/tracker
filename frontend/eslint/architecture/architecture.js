@@ -15,7 +15,12 @@ const RESERVED_DECLARATION_SUFFIXES = [
 
 const DOMAIN_DEPENDENCY_LAYERS = ['domain'];
 const PORT_DEPENDENCY_LAYERS = ['domain'];
-const SERVICE_DEPENDENCY_LAYERS = ['domain', 'application/port/in', 'application/port/out'];
+const SERVICE_DEPENDENCY_LAYERS = [
+  'domain',
+  'application/service',
+  'application/port/in',
+  'application/port/out',
+];
 const INBOUND_ADAPTER_DEPENDENCY_LAYERS = ['domain', 'application/port/in', 'adapter/in'];
 const OUTBOUND_ADAPTER_DEPENDENCY_LAYERS = ['domain', 'application/port/out', 'adapter/out'];
 const CONFIGURATION_DEPENDENCY_LAYERS = [
