@@ -1,7 +1,7 @@
 import type { CalendarDate } from './calendar-date';
 
 export class DateRange {
-  constructor(
+  private constructor(
     readonly startDate: CalendarDate,
     readonly endDate: CalendarDate,
   ) {
@@ -16,6 +16,10 @@ export class DateRange {
     if (startDate > endDate) {
       throw new RangeError('start date must not be after end date');
     }
+  }
+
+  static create(startDate: CalendarDate, endDate: CalendarDate): DateRange {
+    return new DateRange(startDate, endDate);
   }
 
   contains(date: CalendarDate): boolean {

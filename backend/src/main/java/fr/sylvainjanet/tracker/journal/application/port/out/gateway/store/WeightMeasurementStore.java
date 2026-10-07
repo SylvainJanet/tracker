@@ -4,17 +4,15 @@ import fr.sylvainjanet.tracker.journal.application.port.out.dtos.criteria.GetWei
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.criteria.GetWeightMeasurementInDateRangeCriteria;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.instruction.LogWeightMeasurementInstruction;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetFirstWeightMeasurementDateOutcome;
-import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementByDateOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.GetWeightMeasurementInDateRangeOutcome;
-import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
+import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.WeightMeasurementOutcome;
 import java.util.Optional;
 
 public interface WeightMeasurementStore {
 
-    LogWeightMeasurementOutcome log(LogWeightMeasurementInstruction instruction);
+    WeightMeasurementOutcome log(LogWeightMeasurementInstruction instruction);
 
-    Optional<GetWeightMeasurementByDateOutcome> getByDate(
-            GetWeightMeasurementByDateCriteria criteria);
+    Optional<WeightMeasurementOutcome> getByDate(GetWeightMeasurementByDateCriteria criteria);
 
     GetWeightMeasurementInDateRangeOutcome getInDateRange(
             GetWeightMeasurementInDateRangeCriteria criteria);

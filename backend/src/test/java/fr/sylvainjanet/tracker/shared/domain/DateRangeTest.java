@@ -4,90 +4,108 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import fr.sylvainjanet.tracker.technical.domain.contract.error.exception.DomainValidationException;
 import java.time.LocalDate;
 import java.time.Month;
 import org.junit.jupiter.api.Test;
 
 class DateRangeTest {
 
+    private static final LocalDate START_DATE = LocalDate.of(2026, Month.SEPTEMBER, 1);
+    private static final LocalDate END_DATE = LocalDate.of(2026, Month.SEPTEMBER, 6);
+
     @Test
     void createsAnInclusiveDateRange() {
-        LocalDate startDate = LocalDate.of(2026, Month.SEPTEMBER, 1);
-        LocalDate endDate = LocalDate.of(2026, Month.SEPTEMBER, 6);
+        DateRange range = DateRange.create(START_DATE, END_DATE);
 
-        DateRange dateRange = DateRange.of(startDate, endDate);
-
-        assertThat(dateRange.getStartDate()).isEqualTo(startDate);
-        assertThat(dateRange.getEndDate()).isEqualTo(endDate);
+        assertThat(range.startDate()).isEqualTo(START_DATE);
+        assertThat(range.endDate()).isEqualTo(END_DATE);
     }
 
     @Test
     void acceptsTheSameDateAsBothBoundaries() {
-        LocalDate date = LocalDate.of(2026, Month.SEPTEMBER, 1);
-
-        assertThatCode(() -> DateRange.of(date, date)).doesNotThrowAnyException();
+        assertThatCode(() -> DateRange.create(START_DATE, START_DATE)).doesNotThrowAnyException();
     }
 
     @Test
-    void rejectsANullStartDate() {
-        LocalDate endDate = LocalDate.of(2026, Month.SEPTEMBER, 6);
-
-        assertThatThrownBy(() -> DateRange.of(null, endDate))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("start date must not be null");
-    }
-
-    @Test
-    void rejectsANullEndDate() {
-        LocalDate startDate = LocalDate.of(2026, Month.SEPTEMBER, 1);
-
-        assertThatThrownBy(() -> DateRange.of(startDate, null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("end date must not be null");
+    void rejectsMissingBoundariesTogether() {
+        assertThatThrownBy(() -> DateRange.create(null, null))
+                .isExactlyInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("start date must not be null")
+                .hasMessageContaining("end date must not be null");
     }
 
     @Test
     void rejectsAStartDateAfterTheEndDate() {
-        LocalDate startDate = LocalDate.of(2026, Month.SEPTEMBER, 7);
-        LocalDate endDate = LocalDate.of(2026, Month.SEPTEMBER, 6);
-
-        assertThatThrownBy(() -> DateRange.of(startDate, endDate))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("start date must not be after end date");
+        assertThatThrownBy(() -> DateRange.create(END_DATE, START_DATE))
+                .isExactlyInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("start date must not be after end date");
     }
 
     @Test
     void containsBothBoundariesAndDatesBetweenThem() {
-        DateRange range =
-                DateRange.of(
-                        LocalDate.of(2026, Month.SEPTEMBER, 1),
-                        LocalDate.of(2026, Month.SEPTEMBER, 6));
+        DateRange range = DateRange.create(START_DATE, END_DATE);
 
-        assertThat(range.contains(LocalDate.of(2026, Month.SEPTEMBER, 1))).isTrue();
-        assertThat(range.contains(LocalDate.of(2026, Month.SEPTEMBER, 3))).isTrue();
-        assertThat(range.contains(LocalDate.of(2026, Month.SEPTEMBER, 6))).isTrue();
+        assertThat(range.contains(START_DATE)).isTrue();
+        assertThat(range.contains(START_DATE.plusDays(2))).isTrue();
+        assertThat(range.contains(END_DATE)).isTrue();
     }
 
     @Test
     void doesNotContainDatesOutsideItsBoundaries() {
-        DateRange range =
-                DateRange.of(
-                        LocalDate.of(2026, Month.SEPTEMBER, 1),
-                        LocalDate.of(2026, Month.SEPTEMBER, 6));
+        DateRange range = DateRange.create(START_DATE, END_DATE);
 
-        assertThat(range.contains(LocalDate.of(2026, Month.AUGUST, 31))).isFalse();
-        assertThat(range.contains(LocalDate.of(2026, Month.SEPTEMBER, 7))).isFalse();
+        assertThat(range.contains(START_DATE.minusDays(1))).isFalse();
+        assertThat(range.contains(END_DATE.plusDays(1))).isFalse();
     }
 
     @Test
     void rejectsANullContainedDate() {
-        DateRange range =
-                DateRange.of(
-                        LocalDate.of(2026, Month.SEPTEMBER, 1),
-                        LocalDate.of(2026, Month.SEPTEMBER, 6));
+        DateRange range = DateRange.create(START_DATE, END_DATE);
 
-        assertThatThrownBy(() -> range.contains(null))
-                .isInstanceOf(NullPointerException.class)
+        assertThatThrownBy(() -> range.contains((LocalDate) null))
+                .isExactlyInstanceOf(NullPointerException.class)
                 .hasMessage("date must not be null");
+    }
+
+    @Test
+    void containsRangesWithinItsInclusiveBoundaries() {
+        DateRange range = DateRange.create(START_DATE, END_DATE);
+
+        assertThat(range.contains(DateRange.create(START_DATE, END_DATE))).isTrue();
+        assertThat(range.contains(DateRange.create(START_DATE, END_DATE.minusDays(1)))).isTrue();
+        assertThat(range.contains(DateRange.create(START_DATE.plusDays(1), END_DATE))).isTrue();
+        assertThat(range.contains(DateRange.create(START_DATE.plusDays(1), END_DATE.minusDays(1))))
+                .isTrue();
+    }
+
+    @Test
+    void doesNotContainRangesOutsideItsBoundaries() {
+        DateRange range = DateRange.create(START_DATE, END_DATE);
+
+        assertThat(range.contains(DateRange.create(START_DATE.minusDays(1), END_DATE.minusDays(1))))
+                .isFalse();
+        assertThat(range.contains(DateRange.create(START_DATE.plusDays(1), END_DATE.plusDays(1))))
+                .isFalse();
+        assertThat(range.contains(DateRange.create(START_DATE.minusDays(1), END_DATE.plusDays(1))))
+                .isFalse();
+    }
+
+    @Test
+    void rejectsANullContainedRange() {
+        DateRange range = DateRange.create(START_DATE, END_DATE);
+
+        assertThatThrownBy(() -> range.contains((DateRange) null))
+                .isExactlyInstanceOf(NullPointerException.class)
+                .hasMessage("other date range must not be null");
+    }
+
+    @Test
+    void hasValueSemantics() {
+        DateRange first = DateRange.create(START_DATE, END_DATE);
+        DateRange equal = DateRange.create(START_DATE, END_DATE);
+        DateRange different = DateRange.create(START_DATE.plusDays(1), END_DATE);
+
+        assertThat(first).isEqualTo(equal).hasSameHashCodeAs(equal).isNotEqualTo(different);
     }
 }

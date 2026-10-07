@@ -1,31 +1,26 @@
 package fr.sylvainjanet.tracker.analysis.application.service;
 
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.ANALYSIS_RESULT;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.CLOCK;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.DATE_RANGE_QUERY;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.EMPTY_MEASUREMENTS_RESULT;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.FIRST_DATE_RESULT;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.FUTURE_FIRST_DATE_RESULT;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.MEASUREMENTS_RESULT;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.NO_MEASUREMENTS_RESULT;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.OUTSIDE_RANGE_MEASUREMENTS_RESULT;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.ROLLING_AVERAGES_COMMAND;
+import static fr.sylvainjanet.tracker.analysis.fixture.WeightAnalysisFixtures.ROLLING_AVERAGES_RESULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult;
-import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.AnalysisDateRangeResult;
-import fr.sylvainjanet.tracker.analysis.application.port.in.dtos.result.GetWeightAnalysisResult.AnalysisWeightValueResult;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightMeasurementInDateRangeQuery;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetFirstWeightMeasurementDateResult;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementInDateRangeResult;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementInDateRangeResult.WeightMeasurementByDateResult;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.GetFirstWeightMeasurementDateUseCase;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.GetWeightMeasurementInDateRangeUseCase;
-import fr.sylvainjanet.tracker.statistics.application.port.in.dtos.command.CalculateRollingAveragesCommand;
-import fr.sylvainjanet.tracker.statistics.application.port.in.dtos.command.CalculateRollingAveragesCommand.IndexedValueCommand;
-import fr.sylvainjanet.tracker.statistics.application.port.in.dtos.result.CalculateRollingAveragesResult;
 import fr.sylvainjanet.tracker.statistics.application.port.in.usecase.CalculateRollingAveragesUseCase;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneOffset;
-import java.util.List;
+import fr.sylvainjanet.tracker.technical.domain.contract.error.exception.DomainValidationException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,10 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class GetWeightAnalysisServiceTest {
-
-    private static final LocalDate TODAY = LocalDate.of(2026, Month.SEPTEMBER, 25);
-    private static final Clock CLOCK =
-            Clock.fixed(Instant.parse("2026-09-25T12:00:00Z"), ZoneOffset.UTC);
 
     @Mock private GetFirstWeightMeasurementDateUseCase getFirstDate;
     @Mock private GetWeightMeasurementInDateRangeUseCase getMeasurementsInRange;
@@ -54,101 +45,107 @@ class GetWeightAnalysisServiceTest {
     }
 
     @Test
-    void getsWeightMeasurementsAndRequestsTheirStatistics() {
-        LocalDate firstDate = LocalDate.of(2026, Month.SEPTEMBER, 20);
-        LocalDate secondDate = LocalDate.of(2026, Month.SEPTEMBER, 23);
+    void returnsWeightAnalysisThroughToday() {
+        when(getFirstDate.get()).thenReturn(Optional.of(FIRST_DATE_RESULT));
+        when(getMeasurementsInRange.get(DATE_RANGE_QUERY)).thenReturn(MEASUREMENTS_RESULT);
+        when(calculateRollingAverages.calculate(ROLLING_AVERAGES_COMMAND))
+                .thenReturn(ROLLING_AVERAGES_RESULT);
 
-        when(getFirstDate.get())
-                .thenReturn(Optional.of(new GetFirstWeightMeasurementDateResult(firstDate)));
-        when(getMeasurementsInRange.get(new GetWeightMeasurementInDateRangeQuery(firstDate, TODAY)))
-                .thenReturn(
-                        new GetWeightMeasurementInDateRangeResult(
-                                List.of(
-                                        new WeightMeasurementByDateResult(
-                                                firstDate, new BigDecimal("82.10")),
-                                        new WeightMeasurementByDateResult(
-                                                secondDate, new BigDecimal("81.90")))));
+        assertThat(service.get()).isEqualTo(ANALYSIS_RESULT);
 
-        CalculateRollingAveragesCommand statisticsCommand =
-                new CalculateRollingAveragesCommand(
-                        List.of(
-                                new IndexedValueCommand(1L, new BigDecimal("82.10")),
-                                new IndexedValueCommand(4L, new BigDecimal("81.90"))),
-                        List.of());
-
-        when(calculateRollingAverages.calculate(statisticsCommand))
-                .thenReturn(CalculateRollingAveragesResult.empty());
-
-        GetWeightAnalysisResult result = service.get();
-
-        assertThat(result)
-                .isEqualTo(
-                        new GetWeightAnalysisResult(
-                                firstDate,
-                                new AnalysisDateRangeResult(firstDate, TODAY),
-                                List.of(
-                                        new AnalysisWeightValueResult(
-                                                firstDate, 1L, new BigDecimal("82.10")),
-                                        new AnalysisWeightValueResult(
-                                                secondDate, 4L, new BigDecimal("81.90"))),
-                                List.of()));
-
-        verify(calculateRollingAverages).calculate(statisticsCommand);
+        verify(getFirstDate).get();
+        verify(getMeasurementsInRange).get(DATE_RANGE_QUERY);
+        verify(calculateRollingAverages).calculate(ROLLING_AVERAGES_COMMAND);
     }
 
     @Test
-    void returnsEmptyWhenNoWeightHasBeenLogged() {
+    void returnsNoMeasurementsWhenNoWeightHasBeenLogged() {
         when(getFirstDate.get()).thenReturn(Optional.empty());
 
-        GetWeightAnalysisResult result = service.get();
+        assertThat(service.get()).isEqualTo(NO_MEASUREMENTS_RESULT);
 
-        assertThat(result).isEqualTo(GetWeightAnalysisResult.noMeasurements());
-        verifyNoInteractions(getMeasurementsInRange);
+        verify(getFirstDate).get();
+        verifyNoInteractions(getMeasurementsInRange, calculateRollingAverages);
     }
 
     @Test
-    void returnsEmptyWhenTheFirstLoggedWeightIsAfterToday() {
-        LocalDate futureDate = TODAY.plusDays(1);
+    void returnsNoMeasurementsWhenFirstLoggedWeightIsAfterToday() {
+        when(getFirstDate.get()).thenReturn(Optional.of(FUTURE_FIRST_DATE_RESULT));
 
-        when(getFirstDate.get())
-                .thenReturn(Optional.of(new GetFirstWeightMeasurementDateResult(futureDate)));
+        assertThat(service.get()).isEqualTo(NO_MEASUREMENTS_RESULT);
 
-        GetWeightAnalysisResult result = service.get();
-
-        assertThat(result).isEqualTo(GetWeightAnalysisResult.noMeasurements());
-        verifyNoInteractions(getMeasurementsInRange);
+        verify(getFirstDate).get();
+        verifyNoInteractions(getMeasurementsInRange, calculateRollingAverages);
     }
 
     @Test
-    void returnsEmptyWhenTheDefaultRangeContainsNoMeasurements() {
-        LocalDate firstDate = LocalDate.of(2026, Month.SEPTEMBER, 20);
+    void returnsNoMeasurementsWhenDefaultDateRangeContainsNoMeasurement() {
+        when(getFirstDate.get()).thenReturn(Optional.of(FIRST_DATE_RESULT));
+        when(getMeasurementsInRange.get(DATE_RANGE_QUERY)).thenReturn(EMPTY_MEASUREMENTS_RESULT);
 
-        when(getFirstDate.get())
-                .thenReturn(Optional.of(new GetFirstWeightMeasurementDateResult(firstDate)));
-        when(getMeasurementsInRange.get(new GetWeightMeasurementInDateRangeQuery(firstDate, TODAY)))
-                .thenReturn(new GetWeightMeasurementInDateRangeResult(List.of()));
+        assertThat(service.get()).isEqualTo(NO_MEASUREMENTS_RESULT);
 
-        GetWeightAnalysisResult result = service.get();
-
-        assertThat(result).isEqualTo(GetWeightAnalysisResult.noMeasurements());
+        verify(getMeasurementsInRange).get(DATE_RANGE_QUERY);
+        verifyNoInteractions(calculateRollingAverages);
     }
 
     @Test
-    void rejectsAnIncoherentAnalysisDatasetPublishedByJournal() {
-        LocalDate firstDate = LocalDate.of(2026, Month.SEPTEMBER, 20);
-        LocalDate outsideRange = TODAY.plusDays(1);
-
-        when(getFirstDate.get())
-                .thenReturn(Optional.of(new GetFirstWeightMeasurementDateResult(firstDate)));
-        when(getMeasurementsInRange.get(new GetWeightMeasurementInDateRangeQuery(firstDate, TODAY)))
-                .thenReturn(
-                        new GetWeightMeasurementInDateRangeResult(
-                                List.of(
-                                        new WeightMeasurementByDateResult(
-                                                outsideRange, new BigDecimal("81.90")))));
+    void rejectsMeasurementOutsideRequestedDateRange() {
+        when(getFirstDate.get()).thenReturn(Optional.of(FIRST_DATE_RESULT));
+        when(getMeasurementsInRange.get(DATE_RANGE_QUERY))
+                .thenReturn(OUTSIDE_RANGE_MEASUREMENTS_RESULT);
 
         assertThatThrownBy(service::get)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("value must be inside the represented dateRange");
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("dataSeries date range must be within dataCompleteRange");
+
+        verify(getMeasurementsInRange).get(DATE_RANGE_QUERY);
+        verifyNoInteractions(calculateRollingAverages);
+    }
+
+    @Test
+    void rejectsNullFirstWeightMeasurementDateUseCase() {
+        assertThatThrownBy(
+                        () ->
+                                new GetWeightAnalysisService(
+                                        null,
+                                        getMeasurementsInRange,
+                                        calculateRollingAverages,
+                                        CLOCK))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("get first weight measurement date must not be null");
+    }
+
+    @Test
+    void rejectsNullWeightMeasurementsInRangeUseCase() {
+        assertThatThrownBy(
+                        () ->
+                                new GetWeightAnalysisService(
+                                        getFirstDate, null, calculateRollingAverages, CLOCK))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("get weight measurements in dateRange must not be null");
+    }
+
+    @Test
+    void rejectsNullCalculateRollingAveragesUseCase() {
+        assertThatThrownBy(
+                        () ->
+                                new GetWeightAnalysisService(
+                                        getFirstDate, getMeasurementsInRange, null, CLOCK))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("calculate rolling averages must not be null");
+    }
+
+    @Test
+    void rejectsNullClock() {
+        assertThatThrownBy(
+                        () ->
+                                new GetWeightAnalysisService(
+                                        getFirstDate,
+                                        getMeasurementsInRange,
+                                        calculateRollingAverages,
+                                        null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("clock must not be null");
     }
 }

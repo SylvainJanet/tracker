@@ -2,6 +2,10 @@
   display: block;
 }
 
+.tracker-page {
+  max-inline-size: 80rem;
+}
+
 .tracker-page-header {
   max-inline-size: 34rem;
 }
@@ -79,11 +83,6 @@
 
 .analysis-table-region {
   overflow-x: auto;
-}
-
-.analysis-table-region:focus-visible {
-  outline: var(--focus-outline);
-  outline-offset: calc(-1 * var(--focus-outline-offset));
 }
 
 .analysis-table {

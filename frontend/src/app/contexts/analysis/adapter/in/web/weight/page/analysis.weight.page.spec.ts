@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SharedGraphModel, SharedGraphPage } from '../../../../../../../shared/api/shared.graph';
+import { SharedGraphPage, SharedGraphView } from '../../../../../../../shared/api/shared.graph';
 import type { AnalysisWeightState } from '../model/state/analysis.weight.model.state';
 import {
   ANALYSIS_WEIGHT_PRESENTER_FACTORY,
@@ -16,8 +16,9 @@ import { AnalysisWeightPage } from './analysis.weight.page';
   template: '',
 })
 class SharedGraphPageStub {
-  readonly graph = input.required<SharedGraphModel>();
+  readonly graph = input.required<SharedGraphView>();
 }
+
 describe('AnalysisWeightPage', () => {
   let currentState: WritableSignal<AnalysisWeightState>;
   let analyze: ReturnType<typeof vi.fn<AnalysisWeightPresenter['analyze']>>;
@@ -69,16 +70,23 @@ describe('AnalysisWeightPage', () => {
   });
 
   it('renders the analysis summary and measurements as semantic data', () => {
-    const graph = new SharedGraphModel(
+    const graph = new SharedGraphView(
       'Line graph of 2 measured weights from analysis day 1 to analysis day 4.',
-      {
-        label: 'Measured weight',
-        color: '--color-action',
-        points: [
-          { x: 1, y: 82.1 },
-          { x: 4, y: 81.9 },
-        ],
-      },
+      [
+        {
+          label: 'Measured weight',
+          color: '--color-action',
+          points: [
+            { x: 1, y: 82.1 },
+            { x: 4, y: 81.9 },
+          ],
+        },
+        {
+          label: '7-day rolling average',
+          color: '--color-analysis-weight-rolling-7',
+          points: [{ x: 4, y: 82, intensity: 2 / 7 }],
+        },
+      ],
     );
     currentState.set({
       analysisState: {
@@ -101,6 +109,20 @@ describe('AnalysisWeightPage', () => {
               weightInKg: 81.9,
             },
           ],
+          rollingAverages: [
+            {
+              windowInDays: 7,
+              points: [
+                {
+                  date: '2026-09-23',
+                  dayNumber: 4,
+                  includedMeasurementCount: 2,
+                  averageWeightInKgApproximation: 82,
+                  completeCalendarWindow: false,
+                },
+              ],
+            },
+          ],
           graph,
         },
       },
@@ -118,7 +140,9 @@ describe('AnalysisWeightPage', () => {
     const summary = fixture.nativeElement.querySelector(
       '[data-testid="weight-analysis-summary"]',
     ) as HTMLElement;
-    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const measurementTable = fixture.nativeElement.querySelector(
+      'section[aria-labelledby="weight-measurements-caption"] table',
+    ) as HTMLTableElement;
 
     expect(Array.from(summary.querySelectorAll('dt'), (term) => normalizedText(term))).toEqual([
       'Timeline begins',
@@ -135,11 +159,13 @@ describe('AnalysisWeightPage', () => {
     ).toBe('2');
 
     expect(
-      Array.from(table.querySelectorAll('thead th'), (heading) => normalizedText(heading)),
+      Array.from(measurementTable.querySelectorAll('thead th'), (heading) =>
+        normalizedText(heading),
+      ),
     ).toEqual(['Day', 'Date', 'Weight']);
 
     expect(
-      Array.from(table.tBodies[0]?.rows ?? [], (row) =>
+      Array.from(measurementTable.tBodies[0]?.rows ?? [], (row) =>
         Array.from(row.cells, (cell) => normalizedText(cell)),
       ),
     ).toEqual([
@@ -148,8 +174,41 @@ describe('AnalysisWeightPage', () => {
     ]);
 
     expect(
-      Array.from(table.querySelectorAll('tbody time'), (time) => time.getAttribute('datetime')),
+      Array.from(measurementTable.querySelectorAll('tbody time'), (time) =>
+        time.getAttribute('datetime'),
+      ),
     ).toEqual(['2026-09-20', '2026-09-23']);
+
+    const rollingTable = fixture.nativeElement.querySelector(
+      '[data-testid="weight-rolling-averages"]',
+    ) as HTMLTableElement;
+
+    expect(rollingTable).not.toBeNull();
+
+    expect(
+      Array.from(rollingTable.querySelectorAll('thead th'), (heading) => normalizedText(heading)),
+    ).toEqual(['Window', 'Day', 'Date', 'Average', 'Coverage', 'Calendar window']);
+
+    expect(
+      Array.from(rollingTable.tBodies[0]?.rows ?? [], (row) =>
+        Array.from(row.cells, (cell) => normalizedText(cell)),
+      ),
+    ).toEqual([['7 days', '4', '2026-09-23', '82 kg', '2 of 7 days', 'Partial']]);
+
+    expect(normalizedText(rollingTable)).not.toContain('164.00');
+
+    const tableRegions = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'section.analysis-table-region',
+      ) as NodeListOf<HTMLElement>,
+    );
+
+    expect(tableRegions.map((region) => region.getAttribute('aria-labelledby'))).toEqual([
+      'weight-rolling-averages-caption',
+      'weight-measurements-caption',
+    ]);
+    expect(tableRegions.every((region) => !region.hasAttribute('role'))).toBe(true);
+    expect(tableRegions.every((region) => !region.hasAttribute('tabindex'))).toBe(true);
   });
 
   it('renders the empty-state title and message', () => {
@@ -189,6 +248,7 @@ describe('AnalysisWeightPage', () => {
     const alert = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
     const retry = alert.querySelector('[data-testid="retry-analysis"]') as HTMLButtonElement;
 
+    expect(alert.tagName).toBe('DIV');
     expect(alert.querySelector('h2')?.textContent?.trim()).toBe(
       'Unable to perform weight analysis',
     );

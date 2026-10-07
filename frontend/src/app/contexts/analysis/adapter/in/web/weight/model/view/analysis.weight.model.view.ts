@@ -1,4 +1,4 @@
-import type { SharedGraphModel } from '../../../../../../../../shared/api/shared.graph';
+import type { SharedGraphView } from '../../../../../../../../shared/api/shared.graph';
 
 export interface AnalysisWeightDateRangeView {
   readonly startDate: string;
@@ -11,9 +11,23 @@ export interface AnalysisWeightMeasurementView {
   readonly weightInKg: number;
 }
 
+export interface AnalysisWeightRollingAveragePointView {
+  readonly date: string;
+  readonly dayNumber: number;
+  readonly includedMeasurementCount: number;
+  readonly averageWeightInKgApproximation: number;
+  readonly completeCalendarWindow: boolean;
+}
+
+export interface AnalysisWeightRollingAverageView {
+  readonly windowInDays: number;
+  readonly points: readonly AnalysisWeightRollingAveragePointView[];
+}
+
 export interface AnalysisWeightView {
   readonly timelineStartDate: string;
   readonly range: AnalysisWeightDateRangeView;
   readonly weightMeasurements: readonly AnalysisWeightMeasurementView[];
-  readonly graph: SharedGraphModel;
+  readonly rollingAverages: readonly AnalysisWeightRollingAverageView[];
+  readonly graph: SharedGraphView;
 }

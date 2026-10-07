@@ -436,6 +436,8 @@ describe('JournalLoggingPage', () => {
 
       expect(failure?.textContent).toContain('Unable to get weight measurement');
       expect(failure?.textContent).toContain('The measurement could not be loaded.');
+      expect(failure?.tagName).toBe('DIV');
+      expect(failure?.getAttribute('role')).toBe('alert');
     });
 
     it('renders the log loading state while the controls are disabled', () => {

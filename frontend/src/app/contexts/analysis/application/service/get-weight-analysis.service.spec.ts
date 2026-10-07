@@ -23,6 +23,39 @@ describe('GetWeightAnalysisService', () => {
         weightInKg: 81.9,
       },
     ],
+    rollingAverageSeries: [
+      {
+        windowSize: 7,
+        rollingAverages: [
+          {
+            date: '2026-09-23',
+            dayNumber: 4,
+            includedValues: [
+              {
+                date: '2026-09-20',
+                dayNumber: 1,
+                weightInKg: 82.1,
+              },
+              {
+                date: '2026-09-23',
+                dayNumber: 4,
+                weightInKg: 81.9,
+              },
+            ],
+            rollingAverage: {
+              exactValue: {
+                numerator: 164,
+                denominator: 2,
+              },
+              approximations: [
+                { value: 82, rounding: 'PRETTY' },
+                { value: 82, rounding: 'PRECISE' },
+              ],
+            },
+          },
+        ],
+      },
+    ],
   };
 
   it('gets a populated weight analysis', async () => {
@@ -52,6 +85,39 @@ describe('GetWeightAnalysisService', () => {
             weightInKg: 81.9,
           },
         ],
+        rollingAverageSeries: [
+          {
+            windowSize: 7,
+            rollingAverages: [
+              {
+                date: '2026-09-23',
+                dayNumber: 4,
+                includedValues: [
+                  {
+                    date: '2026-09-20',
+                    dayNumber: 1,
+                    weightInKg: 82.1,
+                  },
+                  {
+                    date: '2026-09-23',
+                    dayNumber: 4,
+                    weightInKg: 81.9,
+                  },
+                ],
+                rollingAverage: {
+                  exactValue: {
+                    numerator: 164,
+                    denominator: 2,
+                  },
+                  approximations: [
+                    { value: 82, rounding: 'PRETTY' },
+                    { value: 82, rounding: 'PRECISE' },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
       },
     });
 
@@ -79,13 +145,17 @@ describe('GetWeightAnalysisService', () => {
           endDate: '2026-09-25',
         },
         weightMeasurements: [],
+        rollingAverageSeries: [
+          {
+            windowSize: 0,
+            rollingAverages: [],
+          },
+        ],
       },
     }));
     const service = new GetWeightAnalysisService({ get });
 
-    await expect(service.get()).rejects.toThrow(
-      'timeline start date must not be after represented range start date',
-    );
+    await expect(service.get()).rejects.toThrow('rolling window must be a positive safe integer');
   });
 
   it('reports a failed retrieval', async () => {
