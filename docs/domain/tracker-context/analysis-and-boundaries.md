@@ -21,35 +21,35 @@ cases may retain, rename or replace those windows and methods.
 
 The workbook used these fixed day-count windows:
 
-| Historical identifier | Duration | Intended perspective                      |
-| --------------------- | -------: | ----------------------------------------- |
-| `1W`                  |   7 days | Recent behaviour                          |
-| `2W`                  |  14 days | Short-cycle evaluation                    |
-| `4W`                  |  28 days | Medium-term strategy                      |
-| `2M`                  |  60 days | Intermediate trend                        |
-| `6M`                  | 180 days | Long-term trend                           |
-| `1Y`                  | 360 days | Very long-term and maintenance evaluation |
+| Identifier |   Length |
+| ---------- | -------: |
+| `1W`       |   7 days |
+| `2W`       |  14 days |
+| `4W`       |  28 days |
+| `2M`       |  60 days |
+| `6M`       | 180 days |
+| `1Y`       | 360 days |
 
 Not every historical calculation used every window. The redesigned tracker
-nevertheless established these six durations as its common analysis-window set.
+adopts these six durations for rolling-weight analysis.
 
 The identifiers are historical labels. In particular, `6M` and `1Y` mean 180
 and 360 calendar days rather than calendar months or a calendar year; an
 application model need not preserve potentially misleading names.
 
-For a historical window of `N` days ending on date `d`, the inclusive range was:
+A window of `N` days ending on date `d` covers the inclusive calendar range:
 
 `d - (N - 1 days)` through `d`
 
-Incomplete windows must not appear complete. Whether to suppress them,
-publish a provisional result or show the available-day count remains a method
-decision.
+Rolling-weight analysis uses direct measurements only. Missing dates remain
+gaps, and incomplete coverage remains distinguishable from complete calendar
+coverage.
 
-Eligibility is metric-specific. It may depend on record completion, value
-presence, measurement quality, day type or the availability of an effective
-weight. Calendar size must remain distinguishable from eligible-day count,
-and exclusions must remain explainable. Twenty-six measured dates within a
-28-day window are not a 26-day calendar window.
+Eligibility remains metric-specific. Other analyses may depend on record
+completion, measurement quality, day type or the availability of an effective
+weight. Calendar size must remain distinguishable from eligible-day count, and
+exclusions must remain explainable. Twenty-six measured dates within a 28-day
+window are not a 26-day calendar window.
 
 Date-specific inputs such as goals, day rules and expected-weight values must
 use the configuration applicable to each date. Calculation methods are also
@@ -240,7 +240,8 @@ preserve the distinction rather than making them indistinguishable.
 
 The following matters remain deliberately undecided:
 
-- application window identities, durations and treatment of partial windows;
+- whether future analysis methods reuse the rolling-weight windows and coverage
+  rules;
 - metric eligibility and how coverage affects confidence or presentation;
 - calorie-adherence and physiological energy formulas;
 - weight resolution and the influence of predictions on confidence;
