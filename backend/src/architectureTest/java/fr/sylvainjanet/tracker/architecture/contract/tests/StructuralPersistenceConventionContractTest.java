@@ -2,9 +2,12 @@ package fr.sylvainjanet.tracker.architecture.contract.tests;
 
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.PersistenceExceptionsRules.persistenceExceptionsExtendRuntimeException;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.PersistenceExceptionsRules.persistenceExceptionsHaveExceptionSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.PersistenceRepositoryRules.PersistenceRepositoryMapperRules.persistenceRepositoryMappersHaveMapperSuffix;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.PersistenceRepositoryRules.PersistenceRepositoryMapperRules.persistenceRepositoryMappersShouldBeFinalClasses;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.PersistenceRepositoryRules.classesNamedRepositoryStayInRepositoryPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.PersistenceRepositoryRules.persistenceRepositoriesHaveRepositorySuffix;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.PersistenceRepositoryRules.persistenceRepositoriesShouldBeFinalClasses;
+import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.PersistenceRepositoryRules.persistenceRepositoriesUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.PersistenceRules.persistenceAdaptersUseAllowedPackages;
 import static fr.sylvainjanet.tracker.architecture.tests.StructuralConventionTest.ContextRules.AdapterRules.AdapterOutboundRules.outboundAdaptersUseAllowedPackages;
 
@@ -13,6 +16,9 @@ import fr.sylvainjanet.tracker.architecturefixture.adapter.out.persistence.excep
 import fr.sylvainjanet.tracker.architecturefixture.adapter.out.persistence.exceptions.MisconfiguredPersistenceFailure;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.out.persistence.repository.CorrectlyNamedRepository;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.out.persistence.repository.MisconfiguredPersistenceComponent;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.out.persistence.repository.mapper.CorrectlyNamedRepositoryMapper;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.out.persistence.repository.mapper.InvalidRepositoryMapperFunction;
+import fr.sylvainjanet.tracker.architecturefixture.adapter.out.persistence.repository.unsupported.UnsupportedRepositoryType;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.out.persistence.unsupported.UnsupportedPersistenceType;
 import fr.sylvainjanet.tracker.architecturefixture.adapter.out.unsupported.UnsupportedOutboundAdapterType;
 import fr.sylvainjanet.tracker.architecturefixture.domain.MisplacedRepository;
@@ -58,6 +64,37 @@ public class StructuralPersistenceConventionContractTest {
                 persistenceExceptionsExtendRuntimeException,
                 "MisconfiguredPersistenceFailure",
                 MisconfiguredPersistenceFailure.class);
+    }
+
+    @Test
+    void persistenceRepositoriesUseAllowedPackages() {
+        ArchitectureRuleContract.assertAccepts(
+                persistenceRepositoriesUseAllowedPackages, CorrectlyNamedRepositoryMapper.class);
+        ArchitectureRuleContract.assertRejects(
+                persistenceRepositoriesUseAllowedPackages,
+                "UnsupportedRepositoryType",
+                UnsupportedRepositoryType.class);
+    }
+
+    @Test
+    void persistenceRepositoryMappersHaveMapperSuffix() {
+        ArchitectureRuleContract.assertAccepts(
+                persistenceRepositoryMappersHaveMapperSuffix, CorrectlyNamedRepositoryMapper.class);
+        ArchitectureRuleContract.assertRejects(
+                persistenceRepositoryMappersHaveMapperSuffix,
+                "InvalidRepositoryMapperFunction",
+                InvalidRepositoryMapperFunction.class);
+    }
+
+    @Test
+    void persistenceRepositoryMappersShouldBeFinalClasses() {
+        ArchitectureRuleContract.assertAccepts(
+                persistenceRepositoryMappersShouldBeFinalClasses,
+                CorrectlyNamedRepositoryMapper.class);
+        ArchitectureRuleContract.assertRejects(
+                persistenceRepositoryMappersShouldBeFinalClasses,
+                "InvalidRepositoryMapperFunction",
+                InvalidRepositoryMapperFunction.class);
     }
 
     @Test

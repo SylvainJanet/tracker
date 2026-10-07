@@ -37,7 +37,11 @@ public class HexagonalArchitectureTest {
     private static final String OUTBOUND_ADAPTERS = architecturePackage("adapter.out");
     private static final String PERSISTENCE = architecturePackage("adapter.out.persistence");
     private static final String OUTBOUND_ADAPTER_EXCEPTIONS =
-            architecturePackage("adapter.out.persistence.exceptions");
+            architecturePackage("adapter.out.*..exceptions");
+    private static final String OUTBOUND_ADAPTER_MAPPER =
+            architecturePackage("adapter.out.*..mapper");
+    private static final String[] OUTBOUND_ADAPTER_ALLOWED_PACKAGES =
+            new String[] {OUTBOUND_ADAPTER_EXCEPTIONS, OUTBOUND_ADAPTER_MAPPER};
     private static final String CONTEXT_CONFIGURATION = architecturePackage("configuration");
     private static final String APPLICATION_CONFIGURATION =
             "fr.sylvainjanet.tracker.configuration..";
@@ -147,7 +151,7 @@ public class HexagonalArchitectureTest {
                     .that()
                     .resideInAPackage(OUTBOUND_ADAPTERS)
                     .and()
-                    .resideOutsideOfPackage(OUTBOUND_ADAPTER_EXCEPTIONS)
+                    .resideOutsideOfPackages(OUTBOUND_ADAPTER_ALLOWED_PACKAGES)
                     .should(implement(resideInAPackage(OUTBOUND_PORTS)))
                     .allowEmptyShould(true);
 
