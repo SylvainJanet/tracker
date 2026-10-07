@@ -257,8 +257,8 @@ duplicates.
 - [x] Create the business-agnostic Statistics supporting module and its inbound
       rolling-average contract.
 - [x] Wire Analysis to Statistics through that contract.
-- [x] Publish the requested timeline, range and weight-measurement data while
-      deliberately returning no rolling averages until their calculation ticket.
+- [x] Publish the requested timeline, range and weight-measurement data through
+      a stable Analysis contract.
 - [ ] Model calculation-method identity and effective history independently from
       goals.
 - [ ] Resolve expected weight from the applicable strategy trajectory.
@@ -285,10 +285,10 @@ applicable strategy, and calculation method.
 
 ## Milestone 5 — Reproduce weight progress and boundaries
 
-- [ ] Implement reusable indexed rolling-average calculations in Statistics.
-- [ ] Have Analysis select the required windows and translate dated weight data
+- [x] Implement reusable indexed rolling-average calculations in Statistics.
+- [x] Have Analysis select the required windows and translate dated weight data
       into indexed Statistics inputs.
-- [ ] Translate Statistics results back into dated rolling-weight results with
+- [x] Translate Statistics results back into dated rolling-weight results with
       stable timeline indexes.
 - [ ] Compare rolling results with expected trajectories.
 - [ ] Implement direction- and severity-specific boundary policies.
@@ -301,10 +301,9 @@ applicable strategy, and calculation method.
 
 ### Decision gates
 
-- Accepted rolling windows, partial-window behaviour and rounding.
 - Whether predictions may participate in rolling-weight calculations.
 - Accepted boundary method and parameters.
-- Treatment of incomplete coverage.
+- How incomplete coverage affects boundary confidence and signals.
 - Signal prioritization and acknowledgement.
 - Conditions for proposing a goal or maintenance review.
 
@@ -344,7 +343,8 @@ explains differences caused by deliberately changed rules.
 - [ ] Show recent and longer-window nutrition results.
 - [x] Establish reusable frontend graph presentation and show the measured-weight
       trajectory.
-- [ ] Show rolling-weight trends and boundary signals.
+- [x] Show rolling-weight trends.
+- [ ] Show weight-boundary signals.
 - [ ] Make important results expandable into explanations.
 - [ ] Distinguish missing, unmeasured, provisional, and complete information.
 - [ ] Keep presentation composition outside domain ownership.

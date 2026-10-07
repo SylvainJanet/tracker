@@ -68,12 +68,12 @@ Feature contexts provide library-independent graph inputs to a shared,
 input-driven graph component in the frontend web adapter. The shared adapter
 owns their conversion to ECharts options.
 
-The implemented baseline supports one line series of numeric points. Series
-meaning, labels, visibility, colours and accessible descriptions remain
-application-owned. The graph is responsive, and the Analysis page retains a
-semantic table as a non-chart representation of the same measurements. Later
-tickets may extend the shared contract with multiple series and interactions
-without exposing ECharts types outside the adapter.
+The implemented baseline supports the measured-weight line plus one rolling-average
+line for each accepted window. Series meaning, labels, colours, coverage intensity
+and accessible descriptions remain application-owned. The graph is responsive,
+and the Analysis page retains a semantic table as a non-chart representation of
+the measured weights. Later tickets add interactions, visibility controls and
+further descriptions without exposing ECharts types outside the adapter.
 
 Exact dependency versions, module registration, loading configuration and adapter
 structure are owned by executable configuration and production code.
@@ -88,78 +88,36 @@ absence. The stable timeline origin and requested range remain available while
 the measurement and calculated-series collections are empty. Presentation for
 this state must not claim that no weight has ever been logged.
 
-## Rolling-average decision gate
+## Rolling-average baseline
 
-Before TRACKER-15, explicitly decide:
+The implemented weight-analysis workflow:
 
-1. Which windows the weight-analysis workflow requests. Historical evidence
-   identifies 7, 14, 28, 60, 180 and 360 calendar days, but the accepted set
-   remains a product decision.
-2. On which timeline indexes Analysis publishes results: every represented day,
-   only measurement dates, or another explicitly defined set.
-3. Which input values are eligible and how gaps are resolved. This is a
-   Strategy-owned decision. Missing values must remain observable to Strategy
-   and must never be silently converted to zero by Analysis or Statistics.
-4. Whether partial initial windows are published and how their coverage is
-   represented.
-5. The mathematical precision and rounding required from Statistics, separately
-   from frontend display formatting.
-6. How explicitly selected future ranges behave. The default range ends on
-   today, so later measurements are outside that range without requiring a
-   separate past, present or future classification.
+- requests trailing windows of 7, 14, 28, 60, 180 and 360 calendar days;
+- includes only directly recorded weight measurements;
+- leaves missing dates absent rather than converting them to zero or filling them;
+- considers every date in the represented range and publishes a point whenever
+  its trailing window contains at least one measurement;
+- publishes incomplete windows and includes every contributing measurement so
+  coverage and provenance are immediately available to frontend workflows;
+- publishes an exact fractional result together with half-up `PRETTY` and
+  `PRECISE` approximations at two and twenty decimal places;
+- exposes window series through `rollingAverageSeries`, ordered by ascending
+  window size, with points and included measurements ordered by ascending date;
+- validates result coherence in frontend Analysis without reproducing the
+  statistical calculation;
+- calculates results on demand without persisting them.
 
-A selected range beginning after the timeline origin must not change the
-calculated value at its first date. Analysis must obtain enough context-owned
-pre-range input for the largest requested window and translate it into indexed
-Statistics input. Statistics performs the numerical calculation without knowing
-the dates or their business meaning. Analysis then restores the dates and clips
-the published points to the requested display range.
+No Strategy eligibility or gap-resolution policy is required for this method
+because every direct measurement in the calendar window is eligible. Other
+analysis methods must obtain such policies from Strategy when their eligibility
+rules require them.
+
+When future range selection begins after the timeline origin, the calculated
+value at its first date must remain unchanged. Analysis must obtain enough
+pre-range input for the largest requested window, restore Statistics indexes to
+dates and clip only the published points to the requested display range.
 
 ## Ticket plan
-
-### TRACKER-15 — Display rolling averages
-
-- Resolve the rolling-average decision gate before implementing calculation
-  behaviour.
-- Define any eligibility or missing-data policy in Strategy rather than
-  embedding it in Analysis or Statistics.
-- Extend Statistics with generic indexed-series and rolling-window domain
-  concepts only where their mathematical invariants require them.
-- Implement rolling-average calculations in Statistics without dates, weights,
-  units, Journal rules or presentation concepts.
-- Have Analysis obtain Journal data and any applicable Strategy decision through
-  their application contracts.
-- Have Analysis translate the selected data and windows into indexed Statistics
-  input.
-- Keep results independent of the selected display range by obtaining the
-  required lookback before requesting the calculation.
-- Translate Statistics indexes and numerical results into Analysis-owned dated
-  rolling-weight results.
-- Include the accepted coverage metadata in every published point.
-- Extend the HTTP response through `rollingAverages`.
-- Extend frontend Analysis validation to accept coherent rolling results without
-  reproducing the calculation.
-- Evolve the shared graph input from its current single-series contract to
-  support the measured-weight series plus one line series per rolling window,
-  without exposing ECharts types outside the shared web adapter.
-- Test Statistics calculations independently for:
-  - complete and partial windows;
-  - sparse indexes;
-  - exact inclusive boundaries;
-  - empty input;
-  - precision and rounding;
-  - output ordering.
-- Test Analysis orchestration independently for:
-  - Journal and Strategy collaboration;
-  - range lookback;
-  - index-to-date translation;
-  - coverage metadata;
-  - response ordering and empty results.
-- Test frontend validation and presentation of valid and incoherent rolling
-  results.
-
-No calculated value should be persisted during this task unless a separate
-persistence decision is made.
 
 ### TRACKER-16 — Display weight when hovering a graph node
 
