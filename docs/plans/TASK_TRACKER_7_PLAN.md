@@ -119,14 +119,6 @@ dates and clip only the published points to the requested display range.
 
 ## Ticket plan
 
-### TRACKER-16 — Display weight when hovering a graph node
-
-- Enable item tooltips.
-- Display series label, calendar date, and formatted kilogram value.
-- Display the rolling window and coverage when hovering a rolling-average point.
-- Keep formatting in the frontend.
-- Test the tooltip formatter as a pure function.
-
 ### TRACKER-17 — Display details when clicking a graph node
 
 - Forward ECharts point-click events from the page.
