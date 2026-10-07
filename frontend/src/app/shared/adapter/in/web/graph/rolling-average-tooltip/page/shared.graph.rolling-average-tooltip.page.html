@@ -1,0 +1,54 @@
+<section
+  class="graph-tooltip"
+  data-testid="shared-graph-rolling-average-tooltip"
+  [attr.aria-label]="'Graph values for ' + view().heading"
+>
+  <h3 class="graph-tooltip__heading">{{ view().heading }}</h3>
+
+  <div class="graph-tooltip__value">
+    <span
+      class="graph-tooltip__series-marker"
+      data-testid="graph-tooltip-series-marker"
+      aria-hidden="true"
+      [style.--series-color]="'var(' + view().primaryValue.color + ')'"
+    ></span>
+
+    <span class="graph-tooltip__series-label">
+      {{ view().primaryValue.seriesLabel }}
+    </span>
+
+    <strong class="graph-tooltip__formatted-value">
+      {{ view().primaryValue.formattedValue }}
+    </strong>
+  </div>
+
+  @if (view().rollingAverages.length > 0) {
+    <h4 class="graph-tooltip__section-heading">Rolling averages</h4>
+
+    @for (rollingAverage of view().rollingAverages; track $index) {
+      <div class="graph-tooltip__rolling-average">
+        <div class="graph-tooltip__value">
+          <span
+            class="graph-tooltip__series-marker"
+            data-testid="graph-tooltip-series-marker"
+            aria-hidden="true"
+            [style.--series-color]="'var(' + rollingAverage.color + ')'"
+          ></span>
+
+          <span class="graph-tooltip__series-label">
+            {{ rollingAverage.seriesLabel }}
+          </span>
+
+          <strong class="graph-tooltip__formatted-value">
+            {{ rollingAverage.formattedValue }}
+          </strong>
+        </div>
+
+        <small class="graph-tooltip__coverage">
+          Coverage: {{ rollingAverage.coverage.includedValueCount }} of
+          {{ rollingAverage.coverage.windowInDays }} days measured
+        </small>
+      </div>
+    }
+  }
+</section>

@@ -4,4 +4,22 @@
   data-testid="shared-graph"
   [options]="options()"
   [autoResize]="true"
+  (chartInit)="onChartInit($event)"
 ></div>
+
+@if (tooltipTemplate(); as template) {
+  @if (tooltipState(); as tooltip) {
+    <div
+      class="shared-graph__tooltip"
+      [class.shared-graph__tooltip--before]="tooltip.positionBeforePointer"
+      [style.--tooltip-pointer-x]="tooltip.pointerX + 'px'"
+      role="tooltip"
+      data-testid="shared-graph-tooltip"
+    >
+      <ng-container
+        [ngTemplateOutlet]="template"
+        [ngTemplateOutletContext]="{ $implicit: tooltip.value }"
+      ></ng-container>
+    </div>
+  }
+}

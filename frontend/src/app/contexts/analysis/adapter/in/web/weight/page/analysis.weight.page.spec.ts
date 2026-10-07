@@ -1,9 +1,22 @@
-import { Component, input, signal, type WritableSignal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  Component,
+  contentChild,
+  input,
+  signal,
+  TemplateRef,
+  type WritableSignal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SharedGraphPage, SharedGraphView } from '../../../../../../../shared/api/shared.graph';
+import {
+  SharedGraphPage,
+  SharedGraphRollingAverageTooltipPage,
+  SharedGraphView,
+  type SharedRollingAverageGraphTooltipView,
+} from '../../../../../../../shared/api/shared.graph';
 import type { AnalysisWeightState } from '../model/state/analysis.weight.model.state';
 import {
   ANALYSIS_WEIGHT_PRESENTER_FACTORY,
@@ -13,10 +26,26 @@ import { AnalysisWeightPage } from './analysis.weight.page';
 
 @Component({
   selector: 'app-shared-graph',
-  template: '',
+  imports: [NgTemplateOutlet],
+  template: `
+    @if (tooltipTemplate(); as template) {
+      @if (selectedX(); as x) {
+        <ng-container
+          [ngTemplateOutlet]="template"
+          [ngTemplateOutletContext]="{ $implicit: x }"
+        ></ng-container>
+      }
+    }
+  `,
 })
 class SharedGraphPageStub {
   readonly graph = input.required<SharedGraphView>();
+  readonly tooltipTemplate = contentChild<TemplateRef<{ readonly $implicit: number }>>(TemplateRef);
+  readonly selectedX = signal<number | undefined>(undefined);
+
+  showTooltipAt(x: number): void {
+    this.selectedX.set(x);
+  }
 }
 
 describe('AnalysisWeightPage', () => {
@@ -88,6 +117,25 @@ describe('AnalysisWeightPage', () => {
         },
       ],
     );
+    const tooltipView: SharedRollingAverageGraphTooltipView = {
+      heading: '2026-09-23',
+      primaryValue: {
+        seriesLabel: 'Measured weight',
+        color: '--color-action',
+        formattedValue: '81.9 kg',
+      },
+      rollingAverages: [
+        {
+          seriesLabel: '7-day rolling average',
+          color: '--color-analysis-weight-rolling-7',
+          formattedValue: '82 kg',
+          coverage: {
+            includedValueCount: 2,
+            windowInDays: 7,
+          },
+        },
+      ],
+    };
     currentState.set({
       analysisState: {
         kind: 'analyzed',
@@ -123,6 +171,9 @@ describe('AnalysisWeightPage', () => {
               ],
             },
           ],
+          graphTooltipByDayNumber: {
+            4: tooltipView,
+          },
           graph,
         },
       },
@@ -136,6 +187,17 @@ describe('AnalysisWeightPage', () => {
 
     expect(graphElement).not.toBeNull();
     expect(graphPage?.graph()).toBe(graph);
+
+    graphPage?.showTooltipAt(4);
+    fixture.detectChanges();
+
+    const tooltipElement = fixture.debugElement.query(
+      By.directive(SharedGraphRollingAverageTooltipPage),
+    );
+    const tooltipPage = tooltipElement?.injector.get(SharedGraphRollingAverageTooltipPage);
+
+    expect(tooltipElement).not.toBeNull();
+    expect(tooltipPage?.view()).toBe(tooltipView);
 
     const summary = fixture.nativeElement.querySelector(
       '[data-testid="weight-analysis-summary"]',

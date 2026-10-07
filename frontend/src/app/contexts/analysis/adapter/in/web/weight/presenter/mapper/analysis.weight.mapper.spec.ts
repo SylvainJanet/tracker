@@ -118,6 +118,46 @@ describe('AnalysisWeightMapper', () => {
           ],
         },
       ],
+      graphTooltipByDayNumber: {
+        1: {
+          heading: '2026-09-20',
+          primaryValue: {
+            seriesLabel: 'Measured weight',
+            color: '--color-action',
+            formattedValue: '82.1 kg',
+          },
+          rollingAverages: [
+            {
+              seriesLabel: '7-day rolling average',
+              color: '--color-analysis-weight-rolling-7',
+              formattedValue: '82.1 kg',
+              coverage: {
+                includedValueCount: 1,
+                windowInDays: 7,
+              },
+            },
+          ],
+        },
+        4: {
+          heading: '2026-09-23',
+          primaryValue: {
+            seriesLabel: 'Measured weight',
+            color: '--color-action',
+            formattedValue: '81.9 kg',
+          },
+          rollingAverages: [
+            {
+              seriesLabel: '7-day rolling average',
+              color: '--color-analysis-weight-rolling-7',
+              formattedValue: '82 kg',
+              coverage: {
+                includedValueCount: 2,
+                windowInDays: 7,
+              },
+            },
+          ],
+        },
+      },
       graph: {
         accessibleDescription:
           'Line graph of 2 measured weights and 1 rolling average from analysis day 1 to analysis day 4.',

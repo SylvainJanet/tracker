@@ -16,3 +16,24 @@ export class SharedGraphView {
     readonly series: readonly SharedGraphSeriesView[],
   ) {}
 }
+
+export interface SharedGraphTooltipValueView {
+  readonly seriesLabel: string;
+  readonly color: string;
+  readonly formattedValue: string;
+}
+
+export interface SharedGraphTooltipCoverageView {
+  readonly includedValueCount: number;
+  readonly windowInDays: number;
+}
+
+export interface SharedGraphTooltipRollingAverageView extends SharedGraphTooltipValueView {
+  readonly coverage: SharedGraphTooltipCoverageView;
+}
+
+export interface SharedRollingAverageGraphTooltipView {
+  readonly heading: string;
+  readonly primaryValue: SharedGraphTooltipValueView;
+  readonly rollingAverages: readonly SharedGraphTooltipRollingAverageView[];
+}

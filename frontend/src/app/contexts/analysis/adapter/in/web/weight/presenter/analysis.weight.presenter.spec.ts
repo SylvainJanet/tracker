@@ -84,6 +84,26 @@ describe('AnalysisWeightPresenter', () => {
           ],
 
           rollingAverages: [],
+          graphTooltipByDayNumber: {
+            1: {
+              heading: '2026-09-20',
+              primaryValue: {
+                seriesLabel: 'Measured weight',
+                color: '--color-action',
+                formattedValue: '82.1 kg',
+              },
+              rollingAverages: [],
+            },
+            4: {
+              heading: '2026-09-23',
+              primaryValue: {
+                seriesLabel: 'Measured weight',
+                color: '--color-action',
+                formattedValue: '81.9 kg',
+              },
+              rollingAverages: [],
+            },
+          },
           graph: {
             accessibleDescription:
               'Line graph of 2 measured weights from analysis day 1 to analysis day 4.',
@@ -182,6 +202,26 @@ describe('AnalysisWeightPresenter', () => {
           range: resultData.range,
           weightMeasurements: resultData.weightMeasurements,
           rollingAverages: [],
+          graphTooltipByDayNumber: {
+            1: {
+              heading: '2026-09-20',
+              primaryValue: {
+                seriesLabel: 'Measured weight',
+                color: '--color-action',
+                formattedValue: '82.1 kg',
+              },
+              rollingAverages: [],
+            },
+            4: {
+              heading: '2026-09-23',
+              primaryValue: {
+                seriesLabel: 'Measured weight',
+                color: '--color-action',
+                formattedValue: '81.9 kg',
+              },
+              rollingAverages: [],
+            },
+          },
           graph: {
             accessibleDescription:
               'Line graph of 2 measured weights from analysis day 1 to analysis day 4.',

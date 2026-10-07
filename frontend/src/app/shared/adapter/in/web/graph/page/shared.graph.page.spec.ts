@@ -1,7 +1,7 @@
-import { Directive, input, signal, type WritableSignal } from '@angular/core';
+import { Component, Directive, input, output, signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import type { EChartsCoreOption } from 'echarts/core';
+import { type ECharts, type EChartsCoreOption } from 'echarts/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -23,6 +23,28 @@ import { SharedGraphPage } from './shared.graph.page';
 class EChartsDirectiveStub {
   readonly options = input<EChartsCoreOption | null>(null);
   readonly autoResize = input(false);
+  readonly chartInit = output<ECharts>();
+}
+
+@Component({
+  selector: 'app-shared-graph-tooltip-test-host',
+  imports: [SharedGraphPage],
+  template: `
+    <app-shared-graph [graph]="graph">
+      <ng-template let-x>
+        <span data-testid="custom-graph-tooltip">Hovered day {{ x }}</span>
+      </ng-template>
+    </app-shared-graph>
+  `,
+})
+class SharedGraphTooltipTestHost {
+  readonly graph = new SharedGraphView('Measured weight.', [
+    {
+      label: 'Measured weight',
+      color: '#2563eb',
+      points: [{ x: 4, y: 81.9 }],
+    },
+  ]);
 }
 
 describe('SharedGraphPage', () => {
@@ -42,7 +64,7 @@ describe('SharedGraphPage', () => {
     presenterFactory = vi.fn<SharedGraphPresenterFactory>(() => presenter);
 
     await TestBed.configureTestingModule({
-      imports: [SharedGraphPage],
+      imports: [SharedGraphPage, SharedGraphTooltipTestHost],
       providers: [
         {
           provide: SHARED_GRAPH_PRESENTER_FACTORY,
@@ -158,5 +180,59 @@ describe('SharedGraphPage', () => {
     expect(chart).not.toBeNull();
     expect(directive?.options()).toEqual(SharedGraphMapper.modelToOptions(resolvedGraph));
     expect(directive?.autoResize()).toBe(true);
+  });
+
+  it('renders projected tooltip content for the x-axis value selected by ECharts', () => {
+    type ChartEventHandler = (event: unknown) => void;
+
+    const handlers = new Map<string, ChartEventHandler>();
+    const chart = {
+      on: vi.fn((eventName: string, handler: ChartEventHandler) => {
+        handlers.set(eventName, handler);
+      }),
+      off: vi.fn(),
+    } as unknown as ECharts;
+    const fixture = TestBed.createComponent(SharedGraphTooltipTestHost);
+
+    fixture.detectChanges();
+
+    const chartElement = fixture.debugElement.query(By.directive(EChartsDirectiveStub));
+    const directive = chartElement?.injector.get(EChartsDirectiveStub);
+
+    expect(directive).toBeDefined();
+
+    directive?.chartInit.emit(chart);
+
+    expect(handlers.has('showtip')).toBe(true);
+    expect(handlers.has('hidetip')).toBe(true);
+
+    handlers.get('showtip')?.({
+      x: 120,
+      y: 80,
+      dataByCoordSys: [
+        {
+          dataByAxis: [
+            {
+              axisDim: 'x',
+              value: 4,
+            },
+          ],
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    const tooltip = fixture.nativeElement.querySelector(
+      '[data-testid="shared-graph-tooltip"]',
+    ) as HTMLElement | null;
+
+    expect(tooltip).not.toBeNull();
+    expect(tooltip?.getAttribute('role')).toBe('tooltip');
+    expect(tooltip?.textContent?.trim()).toBe('Hovered day 4');
+
+    handlers.get('hidetip')?.({});
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="shared-graph-tooltip"]')).toBeNull();
   });
 });

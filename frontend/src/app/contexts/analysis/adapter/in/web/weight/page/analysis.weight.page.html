@@ -65,7 +65,16 @@
         </dl>
 
         <div class="analysis-graph-region">
-          <app-shared-graph [graph]="currentState.analysisState.view.graph" />
+          <app-shared-graph [graph]="currentState.analysisState.view.graph">
+            <ng-template let-dayNumber>
+              @if (
+                currentState.analysisState.view.graphTooltipByDayNumber[dayNumber];
+                as tooltipView
+              ) {
+                <app-shared-graph-rolling-average-tooltip [view]="tooltipView" />
+              }
+            </ng-template>
+          </app-shared-graph>
         </div>
 
         @if (currentState.analysisState.view.rollingAverages.length > 0) {
