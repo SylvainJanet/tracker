@@ -16,6 +16,14 @@ export class SharedGraphMapper {
         enabled: true,
         description: model.accessibleDescription,
       },
+      tooltip: {
+        trigger: 'axis',
+        showContent: false,
+        axisPointer: {
+          type: 'line',
+          snap: true,
+        },
+      },
       xAxis: {
         type: 'value',
         min: 'dataMin',

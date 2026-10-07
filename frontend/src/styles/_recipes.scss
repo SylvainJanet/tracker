@@ -242,7 +242,7 @@
 .tracker-status__eyebrow {
   margin-block-end: var(--space-1) !important;
   color: var(--color-text-muted);
-  font-size: 0.75rem;
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-emphasis);
   letter-spacing: 0.08em;
   line-height: 1.2;

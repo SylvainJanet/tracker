@@ -1,5 +1,5 @@
 import { LineChart } from 'echarts/charts';
-import { GridComponent, VisualMapComponent } from 'echarts/components';
+import { GridComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { describe, expect, it, vi } from 'vitest';
@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { SharedGraphView } from '../../model/view/shared.graph.model.view';
 import { SharedGraphMapper } from './shared.graph.mapper';
 
-echarts.use([LineChart, GridComponent, VisualMapComponent, SVGRenderer]);
+echarts.use([LineChart, GridComponent, TooltipComponent, VisualMapComponent, SVGRenderer]);
 
 describe('SharedGraphMapper', () => {
   it('maps sparse series to lines without persistent point symbols', () => {
@@ -35,6 +35,14 @@ describe('SharedGraphMapper', () => {
       aria: {
         enabled: true,
         description: 'Measured weight and 7-day rolling average.',
+      },
+      tooltip: {
+        trigger: 'axis',
+        showContent: false,
+        axisPointer: {
+          type: 'line',
+          snap: true,
+        },
       },
       xAxis: {
         type: 'value',
@@ -111,24 +119,6 @@ describe('SharedGraphMapper', () => {
     });
   });
 
-  it('keeps a symbol for a series containing only one point', () => {
-    const graph = new SharedGraphView('One measured weight.', [
-      {
-        label: 'Measured weight',
-        color: '#2563eb',
-        points: [{ x: 1, y: 82.1 }],
-      },
-    ]);
-
-    expect(SharedGraphMapper.modelToOptions(graph)).toMatchObject({
-      series: [
-        {
-          showSymbol: true,
-        },
-      ],
-    });
-  });
-
   it('applies calculated intensities to the rendered line stroke', () => {
     const graph = new SharedGraphView('7-day rolling average.', [
       {
@@ -165,5 +155,31 @@ describe('SharedGraphMapper', () => {
       chart.dispose();
       getCanvasContext.mockRestore();
     }
+  });
+
+  it('keeps a single point visible and available to axis hover', () => {
+    const graph = new SharedGraphView('One measured weight.', [
+      {
+        label: 'Measured weight',
+        color: '#2563eb',
+        points: [{ x: 1, y: 82.1 }],
+      },
+    ]);
+
+    expect(SharedGraphMapper.modelToOptions(graph)).toMatchObject({
+      tooltip: {
+        trigger: 'axis',
+        showContent: false,
+        axisPointer: {
+          type: 'line',
+          snap: true,
+        },
+      },
+      series: [
+        {
+          showSymbol: true,
+        },
+      ],
+    });
   });
 });

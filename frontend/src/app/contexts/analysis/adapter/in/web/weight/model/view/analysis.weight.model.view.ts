@@ -1,4 +1,7 @@
-import type { SharedGraphView } from '../../../../../../../../shared/api/shared.graph';
+import type {
+  SharedGraphView,
+  SharedRollingAverageGraphTooltipView,
+} from '../../../../../../../../shared/api/shared.graph';
 
 export interface AnalysisWeightDateRangeView {
   readonly startDate: string;
@@ -29,5 +32,6 @@ export interface AnalysisWeightView {
   readonly range: AnalysisWeightDateRangeView;
   readonly weightMeasurements: readonly AnalysisWeightMeasurementView[];
   readonly rollingAverages: readonly AnalysisWeightRollingAverageView[];
+  readonly graphTooltipByDayNumber: Readonly<Record<number, SharedRollingAverageGraphTooltipView>>;
   readonly graph: SharedGraphView;
 }

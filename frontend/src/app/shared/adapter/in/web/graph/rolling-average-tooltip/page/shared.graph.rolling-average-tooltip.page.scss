@@ -1,0 +1,61 @@
+:host {
+  --graph-tooltip-marker-size: 0.625rem;
+  display: block;
+}
+
+.graph-tooltip__heading,
+.graph-tooltip__section-heading {
+  margin-block: 0;
+  font-size: inherit;
+  font-weight: var(--font-weight-emphasis);
+}
+
+.graph-tooltip__heading {
+  margin-block-end: var(--space-2);
+}
+
+.graph-tooltip__section-heading {
+  margin-block: var(--space-3) var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.graph-tooltip__value {
+  display: grid;
+  grid-template-columns: var(--graph-tooltip-marker-size) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.graph-tooltip__series-marker {
+  inline-size: var(--graph-tooltip-marker-size);
+  block-size: var(--graph-tooltip-marker-size);
+  border-radius: 50%;
+  background: var(--series-color);
+}
+
+.graph-tooltip__series-label {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.graph-tooltip__formatted-value {
+  white-space: nowrap;
+  font-weight: var(--font-weight-emphasis);
+  font-variant-numeric: tabular-nums;
+}
+
+.graph-tooltip__rolling-average + .graph-tooltip__rolling-average {
+  margin-block-start: var(--space-2);
+}
+
+.graph-tooltip__coverage {
+  display: block;
+  margin-block-start: var(--space-1);
+  padding-inline-start: calc(var(--graph-tooltip-marker-size) + var(--space-2));
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  line-height: 1.25;
+}

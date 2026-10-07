@@ -23,6 +23,7 @@ describe('AnalysisWeightModel', () => {
       },
     ],
     rollingAverages: [],
+    graphTooltipByDayNumber: {},
     graph: {
       accessibleDescription:
         'Line graph of 2 measured weights from analysis day 1 to analysis day 4.',
