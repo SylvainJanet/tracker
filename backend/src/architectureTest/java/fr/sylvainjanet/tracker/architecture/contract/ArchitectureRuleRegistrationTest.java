@@ -1,6 +1,7 @@
 package fr.sylvainjanet.tracker.architecture.contract;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.tngtech.archunit.junit.ArchTest;
@@ -26,7 +27,7 @@ import org.junit.jupiter.api.Test;
 
 class ArchitectureRuleRegistrationTest {
 
-    private static final int EXPECTED_RULE_COUNT = 107;
+    private static final int EXPECTED_RULE_COUNT = 122;
 
     private static final List<Class<?>> ARCHITECTURE_POLICY_CLASSES =
             List.of(
@@ -60,7 +61,7 @@ class ArchitectureRuleRegistrationTest {
     void everyArchitectureRuleGroupIsRegistered() {
         List<Field> groupFields = fieldsOfType(ArchTests.class);
 
-        assertTrue(!groupFields.isEmpty());
+        assertFalse(groupFields.isEmpty());
         for (Field groupField : groupFields) {
             assertTrue(
                     groupField.isAnnotationPresent(ArchTest.class),
