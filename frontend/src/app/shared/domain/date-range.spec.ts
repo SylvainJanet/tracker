@@ -8,7 +8,7 @@ describe('DateRange', () => {
     const startDate = calendarDate('2026-09-20');
     const endDate = calendarDate('2026-09-25');
 
-    const range = new DateRange(startDate, endDate);
+    const range = DateRange.create(startDate, endDate);
 
     expect(range.startDate).toBe(startDate);
     expect(range.endDate).toBe(endDate);
@@ -19,17 +19,29 @@ describe('DateRange', () => {
   it('accepts the same date as both boundaries', () => {
     const date = calendarDate('2026-09-20');
 
-    expect(() => new DateRange(date, date)).not.toThrow();
+    expect(() => DateRange.create(date, date)).not.toThrow();
+  });
+
+  it('rejects a missing start date', () => {
+    expect(() => DateRange.create(undefined as never, calendarDate('2026-09-25'))).toThrow(
+      'start date must not be null',
+    );
+  });
+
+  it('rejects a missing end date', () => {
+    expect(() => DateRange.create(calendarDate('2026-09-20'), undefined as never)).toThrow(
+      'end date must not be null',
+    );
   });
 
   it('rejects a start date after the end date', () => {
-    expect(() => new DateRange(calendarDate('2026-09-25'), calendarDate('2026-09-20'))).toThrow(
+    expect(() => DateRange.create(calendarDate('2026-09-25'), calendarDate('2026-09-20'))).toThrow(
       'start date must not be after end date',
     );
   });
 
   it('identifies a date outside the range', () => {
-    const range = new DateRange(calendarDate('2026-09-20'), calendarDate('2026-09-25'));
+    const range = DateRange.create(calendarDate('2026-09-20'), calendarDate('2026-09-25'));
 
     expect(range.contains(calendarDate('2026-09-19'))).toBe(false);
     expect(range.contains(calendarDate('2026-09-26'))).toBe(false);

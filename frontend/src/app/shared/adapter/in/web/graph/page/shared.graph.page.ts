@@ -2,20 +2,26 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
   input,
 } from '@angular/core';
 import { LineChart } from 'echarts/charts';
-import { AriaComponent, GridComponent } from 'echarts/components';
+import { AriaComponent, GridComponent, VisualMapComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
 
-import type { SharedGraphModel } from '../model/shared.graph.model';
-import { SharedGraphMapper } from '../presenter/mapper/shared.graph.mapper';
+import { type SharedGraphView } from '../model/view/shared.graph.model.view';
+import { SharedGraphMapper } from './mapper/shared.graph.mapper';
+import {
+  SHARED_GRAPH_PRESENTER_FACTORY,
+  SharedGraphPresenter,
+  type SharedGraphPresenterFactory,
+} from '../presenter/shared.graph.presenter';
 
-echarts.use([LineChart, GridComponent, AriaComponent, CanvasRenderer]);
+echarts.use([LineChart, GridComponent, VisualMapComponent, AriaComponent, CanvasRenderer]);
 
 @Component({
   selector: 'app-shared-graph',
@@ -23,23 +29,47 @@ echarts.use([LineChart, GridComponent, AriaComponent, CanvasRenderer]);
   templateUrl: './shared.graph.page.html',
   styleUrl: './shared.graph.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [provideEchartsCore({ echarts })],
+  providers: [
+    provideEchartsCore({ echarts }),
+    {
+      provide: SharedGraphPresenter,
+      useFactory: (factory: SharedGraphPresenterFactory): SharedGraphPresenter => factory(),
+      deps: [SHARED_GRAPH_PRESENTER_FACTORY],
+    },
+  ],
 })
 export class SharedGraphPage {
+  readonly presenter = inject(SharedGraphPresenter);
+  readonly state = this.presenter.state;
+
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly graph = input.required<SharedGraphView>();
 
-  readonly graph = input.required<SharedGraphModel>();
   readonly options = computed(() => {
-    const graph = this.graph();
+    const dataState = this.state().dataState;
 
-    return SharedGraphMapper.modelToOptions({
-      ...graph,
-      series: {
-        ...graph.series,
-        color: this.resolveColor(graph.series.color),
-      },
-    });
+    if (dataState.kind !== 'data') {
+      return {};
+    }
+
+    return SharedGraphMapper.modelToOptions(this.resolveGraphColor(dataState.view));
   });
+
+  constructor() {
+    effect(() => {
+      this.presenter.setData(this.graph());
+    });
+  }
+
+  private resolveGraphColor(graph: SharedGraphView): SharedGraphView {
+    return {
+      ...graph,
+      series: graph.series.map((series) => ({
+        ...series,
+        color: this.resolveColor(series.color),
+      })),
+    };
+  }
 
   private resolveColor(color: string): string {
     if (!color.startsWith('--')) {

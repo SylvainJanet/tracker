@@ -12,6 +12,7 @@ import type {
 } from '../../../application/port/out/weight-analysis.store';
 import { isGetWeightAnalysisResponse } from './contract/response/get-weight-analysis-response';
 import { AnalysisHttpContractRoutes } from './contract/routes/analysis-http-contract.routes';
+import { toOutcomeData } from './mapper/http-weight-analysis.gateway.mapper';
 
 export class HttpWeightAnalysisGateway implements WeightAnalysisStore {
   constructor(private readonly httpClient: HttpClient) {}
@@ -32,18 +33,7 @@ export class HttpWeightAnalysisGateway implements WeightAnalysisStore {
         };
       }
 
-      const outcomeData: WeightAnalysisOutcomeData = {
-        timelineStartDate: response.timelineStartDate,
-        range: {
-          startDate: response.range.startDate,
-          endDate: response.range.endDate,
-        },
-        weightMeasurements: response.weightMeasurements.map((measurement) => ({
-          date: measurement.date,
-          dayNumber: measurement.dayNumber,
-          weightInKg: measurement.weightInKg,
-        })),
-      };
+      const outcomeData: WeightAnalysisOutcomeData = toOutcomeData(response);
 
       return {
         kind: 'data',

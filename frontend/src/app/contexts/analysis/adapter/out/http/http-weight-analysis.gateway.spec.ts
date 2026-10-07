@@ -39,7 +39,46 @@ describe('HttpWeightAnalysisGateway', () => {
           {
             date: '2026-09-23',
             dayNumber: 4,
-            weightInKg: 81.9,
+            weightInKg: 81.95,
+          },
+        ],
+        rollingAverageSeries: [
+          {
+            windowSize: 7,
+            rollingAverages: [
+              {
+                date: '2026-09-23',
+                dayNumber: 4,
+                includedValues: [
+                  {
+                    date: '2026-09-20',
+                    dayNumber: 1,
+                    weightInKg: 82.1,
+                  },
+                  {
+                    date: '2026-09-23',
+                    dayNumber: 4,
+                    weightInKg: 81.95,
+                  },
+                ],
+                rollingAverage: {
+                  exactValue: {
+                    numerator: 164.05,
+                    denominator: 2,
+                  },
+                  approximations: [
+                    {
+                      value: 82.03,
+                      rounding: 'PRETTY',
+                    },
+                    {
+                      value: 82.025,
+                      rounding: 'PRECISE',
+                    },
+                  ],
+                },
+              },
+            ],
           },
         ],
       },
@@ -65,10 +104,48 @@ describe('HttpWeightAnalysisGateway', () => {
         {
           date: '2026-09-23',
           dayNumber: 4,
-          weightInKg: 81.9,
+          weightInKg: 81.95,
         },
       ],
-      rollingAverages: [],
+      rollingAverageSeries: [
+        {
+          windowSize: 7,
+          rollingAverages: [
+            {
+              date: '2026-09-23',
+              dayNumber: 4,
+              includedValues: [
+                {
+                  date: '2026-09-20',
+                  dayNumber: 1,
+                  weightInKg: 82.1,
+                },
+                {
+                  date: '2026-09-23',
+                  dayNumber: 4,
+                  weightInKg: 81.95,
+                },
+              ],
+              rollingAverage: {
+                exactValue: {
+                  numerator: 164.05,
+                  denominator: 2,
+                },
+                approximations: [
+                  {
+                    value: 82.03,
+                    rounding: 'PRETTY',
+                  },
+                  {
+                    value: 82.025,
+                    rounding: 'PRECISE',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
     });
 
     await expect(outcomePromise).resolves.toEqual(expectedOutcome);
@@ -82,7 +159,7 @@ describe('HttpWeightAnalysisGateway', () => {
       timelineStartDate: null,
       range: null,
       weightMeasurements: [],
-      rollingAverages: [],
+      rollingAverageSeries: [],
     });
 
     await expect(outcomePromise).resolves.toEqual({
@@ -101,7 +178,7 @@ describe('HttpWeightAnalysisGateway', () => {
         endDate: '2026-09-20',
       },
       weightMeasurements: [],
-      rollingAverages: [],
+      rollingAverageSeries: [],
     });
 
     await expect(outcomePromise).resolves.toEqual({
@@ -154,13 +231,87 @@ describe('HttpWeightAnalysisGateway', () => {
           weightInKg: 82.1,
         },
       ],
-      rollingAverages: [],
+      rollingAverageSeries: [],
     });
 
     await expect(outcomePromise).resolves.toEqual({
       kind: 'failed',
       outcomeData: {
         errorMessage: 'The backend returned an invalid response.',
+      },
+    });
+  });
+
+  it('preserves structurally valid rolling data for domain validation', async () => {
+    const outcomePromise = gateway.get();
+
+    const request = httpTestingController.expectOne('/api/analysis/weight');
+    request.flush({
+      timelineStartDate: '2026-09-20',
+      range: {
+        startDate: '2026-09-20',
+        endDate: '2026-09-20',
+      },
+      weightMeasurements: [],
+      rollingAverageSeries: [
+        {
+          windowSize: 7,
+          rollingAverages: [
+            {
+              date: '2026-09-20',
+              dayNumber: 1,
+              includedValues: [],
+              rollingAverage: {
+                exactValue: {
+                  numerator: 82.1,
+                  denominator: 1,
+                },
+                approximations: [
+                  {
+                    value: 82.1,
+                    rounding: 'PRECISE',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    await expect(outcomePromise).resolves.toEqual({
+      kind: 'data',
+      outcomeData: {
+        timelineStartDate: '2026-09-20',
+        range: {
+          startDate: '2026-09-20',
+          endDate: '2026-09-20',
+        },
+        weightMeasurements: [],
+        rollingAverageSeries: [
+          {
+            windowSize: 7,
+            rollingAverages: [
+              {
+                date: '2026-09-20',
+                dayNumber: 1,
+                includedValues: [],
+                rollingAverage: {
+                  exactValue: {
+                    numerator: 82.1,
+                    denominator: 1,
+                  },
+                  approximations: [
+                    {
+                      value: 82.1,
+                      rounding: 'PRECISE',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
       },
     });
   });

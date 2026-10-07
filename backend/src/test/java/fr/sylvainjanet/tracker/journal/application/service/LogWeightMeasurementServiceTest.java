@@ -1,23 +1,19 @@
 package fr.sylvainjanet.tracker.journal.application.service;
 
-import static fr.sylvainjanet.tracker.journal.application.port.in.dtos.builders.command.LogWeightMeasurementCommandTestBuilder.aLogWeightMeasurementCommand;
-import static fr.sylvainjanet.tracker.journal.application.port.out.dtos.builders.instruction.LogWeightMeasurementInstructionTestBuilder.aLogWeightMeasurementInstruction;
-import static fr.sylvainjanet.tracker.journal.application.port.out.dtos.builders.outcome.LogWeightMeasurementOutcomeTestBuilder.aLogWeightMeasurementOutcome;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.INVALID_LOG_COMMAND;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.INVALID_OUTCOME;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.LOG_COMMAND;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.LOG_INSTRUCTION;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.START_OUTCOME;
+import static fr.sylvainjanet.tracker.journal.fixture.WeightMeasurementFixtures.START_RESULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.command.LogWeightMeasurementCommand;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.LogWeightMeasurementResult;
-import fr.sylvainjanet.tracker.journal.application.port.out.dtos.outcome.LogWeightMeasurementOutcome;
 import fr.sylvainjanet.tracker.journal.application.port.out.gateway.store.WeightMeasurementStore;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.Month;
+import fr.sylvainjanet.tracker.technical.domain.contract.error.exception.DomainValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,60 +33,32 @@ class LogWeightMeasurementServiceTest {
     }
 
     @Test
-    void createsAndPersistsWeightMeasurement() {
-        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        BigDecimal weight = BigDecimal.valueOf(123.0f).setScale(2, RoundingMode.UNNECESSARY);
+    void logsWeightMeasurement() {
+        when(store.log(LOG_INSTRUCTION)).thenReturn(START_OUTCOME);
 
-        LogWeightMeasurementCommand command =
-                aLogWeightMeasurementCommand().withDate(date).withWeightInKg(weight).build();
-        LogWeightMeasurementOutcome outcome =
-                aLogWeightMeasurementOutcome().withDate(date).withWeightInKg(weight).build();
-        when(store.log(any())).thenReturn(outcome);
+        assertThat(service.log(LOG_COMMAND)).isEqualTo(START_RESULT);
 
-        LogWeightMeasurementResult result = service.log(command);
-
-        verify(store)
-                .log(
-                        aLogWeightMeasurementInstruction()
-                                .withDate(date)
-                                .withWeightInKg(weight)
-                                .build());
-        assertThat(result.date()).isEqualTo(date);
-        assertThat(result.weightInKg()).isEqualTo(weight);
+        verify(store).log(LOG_INSTRUCTION);
     }
 
     @Test
-    void doesNotStoreInvalidWeightMeasurement() {
-        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        BigDecimal weight = BigDecimal.valueOf(-123.0f).setScale(2, RoundingMode.UNNECESSARY);
+    void rejectsInvalidCommandBeforeCallingStore() {
+        assertThatThrownBy(() -> service.log(INVALID_LOG_COMMAND))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("Weight must be positive");
 
-        LogWeightMeasurementCommand command =
-                aLogWeightMeasurementCommand().withDate(date).withWeightInKg(weight).build();
-
-        assertThatThrownBy(() -> service.log(command))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(
-                        "weight must be a positive number of grams that is a multiple of 50 grams");
         verifyNoInteractions(store);
     }
 
     @Test
-    void shouldRejectInvalidOutcome() {
-        LocalDate date = LocalDate.of(2026, Month.AUGUST, 25);
-        BigDecimal validWeight = BigDecimal.valueOf(123.0f).setScale(2, RoundingMode.UNNECESSARY);
-        BigDecimal invalidWeight =
-                BigDecimal.valueOf(-123.0f).setScale(2, RoundingMode.UNNECESSARY);
+    void rejectsInvalidStoreOutcome() {
+        when(store.log(LOG_INSTRUCTION)).thenReturn(INVALID_OUTCOME);
 
-        LogWeightMeasurementCommand command =
-                aLogWeightMeasurementCommand().withDate(date).withWeightInKg(validWeight).build();
-        LogWeightMeasurementOutcome outcome =
-                aLogWeightMeasurementOutcome().withDate(date).withWeightInKg(invalidWeight).build();
-        when(store.log(any())).thenReturn(outcome);
+        assertThatThrownBy(() -> service.log(LOG_COMMAND))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("Weight must be positive");
 
-        assertThatThrownBy(() -> service.log(command))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(
-                        "weight must be a positive number of grams that is a multiple of 50 grams");
+        verify(store).log(LOG_INSTRUCTION);
     }
 
     @Test
@@ -98,6 +66,8 @@ class LogWeightMeasurementServiceTest {
         assertThatThrownBy(() -> service.log(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("command must not be null");
+
+        verifyNoInteractions(store);
     }
 
     @Test

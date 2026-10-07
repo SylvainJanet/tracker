@@ -1,12 +1,10 @@
 package fr.sylvainjanet.tracker.journal.adapter.in.web.controller;
 
+import fr.sylvainjanet.tracker.journal.adapter.in.web.controller.mapper.GetWeightMeasurementByDateQueryMapper;
+import fr.sylvainjanet.tracker.journal.adapter.in.web.controller.mapper.LogWeightMeasurementCommandMapper;
+import fr.sylvainjanet.tracker.journal.adapter.in.web.controller.mapper.WeightMeasurementResponseMapper;
 import fr.sylvainjanet.tracker.journal.adapter.in.web.dtos.request.LogWeightMeasurementRequest;
-import fr.sylvainjanet.tracker.journal.adapter.in.web.dtos.response.GetWeightMeasurementByDateResponse;
-import fr.sylvainjanet.tracker.journal.adapter.in.web.dtos.response.LogWeightMeasurementResponse;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.command.LogWeightMeasurementCommand;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.query.GetWeightMeasurementByDateQuery;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.GetWeightMeasurementByDateResult;
-import fr.sylvainjanet.tracker.journal.application.port.in.dtos.result.LogWeightMeasurementResult;
+import fr.sylvainjanet.tracker.journal.adapter.in.web.dtos.response.WeightMeasurementResponse;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.GetWeightMeasurementByDateUseCase;
 import fr.sylvainjanet.tracker.journal.application.port.in.usecase.LogWeightMeasurementUseCase;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
-import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +43,7 @@ public final class JournalController {
             content =
                     @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = LogWeightMeasurementResponse.class)))
+                            schema = @Schema(implementation = WeightMeasurementResponse.class)))
     @ApiResponse(
             responseCode = "400",
             description = "Invalid request",
@@ -58,10 +55,12 @@ public final class JournalController {
                                             implementation =
                                                     org.springframework.http.ProblemDetail.class)))
     @PostMapping(path = "/weight-measurement")
-    ResponseEntity<LogWeightMeasurementResponse> log(
+    ResponseEntity<WeightMeasurementResponse> log(
             @RequestBody @Valid LogWeightMeasurementRequest request) {
-        LogWeightMeasurementResult result = logWeightMeasurementUseCase.log(toCommand(request));
-        return ResponseEntity.ok(toResponse(result));
+        return ResponseEntity.ok(
+                WeightMeasurementResponseMapper.response(
+                        logWeightMeasurementUseCase.log(
+                                LogWeightMeasurementCommandMapper.command(request))));
     }
 
     @ApiResponse(
@@ -70,10 +69,7 @@ public final class JournalController {
             content =
                     @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema =
-                                    @Schema(
-                                            implementation =
-                                                    GetWeightMeasurementByDateResponse.class)))
+                            schema = @Schema(implementation = WeightMeasurementResponse.class)))
     @ApiResponse(
             responseCode = "404",
             description = "Weight measurement not found",
@@ -95,32 +91,15 @@ public final class JournalController {
                                             implementation =
                                                     org.springframework.http.ProblemDetail.class)))
     @GetMapping(path = "/weight-measurement/{date}")
-    ResponseEntity<GetWeightMeasurementByDateResponse> get(@PathVariable("date") LocalDate date) {
-        Optional<GetWeightMeasurementByDateResult> result =
-                getWeightMeasurementByDateUseCase.get(toQuery(date));
-        return result.map(
-                        getWeightMeasurementByDateResult ->
-                                ResponseEntity.ok(toResponse(getWeightMeasurementByDateResult)))
+    ResponseEntity<WeightMeasurementResponse> get(@PathVariable("date") LocalDate date) {
+        return getWeightMeasurementByDateUseCase
+                .get(GetWeightMeasurementByDateQueryMapper.query(date))
+                .map(WeightMeasurementResponseMapper::response)
+                .map(ResponseEntity::ok)
                 .orElseThrow(
                         () ->
                                 new ResponseStatusException(
                                         HttpStatus.NOT_FOUND,
                                         "No weight measurement was found for date " + date));
-    }
-
-    private LogWeightMeasurementCommand toCommand(LogWeightMeasurementRequest request) {
-        return new LogWeightMeasurementCommand(request.date(), request.weightInKg());
-    }
-
-    private GetWeightMeasurementByDateQuery toQuery(LocalDate date) {
-        return new GetWeightMeasurementByDateQuery(date);
-    }
-
-    private LogWeightMeasurementResponse toResponse(LogWeightMeasurementResult result) {
-        return new LogWeightMeasurementResponse(result.date(), result.weightInKg());
-    }
-
-    private GetWeightMeasurementByDateResponse toResponse(GetWeightMeasurementByDateResult result) {
-        return new GetWeightMeasurementByDateResponse(result.date(), result.weightInKg());
     }
 }

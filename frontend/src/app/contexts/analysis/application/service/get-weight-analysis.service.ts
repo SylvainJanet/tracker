@@ -1,10 +1,9 @@
 import type {
   GetWeightAnalysisResult,
   GetWeightAnalysisUseCase,
-  WeightAnalysisResultData,
 } from '../port/in/get-weight-analysis.use-case';
 import type { WeightAnalysisStore } from '../port/out/weight-analysis.store';
-import { WeightAnalysis } from '../../domain/weight-analysis';
+import { toDomain, toResultData } from './mapper/get-weight-analysis.service.mapper';
 
 export class GetWeightAnalysisService implements GetWeightAnalysisUseCase {
   constructor(private readonly store: WeightAnalysisStore) {}
@@ -22,26 +21,11 @@ export class GetWeightAnalysisService implements GetWeightAnalysisUseCase {
       };
     }
 
-    const analysis = WeightAnalysis.create(outcome.outcomeData);
+    const analysis = toDomain(outcome.outcomeData);
 
     return {
       kind: 'data',
       resultData: toResultData(analysis),
     };
   }
-}
-
-function toResultData(analysis: WeightAnalysis): WeightAnalysisResultData {
-  return {
-    timelineStartDate: analysis.timelineStartDate,
-    range: {
-      startDate: analysis.range.startDate,
-      endDate: analysis.range.endDate,
-    },
-    weightMeasurements: analysis.weightMeasurements.map((measurement) => ({
-      date: measurement.date,
-      dayNumber: measurement.dayNumber,
-      weightInKg: measurement.weightInKilograms(),
-    })),
-  };
 }
