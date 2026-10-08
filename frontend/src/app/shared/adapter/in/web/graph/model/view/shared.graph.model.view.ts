@@ -37,3 +37,29 @@ export interface SharedRollingAverageGraphTooltipView {
   readonly primaryValue: SharedGraphTooltipValueView;
   readonly rollingAverages: readonly SharedGraphTooltipRollingAverageView[];
 }
+
+export interface SharedGraphRollingAverageCalculationView {
+  readonly exactValue: {
+    readonly numerator: number;
+    readonly denominator: number;
+  };
+  readonly prettyApproximation: string;
+  readonly preciseApproximation: string;
+}
+
+export interface SharedGraphRollingAverageTrendView {
+  readonly graph: SharedGraphView;
+  readonly tooltipByX: Readonly<Record<number, SharedRollingAverageGraphTooltipView>>;
+}
+
+export interface SharedGraphDialogRollingAverageView extends SharedGraphTooltipRollingAverageView {
+  readonly description: string;
+  readonly calculation: SharedGraphRollingAverageCalculationView;
+  readonly trend: SharedGraphRollingAverageTrendView;
+}
+
+export interface SharedRollingAverageGraphDialogView {
+  readonly heading: string;
+  readonly primaryValue: SharedGraphTooltipValueView;
+  readonly rollingAverages: readonly SharedGraphDialogRollingAverageView[];
+}

@@ -1,17 +1,41 @@
 <div
-  echarts
-  class="shared-graph"
-  data-testid="shared-graph"
-  [options]="options()"
-  [autoResize]="true"
-  (chartInit)="onChartInit($event)"
-></div>
+  class="shared-graph__interaction"
+  data-testid="shared-graph-interaction"
+  [attr.role]="graphNodeDetailsTemplate() === undefined ? null : 'button'"
+  [attr.tabindex]="graphNodeDetailsTemplate() === undefined ? null : 0"
+  [attr.aria-label]="
+    graphNodeDetailsTemplate() === undefined
+      ? null
+      : graph().accessibleDescription +
+        ' Press Enter or Space to open details for the latest value.'
+  "
+  (keydown)="onGraphKeydown($event)"
+  (click)="onGraphRegionClick($event)"
+  [class.shared-graph__interaction--interactive]="graphNodeDetailsTemplate() !== undefined"
+>
+  <div
+    echarts
+    class="shared-graph"
+    data-testid="shared-graph"
+    [options]="options()"
+    [autoResize]="true"
+    [attr.aria-hidden]="graphNodeDetailsTemplate() === undefined ? null : 'true'"
+    (chartInit)="onChartInit($event)"
+    [class.shared-graph--compact]="compact()"
+    (mousemove)="onGraphPointerMove($event)"
+    (mouseleave)="onGraphPointerLeave()"
+    [class.shared-graph--interactive]="pointerInsidePlottingGrid()"
+  ></div>
+</div>
 
 @if (tooltipTemplate(); as template) {
   @if (tooltipState(); as tooltip) {
     <div
       class="shared-graph__tooltip"
+      [class.shared-graph__tooltip--compact]="compact()"
       [class.shared-graph__tooltip--before]="tooltip.positionBeforePointer"
+      [style.--tooltip-viewport-x]="tooltip.viewportPointerX + 'px'"
+      [style.--tooltip-viewport-y]="tooltip.viewportPointerY + 'px'"
       [style.--tooltip-pointer-x]="tooltip.pointerX + 'px'"
       role="tooltip"
       data-testid="shared-graph-tooltip"
@@ -21,5 +45,17 @@
         [ngTemplateOutletContext]="{ $implicit: tooltip.value }"
       ></ng-container>
     </div>
+  }
+}
+
+@if (graphNodeDetailsTemplate(); as template) {
+  @if (nodeDetailsState(); as details) {
+    <ng-container
+      [ngTemplateOutlet]="template"
+      [ngTemplateOutletContext]="{
+        $implicit: details.value,
+        close: closeNodeDetails,
+      }"
+    ></ng-container>
   }
 }

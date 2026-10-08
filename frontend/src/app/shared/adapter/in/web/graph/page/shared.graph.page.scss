@@ -3,13 +3,16 @@
   min-inline-size: 0;
   position: relative;
   isolation: isolate;
+}
+
+:host:not(.shared-graph-host--compact) {
   container-type: inline-size;
 }
 
 .shared-graph {
   inline-size: 100%;
-  block-size: clamp(18rem, 50vw, 32rem);
-  min-block-size: 18rem;
+  block-size: var(--shared-graph-block-size, clamp(18rem, 50vw, 32rem));
+  min-block-size: var(--shared-graph-min-block-size, 18rem);
 }
 
 .shared-graph__tooltip {
@@ -36,11 +39,27 @@
 }
 
 @container (inline-size <= 36rem) {
-  .shared-graph__tooltip {
+  .shared-graph__tooltip:not(.shared-graph__tooltip--compact) {
     position: static;
     min-inline-size: 0;
     max-inline-size: none;
     margin-block-start: var(--space-2);
     transform: none;
   }
+}
+
+.shared-graph__tooltip--compact {
+  position: fixed;
+  inset-block-start: var(--tooltip-viewport-y);
+  left: var(--tooltip-viewport-x);
+}
+
+.shared-graph--interactive,
+.shared-graph--interactive ::ng-deep * {
+  cursor: pointer !important;
+}
+
+.shared-graph__interaction--interactive:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
 }

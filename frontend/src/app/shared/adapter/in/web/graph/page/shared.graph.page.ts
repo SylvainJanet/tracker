@@ -47,7 +47,18 @@ interface SharedGraphTooltipContext {
 interface SharedGraphTooltipState {
   readonly value: number;
   readonly pointerX: number;
+  readonly viewportPointerX: number;
+  readonly viewportPointerY: number;
   readonly positionBeforePointer: boolean;
+}
+
+interface SharedGraphNodeDetailsContext {
+  readonly $implicit: number;
+  readonly close: () => void;
+}
+
+interface SharedGraphNodeDetailsState {
+  readonly value: number;
 }
 
 @Component({
@@ -64,6 +75,9 @@ interface SharedGraphTooltipState {
       deps: [SHARED_GRAPH_PRESENTER_FACTORY],
     },
   ],
+  host: {
+    '[class.shared-graph-host--compact]': 'compact()',
+  },
 })
 export class SharedGraphPage {
   readonly presenter = inject(SharedGraphPresenter);
@@ -75,15 +89,26 @@ export class SharedGraphPage {
 
   readonly tooltipTemplate = contentChild<TemplateRef<SharedGraphTooltipContext>>(TemplateRef);
   readonly tooltipState = signal<SharedGraphTooltipState | undefined>(undefined);
+  readonly graphNodeDetailsTemplate =
+    contentChild<TemplateRef<SharedGraphNodeDetailsContext>>('graphNodeDetails');
+
+  readonly nodeDetailsState = signal<SharedGraphNodeDetailsState | undefined>(undefined);
+  readonly pointerInsidePlottingGrid = signal(false);
+
+  readonly closeNodeDetails = (): void => {
+    this.nodeDetailsState.set(undefined);
+  };
 
   private readonly showTooltipHandler = (event: unknown): void => {
-    this.tooltipState.set(tooltipStateFrom(event, this.host.nativeElement.clientWidth));
+    this.tooltipState.set(tooltipStateFrom(event, this.host.nativeElement.getBoundingClientRect()));
   };
 
   private readonly hideTooltipHandler = (): void => {
     this.tooltipState.set(undefined);
   };
+
   readonly graph = input.required<SharedGraphView>();
+  readonly compact = input(false);
 
   readonly options = computed(() => {
     const dataState = this.state().dataState;
@@ -92,7 +117,9 @@ export class SharedGraphPage {
       return {};
     }
 
-    return SharedGraphMapper.modelToOptions(this.resolveGraphColor(dataState.view));
+    return SharedGraphMapper.modelToOptions(this.resolveGraphColor(dataState.view), {
+      compact: this.compact(),
+    });
   });
 
   constructor() {
@@ -105,6 +132,54 @@ export class SharedGraphPage {
     });
   }
 
+  onGraphRegionClick(event: MouseEvent): void {
+    const chart = this.chart;
+
+    if (chart === undefined || this.graphNodeDetailsTemplate() === undefined) {
+      return;
+    }
+
+    const value = graphRegionXAxisValueFrom(event, chart, this.graph());
+
+    if (value !== undefined) {
+      this.nodeDetailsState.set({ value });
+    }
+  }
+
+  onGraphPointerMove(event: MouseEvent): void {
+    const chart = this.chart;
+    const pointer = pointerCoordinatesFrom(event);
+
+    this.pointerInsidePlottingGrid.set(
+      chart !== undefined &&
+        this.graphNodeDetailsTemplate() !== undefined &&
+        pointer !== undefined &&
+        chart.containPixel({ gridIndex: 0 }, pointer),
+    );
+  }
+
+  onGraphPointerLeave(): void {
+    this.pointerInsidePlottingGrid.set(false);
+  }
+
+  onGraphKeydown(event: KeyboardEvent): void {
+    if (
+      (event.key !== 'Enter' && event.key !== ' ') ||
+      this.graphNodeDetailsTemplate() === undefined
+    ) {
+      return;
+    }
+
+    const value = latestGraphXAxisValue(this.graph());
+
+    if (value === undefined) {
+      return;
+    }
+
+    event.preventDefault();
+    this.nodeDetailsState.set({ value });
+  }
+
   onChartInit(chart: echarts.ECharts): void {
     this.disconnectChart();
 
@@ -114,6 +189,8 @@ export class SharedGraphPage {
   }
 
   private disconnectChart(): void {
+    this.pointerInsidePlottingGrid.set(false);
+
     if (this.chart === undefined) {
       return;
     }
@@ -122,6 +199,7 @@ export class SharedGraphPage {
     this.chart.off('hidetip', this.hideTooltipHandler);
     this.chart = undefined;
     this.tooltipState.set(undefined);
+    this.nodeDetailsState.set(undefined);
   }
 
   private resolveGraphColor(graph: SharedGraphView): SharedGraphView {
@@ -149,22 +227,34 @@ export class SharedGraphPage {
   }
 }
 
-function tooltipStateFrom(event: unknown, graphWidth: number): SharedGraphTooltipState | undefined {
+function tooltipStateFrom(
+  event: unknown,
+  graphBounds: DOMRectReadOnly,
+): SharedGraphTooltipState | undefined {
   if (!isRecord(event)) {
     return undefined;
   }
 
   const pointerX = event['x'];
+  const pointerY = event['y'];
   const value = xAxisValueFrom(event);
 
-  if (typeof pointerX !== 'number' || !Number.isFinite(pointerX) || value === undefined) {
+  if (
+    typeof pointerX !== 'number' ||
+    !Number.isFinite(pointerX) ||
+    typeof pointerY !== 'number' ||
+    !Number.isFinite(pointerY) ||
+    value === undefined
+  ) {
     return undefined;
   }
 
   return {
     value,
     pointerX,
-    positionBeforePointer: graphWidth > 0 && pointerX > graphWidth / 2,
+    viewportPointerX: graphBounds.left + pointerX,
+    viewportPointerY: graphBounds.top + pointerY,
+    positionBeforePointer: graphBounds.width > 0 && pointerX > graphBounds.width / 2,
   };
 }
 
@@ -203,4 +293,65 @@ function xAxisValueFrom(event: Record<string, unknown>): number | undefined {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
+}
+
+function graphRegionXAxisValueFrom(
+  event: unknown,
+  chart: echarts.ECharts,
+  graph: SharedGraphView,
+): number | undefined {
+  const pointer = pointerCoordinatesFrom(event);
+
+  if (pointer === undefined || !chart.containPixel({ gridIndex: 0 }, pointer)) {
+    return undefined;
+  }
+
+  const converted = chart.convertFromPixel({ xAxisIndex: 0 }, pointer[0]);
+  const x = Array.isArray(converted) ? converted[0] : converted;
+
+  return typeof x === 'number' && Number.isFinite(x) ? nearestGraphXAxisValue(graph, x) : undefined;
+}
+
+function pointerCoordinatesFrom(event: unknown): [number, number] | undefined {
+  if (!isRecord(event)) {
+    return undefined;
+  }
+
+  const offsetX = event['offsetX'];
+  const offsetY = event['offsetY'];
+
+  return typeof offsetX === 'number' &&
+    Number.isFinite(offsetX) &&
+    typeof offsetY === 'number' &&
+    Number.isFinite(offsetY)
+    ? [offsetX, offsetY]
+    : undefined;
+}
+
+function nearestGraphXAxisValue(graph: SharedGraphView, target: number): number | undefined {
+  let nearest: number | undefined;
+
+  for (const series of graph.series) {
+    for (const point of series.points) {
+      if (nearest === undefined || Math.abs(point.x - target) < Math.abs(nearest - target)) {
+        nearest = point.x;
+      }
+    }
+  }
+
+  return nearest;
+}
+
+function latestGraphXAxisValue(graph: SharedGraphView): number | undefined {
+  let latest: number | undefined;
+
+  for (const series of graph.series) {
+    for (const point of series.points) {
+      if (latest === undefined || point.x > latest) {
+        latest = point.x;
+      }
+    }
+  }
+
+  return latest;
 }

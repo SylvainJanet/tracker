@@ -1,16 +1,23 @@
-import type { WeightAnalysisResultData } from '../../../../../../application/port/in/get-weight-analysis.use-case';
+import type {
+  RollingAveragePointResultData,
+  RollingAverageResultData,
+  WeightAnalysisResultData,
+} from '../../../../../../application/port/in/get-weight-analysis.use-case';
 import type {
   AnalysisWeightMeasurementView,
   AnalysisWeightRollingAverageView,
   AnalysisWeightView,
 } from '../../model/view/analysis.weight.model.view';
 import {
+  type SharedGraphRollingAverageTrendView,
   SharedGraphView,
+  type SharedRollingAverageGraphDialogView,
   type SharedRollingAverageGraphTooltipView,
 } from '../../../../../../../../shared/api/shared.graph';
 
 const MEASURED_WEIGHT_SERIES_LABEL = 'Measured weight';
 const MEASURED_WEIGHT_SERIES_COLOR = '--color-action';
+const WEIGHT_VALUE_LABEL = 'Weight';
 
 export class AnalysisWeightMapper {
   private constructor() {
@@ -48,6 +55,7 @@ export class AnalysisWeightMapper {
         rollingAverages,
       ),
       graph: weightGraphFor(weightMeasurements, rollingAverages),
+      graphDialogByDayNumber: weightGraphDialogByDayNumberFor(resultData),
     };
   }
 }
@@ -117,6 +125,155 @@ function weightGraphTooltipByDayNumberFor(
   }
 
   return tooltipByDayNumber;
+}
+
+function weightGraphDialogByDayNumberFor(
+  resultData: WeightAnalysisResultData,
+): AnalysisWeightView['graphDialogByDayNumber'] {
+  const dialogByDayNumber: Record<number, SharedRollingAverageGraphDialogView> = {};
+
+  for (const measurement of resultData.weightMeasurements) {
+    dialogByDayNumber[measurement.dayNumber] = {
+      heading: measurement.date,
+      primaryValue: {
+        seriesLabel: WEIGHT_VALUE_LABEL,
+        color: MEASURED_WEIGHT_SERIES_COLOR,
+        formattedValue: formatWeight(measurement.weightInKg),
+      },
+      rollingAverages: [],
+    };
+  }
+
+  for (const rollingAverage of resultData.rollingAverageSeries) {
+    for (const point of rollingAverage.rollingAverages) {
+      const currentDialog = dialogByDayNumber[point.dayNumber] ?? {
+        heading: point.date,
+        primaryValue: {
+          seriesLabel: WEIGHT_VALUE_LABEL,
+          color: MEASURED_WEIGHT_SERIES_COLOR,
+          formattedValue: 'No measurement',
+        },
+        rollingAverages: [],
+      };
+
+      dialogByDayNumber[point.dayNumber] = {
+        ...currentDialog,
+        rollingAverages: [
+          ...currentDialog.rollingAverages,
+          {
+            seriesLabel: rollingAverageSeriesLabel(rollingAverage.windowSize),
+            color: rollingAverageSeriesColor(rollingAverage.windowSize),
+            formattedValue: formatWeight(prettyApproximationFor(point)),
+            description: `Average measured weight over the trailing ${rollingAverage.windowSize} calendar days.`,
+            coverage: {
+              includedValueCount: point.includedValues.length,
+              windowInDays: rollingAverage.windowSize,
+            },
+            calculation: {
+              exactValue: {
+                numerator: point.rollingAverage.exactValue.numerator,
+                denominator: point.rollingAverage.exactValue.denominator,
+              },
+              prettyApproximation: formatWeight(prettyApproximationFor(point)),
+              preciseApproximation: formatWeight(preciseApproximationFor(point)),
+            },
+            trend: rollingAverageTrendFor(rollingAverage, point),
+          },
+        ],
+      };
+    }
+  }
+
+  return dialogByDayNumber;
+}
+
+function rollingAverageTrendFor(
+  rollingAverage: RollingAverageResultData,
+  selectedPoint: RollingAveragePointResultData,
+): SharedGraphRollingAverageTrendView {
+  const firstDayNumber = selectedPoint.dayNumber - rollingAverage.windowSize + 1;
+  const rollingPoints = rollingAverage.rollingAverages.filter(
+    (point) => point.dayNumber >= firstDayNumber && point.dayNumber <= selectedPoint.dayNumber,
+  );
+  const measurementByDayNumber = new Map(
+    selectedPoint.includedValues.map((measurement) => [measurement.dayNumber, measurement]),
+  );
+  const tooltipByX: Record<number, SharedRollingAverageGraphTooltipView> = {};
+
+  for (const point of rollingPoints) {
+    const measurement = measurementByDayNumber.get(point.dayNumber);
+
+    tooltipByX[point.dayNumber] = {
+      heading: point.date,
+      primaryValue: {
+        seriesLabel: MEASURED_WEIGHT_SERIES_LABEL,
+        color: MEASURED_WEIGHT_SERIES_COLOR,
+        formattedValue:
+          measurement === undefined ? 'No measurement' : formatWeight(measurement.weightInKg),
+      },
+      rollingAverages: [
+        {
+          seriesLabel: rollingAverageSeriesLabel(rollingAverage.windowSize),
+          color: rollingAverageSeriesColor(rollingAverage.windowSize),
+          formattedValue: formatWeight(prettyApproximationFor(point)),
+          coverage: {
+            includedValueCount: point.includedValues.length,
+            windowInDays: rollingAverage.windowSize,
+          },
+        },
+      ],
+    };
+  }
+
+  const firstDate = rollingPoints[0]?.date ?? selectedPoint.date;
+  const lastDate = rollingPoints.at(-1)?.date ?? selectedPoint.date;
+  const seriesLabel = rollingAverageSeriesLabel(rollingAverage.windowSize);
+  const seriesColor = rollingAverageSeriesColor(rollingAverage.windowSize);
+
+  return {
+    graph: new SharedGraphView(
+      `Compact line graph of measured weight and the ${seriesLabel} from ${firstDate} to ${lastDate}.`,
+      [
+        {
+          label: MEASURED_WEIGHT_SERIES_LABEL,
+          color: MEASURED_WEIGHT_SERIES_COLOR,
+          points: selectedPoint.includedValues.map((measurement) => ({
+            x: measurement.dayNumber,
+            y: measurement.weightInKg,
+          })),
+        },
+        {
+          label: seriesLabel,
+          color: seriesColor,
+          points: rollingPoints.map((point) => ({
+            x: point.dayNumber,
+            y: prettyApproximationFor(point),
+            intensity: rollingAverageIntensity(
+              point.includedValues.length,
+              rollingAverage.windowSize,
+            ),
+          })),
+        },
+      ],
+    ),
+    tooltipByX,
+  };
+}
+
+function preciseApproximationFor(point: RollingAveragePointResultData): number {
+  const preciseApproximation = point.rollingAverage.approximations.find(
+    (approximation) => approximation.rounding === 'PRECISE',
+  );
+
+  if (preciseApproximation === undefined) {
+    throw new Error('Weight analysis rolling average has no PRECISE approximation.');
+  }
+
+  return preciseApproximation.value;
+}
+
+function rollingAverageIntensity(includedValueCount: number, windowInDays: number): number {
+  return Math.pow(includedValueCount / windowInDays, windowInDays / 7);
 }
 
 function formatWeight(weightInKg: number): string {
