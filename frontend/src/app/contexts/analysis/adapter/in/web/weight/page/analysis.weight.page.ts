@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   SharedGraphPage,
+  SharedGraphRollingAverageDialogPage,
   SharedGraphRollingAverageTooltipPage,
 } from '../../../../../../../shared/api/shared.graph';
 import { SharedSpinnerPage } from '../../../../../../../shared/api/shared.spinner';
@@ -13,7 +14,12 @@ import { take } from 'rxjs';
 
 @Component({
   selector: 'app-analysis-weight-page',
-  imports: [SharedSpinnerPage, SharedGraphPage, SharedGraphRollingAverageTooltipPage],
+  imports: [
+    SharedSpinnerPage,
+    SharedGraphPage,
+    SharedGraphRollingAverageTooltipPage,
+    SharedGraphRollingAverageDialogPage,
+  ],
   templateUrl: './analysis.weight.page.html',
   styleUrl: './analysis.weight.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

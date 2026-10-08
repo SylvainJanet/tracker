@@ -182,4 +182,41 @@ describe('SharedGraphMapper', () => {
       ],
     });
   });
+
+  it('maps a compact graph without visible axes or animation while preserving hover', () => {
+    const graph = new SharedGraphView('Compact weight trend.', [
+      {
+        label: 'Measured weight',
+        color: '#2563eb',
+        points: [
+          { x: 1, y: 82.1 },
+          { x: 4, y: 81.9 },
+        ],
+      },
+    ]);
+
+    expect(SharedGraphMapper.modelToOptions(graph, { compact: true })).toMatchObject({
+      animation: false,
+      grid: {
+        left: 0,
+        right: 0,
+        top: 4,
+        bottom: 4,
+      },
+      tooltip: {
+        trigger: 'axis',
+        showContent: false,
+        axisPointer: {
+          type: 'line',
+          snap: true,
+        },
+      },
+      xAxis: {
+        show: false,
+      },
+      yAxis: {
+        show: false,
+      },
+    });
+  });
 });
