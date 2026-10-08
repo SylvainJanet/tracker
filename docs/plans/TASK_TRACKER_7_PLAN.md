@@ -119,11 +119,11 @@ dates and clip only the published points to the requested display range.
 
 ## Ticket plan
 
-### TRACKER-17 — Display details when clicking a graph node
+### TRACKER-17 — Display details when clicking the graph
 
-- Forward ECharts point-click events from the page.
-- Ignore clicks without a concrete series datum.
-- Use the datum’s calendar date as the dialog identity.
+- Handle clicks anywhere within the graph’s plotting grid.
+- Ignore clicks on axes, labels, margins or outside the plotting grid.
+- Use the graph date nearest to the click’s horizontal position as the dialog identity.
 - Open an accessible dialog showing:
   - date;
   - measured weight, or an explicit missing indication;
