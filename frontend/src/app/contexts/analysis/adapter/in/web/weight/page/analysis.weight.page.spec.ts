@@ -3,6 +3,7 @@ import {
   Component,
   contentChild,
   input,
+  output,
   signal,
   TemplateRef,
   type WritableSignal,
@@ -16,6 +17,8 @@ import {
   SharedGraphRollingAverageTooltipPage,
   SharedGraphView,
   type SharedRollingAverageGraphTooltipView,
+  SharedGraphRollingAverageDialogPage,
+  type SharedRollingAverageGraphDialogView,
 } from '../../../../../../../shared/api/shared.graph';
 import type { AnalysisWeightState } from '../model/state/analysis.weight.model.state';
 import {
@@ -23,6 +26,11 @@ import {
   type AnalysisWeightPresenter,
 } from '../presenter/analysis.weight.presenter';
 import { AnalysisWeightPage } from './analysis.weight.page';
+
+interface SharedGraphNodeDetailsContext {
+  readonly $implicit: number;
+  readonly close: () => void;
+}
 
 @Component({
   selector: 'app-shared-graph',
@@ -36,15 +44,52 @@ import { AnalysisWeightPage } from './analysis.weight.page';
         ></ng-container>
       }
     }
+
+    @if (graphNodeDetailsTemplate(); as template) {
+      @if (selectedNodeDetails(); as details) {
+        <ng-container
+          [ngTemplateOutlet]="template"
+          [ngTemplateOutletContext]="{
+            $implicit: details.x,
+            close: closeNodeDetails,
+          }"
+        ></ng-container>
+      }
+    }
   `,
 })
 class SharedGraphPageStub {
   readonly graph = input.required<SharedGraphView>();
   readonly tooltipTemplate = contentChild<TemplateRef<{ readonly $implicit: number }>>(TemplateRef);
+  readonly graphNodeDetailsTemplate =
+    contentChild<TemplateRef<SharedGraphNodeDetailsContext>>('graphNodeDetails');
+
   readonly selectedX = signal<number | undefined>(undefined);
+  readonly selectedNodeDetails = signal<{ readonly x: number } | undefined>(undefined);
+
+  readonly closeNodeDetails = (): void => {
+    this.selectedNodeDetails.set(undefined);
+  };
 
   showTooltipAt(x: number): void {
     this.selectedX.set(x);
+  }
+
+  showDetailsAt(x: number): void {
+    this.selectedNodeDetails.set({ x });
+  }
+}
+
+@Component({
+  selector: 'app-shared-graph-rolling-average-dialog',
+  template: '',
+})
+class SharedGraphRollingAverageDialogPageStub {
+  readonly view = input.required<SharedRollingAverageGraphDialogView>();
+  readonly closed = output<void>();
+
+  close(): void {
+    this.closed.emit();
   }
 }
 
@@ -74,10 +119,10 @@ describe('AnalysisWeightPage', () => {
     })
       .overrideComponent(AnalysisWeightPage, {
         remove: {
-          imports: [SharedGraphPage],
+          imports: [SharedGraphPage, SharedGraphRollingAverageDialogPage],
         },
         add: {
-          imports: [SharedGraphPageStub],
+          imports: [SharedGraphPageStub, SharedGraphRollingAverageDialogPageStub],
         },
       })
       .compileComponents();
@@ -136,6 +181,16 @@ describe('AnalysisWeightPage', () => {
         },
       ],
     };
+    const dialogView: SharedRollingAverageGraphDialogView = {
+      heading: '2026-09-23',
+      primaryValue: {
+        seriesLabel: 'Weight',
+        color: '--color-action',
+        formattedValue: '81.9 kg',
+      },
+      rollingAverages: [],
+    };
+
     currentState.set({
       analysisState: {
         kind: 'analyzed',
@@ -174,6 +229,9 @@ describe('AnalysisWeightPage', () => {
           graphTooltipByDayNumber: {
             4: tooltipView,
           },
+          graphDialogByDayNumber: {
+            4: dialogView,
+          },
           graph,
         },
       },
@@ -198,6 +256,24 @@ describe('AnalysisWeightPage', () => {
 
     expect(tooltipElement).not.toBeNull();
     expect(tooltipPage?.view()).toBe(tooltipView);
+
+    graphPage?.showDetailsAt(4);
+    fixture.detectChanges();
+
+    const dialogElement = fixture.debugElement.query(
+      By.directive(SharedGraphRollingAverageDialogPageStub),
+    );
+    const dialogPage = dialogElement?.injector.get(SharedGraphRollingAverageDialogPageStub);
+
+    expect(dialogElement).not.toBeNull();
+    expect(dialogPage?.view()).toBe(dialogView);
+
+    dialogPage?.close();
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.directive(SharedGraphRollingAverageDialogPageStub)),
+    ).toBeNull();
 
     const summary = fixture.nativeElement.querySelector(
       '[data-testid="weight-analysis-summary"]',

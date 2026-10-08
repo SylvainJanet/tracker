@@ -6,12 +6,27 @@ export class SharedGraphMapper {
     /* empty */
   }
 
-  static modelToOptions(model: SharedGraphView): EChartsCoreOption {
+  static modelToOptions(
+    model: SharedGraphView,
+    presentation: { readonly compact?: boolean } = {},
+  ): EChartsCoreOption {
     const visualMap = model.series
       .map((series, seriesIndex) => intensityVisualMapFor(series, seriesIndex))
       .filter((vm) => vm !== undefined);
+    const compact = presentation.compact === true;
 
     return {
+      ...(compact
+        ? {
+            animation: false,
+            grid: {
+              left: 0,
+              right: 0,
+              top: 4,
+              bottom: 4,
+            },
+          }
+        : {}),
       aria: {
         enabled: true,
         description: model.accessibleDescription,
@@ -28,11 +43,14 @@ export class SharedGraphMapper {
         type: 'value',
         min: 'dataMin',
         max: 'dataMax',
+        ...(compact ? { show: false } : {}),
       },
+
       yAxis: {
         type: 'value',
         min: 'dataMin',
         max: 'dataMax',
+        ...(compact ? { show: false } : {}),
       },
       series: model.series.map((series) => ({
         name: series.label,

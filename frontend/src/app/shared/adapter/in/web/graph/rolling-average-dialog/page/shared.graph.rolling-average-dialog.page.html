@@ -1,0 +1,118 @@
+<dialog
+  #dialog
+  class="tracker-confirmation-dialog graph-dialog"
+  data-testid="shared-graph-rolling-average-dialog"
+  aria-labelledby="shared-graph-rolling-average-dialog-title"
+  (close)="closed.emit()"
+  closedby="any"
+>
+  <article class="graph-dialog__content">
+    <header class="graph-dialog__header">
+      <h2 id="shared-graph-rolling-average-dialog-title" data-testid="graph-dialog-title">
+        {{ view().heading }} — {{ view().primaryValue.seriesLabel }}:
+        {{ view().primaryValue.formattedValue }}
+      </h2>
+
+      <button
+        type="button"
+        class="tracker-button tracker-button--secondary graph-dialog__close"
+        aria-label="Close details"
+        data-testid="close-graph-dialog"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+
+    <section class="graph-dialog__primary" data-testid="graph-dialog-primary-value">
+      <span
+        class="graph-dialog__marker"
+        data-testid="graph-dialog-series-marker"
+        aria-hidden="true"
+        [style.--series-color]="'var(' + view().primaryValue.color + ')'"
+      ></span>
+
+      <span class="graph-dialog__label">
+        {{ view().primaryValue.seriesLabel }}
+      </span>
+
+      <strong class="graph-dialog__amount">
+        {{ view().primaryValue.formattedValue }}
+      </strong>
+    </section>
+
+    <section class="graph-dialog__windows" aria-label="Rolling averages">
+      @for (
+        rollingAverage of view().rollingAverages;
+        track rollingAverage.seriesLabel;
+        let rollingAverageIndex = $index
+      ) {
+        <article class="graph-dialog__window" data-testid="graph-dialog-rolling-average">
+          <div class="graph-dialog__window-copy">
+            <header class="graph-dialog__value">
+              <span
+                class="graph-dialog__marker"
+                data-testid="graph-dialog-series-marker"
+                aria-hidden="true"
+                [style.--series-color]="'var(' + rollingAverage.color + ')'"
+              ></span>
+
+              <h3 class="graph-dialog__label">
+                {{ rollingAverage.seriesLabel }}
+              </h3>
+
+              <strong class="graph-dialog__amount">
+                {{ rollingAverage.formattedValue }}
+              </strong>
+            </header>
+
+            <p class="graph-dialog__description">
+              {{ rollingAverage.description }}
+            </p>
+
+            <p class="graph-dialog__metadata">
+              Coverage: {{ rollingAverage.coverage.includedValueCount }} of
+              {{ rollingAverage.coverage.windowInDays }} days measured
+            </p>
+
+            <p class="graph-dialog__calculation">
+              Average =
+              {{ rollingAverage.calculation.exactValue.numerator }}
+              /
+              {{ rollingAverage.calculation.exactValue.denominator }}
+              ≈
+              <span
+                class="graph-dialog__pretty"
+                data-testid="graph-dialog-pretty-average"
+                tabindex="0"
+                [attr.aria-describedby]="'graph-dialog-precise-average-' + rollingAverageIndex"
+              >
+                {{ rollingAverage.calculation.prettyApproximation }}
+              </span>
+
+              <span
+                class="graph-dialog__precise"
+                role="tooltip"
+                data-testid="graph-dialog-precise-average-tooltip"
+                [id]="'graph-dialog-precise-average-' + rollingAverageIndex"
+              >
+                Precise average:
+                {{ rollingAverage.calculation.preciseApproximation }}
+              </span>
+            </p>
+          </div>
+
+          <div class="graph-dialog__trend">
+            <app-shared-graph [graph]="rollingAverage.trend.graph" [compact]="true">
+              <ng-template let-x>
+                @if (rollingAverage.trend.tooltipByX[x]; as tooltipView) {
+                  <app-shared-graph-rolling-average-tooltip [view]="tooltipView" />
+                }
+              </ng-template>
+            </app-shared-graph>
+          </div>
+        </article>
+      }
+    </section>
+  </article>
+</dialog>

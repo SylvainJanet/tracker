@@ -74,6 +74,15 @@
                 <app-shared-graph-rolling-average-tooltip [view]="tooltipView" />
               }
             </ng-template>
+
+            <ng-template #graphNodeDetails let-dayNumber let-close="close">
+              @if (
+                currentState.analysisState.view.graphDialogByDayNumber[dayNumber];
+                as dialogView
+              ) {
+                <app-shared-graph-rolling-average-dialog [view]="dialogView" (closed)="close()" />
+              }
+            </ng-template>
           </app-shared-graph>
         </div>
 
