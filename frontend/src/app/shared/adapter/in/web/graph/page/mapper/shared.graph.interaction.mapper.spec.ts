@@ -75,11 +75,11 @@ describe('SharedGraphInteractionMapper', () => {
     ).toBeUndefined();
   });
 
-  it('maps an ECharts tooltip event to viewport positioning state', () => {
+  it('positions a compact tooltip on the side with the most viewport space', () => {
     const graphBounds = {
-      left: 500,
+      left: 440,
       top: 100,
-      width: 200,
+      width: 320,
     } as DOMRectReadOnly;
 
     expect(
@@ -99,11 +99,12 @@ describe('SharedGraphInteractionMapper', () => {
           ],
         },
         graphBounds,
+        800,
       ),
     ).toEqual({
       value: 4,
       pointerX: 120,
-      viewportPointerX: 620,
+      viewportPointerX: 560,
       viewportPointerY: 180,
       positionBeforePointer: true,
     });

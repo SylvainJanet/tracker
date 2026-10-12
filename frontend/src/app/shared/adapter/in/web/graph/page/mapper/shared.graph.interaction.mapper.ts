@@ -11,6 +11,7 @@ export class SharedGraphInteractionMapper {
   static tooltipStateFrom(
     event: unknown,
     graphBounds: DOMRectReadOnly,
+    viewportWidth?: number,
   ):
     | {
         readonly value: number;
@@ -38,12 +39,16 @@ export class SharedGraphInteractionMapper {
       return undefined;
     }
 
+    const viewportPointerX = graphBounds.left + pointerX;
+    const positioningPointerX = viewportWidth === undefined ? pointerX : viewportPointerX;
+    const positioningWidth = viewportWidth ?? graphBounds.width;
+
     return {
       value,
       pointerX,
-      viewportPointerX: graphBounds.left + pointerX,
+      viewportPointerX,
       viewportPointerY: graphBounds.top + pointerY,
-      positionBeforePointer: graphBounds.width > 0 && pointerX > graphBounds.width / 2,
+      positionBeforePointer: positioningWidth > 0 && positioningPointerX > positioningWidth / 2,
     };
   }
 

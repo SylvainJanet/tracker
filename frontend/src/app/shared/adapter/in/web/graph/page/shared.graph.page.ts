@@ -94,11 +94,13 @@ export class SharedGraphPage {
   };
 
   private readonly showTooltipHandler = (event: unknown): void => {
+    const graphBounds = this.host.nativeElement.getBoundingClientRect();
+    const viewportWidth = this.compact()
+      ? this.host.nativeElement.ownerDocument.defaultView?.innerWidth
+      : undefined;
+
     this.tooltipState.set(
-      SharedGraphInteractionMapper.tooltipStateFrom(
-        event,
-        this.host.nativeElement.getBoundingClientRect(),
-      ),
+      SharedGraphInteractionMapper.tooltipStateFrom(event, graphBounds, viewportWidth),
     );
   };
 
