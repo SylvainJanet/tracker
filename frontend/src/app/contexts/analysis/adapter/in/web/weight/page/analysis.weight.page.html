@@ -100,7 +100,6 @@
                   <th scope="col">Date</th>
                   <th scope="col">Average</th>
                   <th scope="col">Coverage</th>
-                  <th scope="col">Calendar window</th>
                 </tr>
               </thead>
 
@@ -122,9 +121,6 @@
                       <td>
                         {{ point.includedMeasurementCount }} of
                         {{ rollingAverage.windowInDays }} days
-                      </td>
-                      <td>
-                        {{ point.completeCalendarWindow ? 'Complete' : 'Partial' }}
                       </td>
                     </tr>
                   }

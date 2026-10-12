@@ -35,7 +35,6 @@ export class AnalysisWeightMapper {
         dayNumber: point.dayNumber,
         includedMeasurementCount: point.includedValues.length,
         averageWeightInKgApproximation: prettyApproximationFor(point),
-        completeCalendarWindow: point.dayNumber >= rollingAverage.windowSize,
       })),
     }));
 

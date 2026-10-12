@@ -20,7 +20,6 @@ export interface AnalysisWeightRollingAveragePointView {
   readonly dayNumber: number;
   readonly includedMeasurementCount: number;
   readonly averageWeightInKgApproximation: number;
-  readonly completeCalendarWindow: boolean;
 }
 
 export interface AnalysisWeightRollingAverageView {
