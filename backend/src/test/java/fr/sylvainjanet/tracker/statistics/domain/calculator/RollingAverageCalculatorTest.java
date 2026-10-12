@@ -75,7 +75,7 @@ class RollingAverageCalculatorTest {
                                         "241.20",
                                         "3",
                                         "80.40",
-                                        "80.40000000000000000000"),
+                                        "80.40000"),
                         point ->
                                 assertPoint(
                                         point,
@@ -84,7 +84,7 @@ class RollingAverageCalculatorTest {
                                         "243.45",
                                         "3",
                                         "81.15",
-                                        "81.15000000000000000000"),
+                                        "81.15000"),
                         point ->
                                 assertPoint(
                                         point,
@@ -93,7 +93,7 @@ class RollingAverageCalculatorTest {
                                         "242.80",
                                         "3",
                                         "80.93",
-                                        "80.93333333333333333333"),
+                                        "80.93333"),
                         point ->
                                 assertPoint(
                                         point,
@@ -102,7 +102,7 @@ class RollingAverageCalculatorTest {
                                         "244.00",
                                         "3",
                                         "81.33",
-                                        "81.33333333333333333333"),
+                                        "81.33333"),
                         point ->
                                 assertPoint(
                                         point,
@@ -111,7 +111,7 @@ class RollingAverageCalculatorTest {
                                         "241.90",
                                         "3",
                                         "80.63",
-                                        "80.63333333333333333333"));
+                                        "80.63333"));
     }
 
     @Test
@@ -136,7 +136,7 @@ class RollingAverageCalculatorTest {
                 "241.90",
                 "3",
                 "80.63",
-                "80.63333333333333333333");
+                "80.63333");
         assertPoint(
                 averages.get(1).points().getFirst(),
                 7L,
@@ -144,7 +144,7 @@ class RollingAverageCalculatorTest {
                 "404.15",
                 "5",
                 "80.83",
-                "80.83000000000000000000");
+                "80.83000");
         assertPoint(
                 averages.get(2).points().getFirst(),
                 7L,
@@ -152,7 +152,7 @@ class RollingAverageCalculatorTest {
                 "565.50",
                 "7",
                 "80.79",
-                "80.78571428571428571429");
+                "80.78571");
     }
 
     @Test

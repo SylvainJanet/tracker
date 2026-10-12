@@ -43,8 +43,7 @@ class ApproximationTest {
         Approximation differentValue =
                 Approximation.create(new BigDecimal("56.78"), CalculationRounding.PRETTY);
         Approximation differentRounding =
-                Approximation.create(
-                        new BigDecimal("12.34000000000000000000"), CalculationRounding.PRECISE);
+                Approximation.create(new BigDecimal("12.34000"), CalculationRounding.PRECISE);
 
         assertThat(first)
                 .isEqualTo(equal)

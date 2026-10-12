@@ -9,7 +9,7 @@ class CalculationRoundingTest {
 
     @Test
     void definesThePreciseRoundingContract() {
-        assertThat(CalculationRounding.PRECISE.scale()).isEqualTo(20);
+        assertThat(CalculationRounding.PRECISE.scale()).isEqualTo(5);
         assertThat(CalculationRounding.PRECISE.roundingMode()).isEqualTo(RoundingMode.HALF_UP);
     }
 

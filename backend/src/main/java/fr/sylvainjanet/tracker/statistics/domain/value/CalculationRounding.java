@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 import java.util.Set;
 
 public enum CalculationRounding implements DomainEnum<CalculationRounding> {
-    PRECISE(20, RoundingMode.HALF_UP),
+    PRECISE(5, RoundingMode.HALF_UP),
     PRETTY(2, RoundingMode.HALF_UP);
 
     private final int scale;

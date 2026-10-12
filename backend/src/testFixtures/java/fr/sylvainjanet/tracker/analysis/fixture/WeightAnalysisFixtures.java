@@ -78,8 +78,7 @@ public final class WeightAnalysisFixtures {
                     new FractionResult(new BigDecimal("164.00"), new BigDecimal("2")),
                     Set.of(
                             new ApproximationResult(
-                                    new BigDecimal("82.00000000000000000000"),
-                                    CalculationRoundingResult.PRECISE),
+                                    new BigDecimal("82.00000"), CalculationRoundingResult.PRECISE),
                             new ApproximationResult(
                                     new BigDecimal("82.00"), CalculationRoundingResult.PRETTY)));
     public static final CalculateRollingAveragesResult ROLLING_AVERAGES_RESULT =
@@ -101,8 +100,7 @@ public final class WeightAnalysisFixtures {
             new AnalysisRollingAverageValueResult(
                     new AnalysisFractionResult(new BigDecimal("164.00"), new BigDecimal("2")),
                     Set.of(
-                            new AnalysisApproximationResult(
-                                    new BigDecimal("82.00000000000000000000"), PRECISE),
+                            new AnalysisApproximationResult(new BigDecimal("82.00000"), PRECISE),
                             new AnalysisApproximationResult(new BigDecimal("82.00"), PRETTY)));
     public static final GetWeightAnalysisResult ANALYSIS_RESULT =
             new GetWeightAnalysisResult(

@@ -39,8 +39,7 @@ public final class RollingAverageFixtures {
             new ValueResult(
                     new FractionResult(new BigDecimal("241.00"), new BigDecimal("3")),
                     Set.of(
-                            new ApproximationResult(
-                                    new BigDecimal("80.33333333333333333333"), PRECISE),
+                            new ApproximationResult(new BigDecimal("80.33333"), PRECISE),
                             new ApproximationResult(new BigDecimal("80.33"), PRETTY)));
     public static final CalculateRollingAveragesResult EXACT_AVERAGE_RESULT =
             new CalculateRollingAveragesResult(
@@ -63,8 +62,7 @@ public final class RollingAverageFixtures {
             new ValueResult(
                     new FractionResult(new BigDecimal("30"), BigDecimal.ONE),
                     Set.of(
-                            new ApproximationResult(
-                                    new BigDecimal("30.00000000000000000000"), PRECISE),
+                            new ApproximationResult(new BigDecimal("30.00000"), PRECISE),
                             new ApproximationResult(new BigDecimal("30.00"), PRETTY)));
     public static final CalculateRollingAveragesResult THROUGH_REQUESTED_END_RESULT =
             new CalculateRollingAveragesResult(

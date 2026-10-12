@@ -100,7 +100,10 @@ The implemented weight-analysis workflow:
 - publishes incomplete windows and includes every contributing measurement so
   coverage and provenance are immediately available to frontend workflows;
 - publishes an exact fractional result together with half-up `PRETTY` and
-  `PRECISE` approximations at two and twenty decimal places;
+  `PRECISE` approximations at scales two and five respectively; five decimal
+  places are sufficient for weight analysis while remaining comfortably within
+  JavaScript number precision at expected weight magnitudes, so the HTTP
+  contract can remain numeric;
 - exposes window series through `rollingAverageSeries`, ordered by ascending
   window size, with points and included measurements ordered by ascending date;
 - validates result coherence in frontend Analysis without reproducing the

@@ -54,7 +54,7 @@ public final class AnalysisHttpFixtures {
                             "rounding": "PRETTY"
                           },
                           {
-                            "value": 82.00000000000000000000,
+                            "value": 82.00000,
                             "rounding": "PRECISE"
                           }
                         ]
