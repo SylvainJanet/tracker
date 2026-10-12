@@ -1,10 +1,9 @@
-<dialog
+<app-shared-modal
   #dialog
-  class="tracker-confirmation-dialog graph-dialog"
+  class="graph-dialog"
   data-testid="shared-graph-rolling-average-dialog"
-  aria-labelledby="shared-graph-rolling-average-dialog-title"
-  (close)="closed.emit()"
-  closedby="any"
+  labelledBy="shared-graph-rolling-average-dialog-title"
+  (closed)="closed.emit()"
 >
   <article class="graph-dialog__content">
     <header class="graph-dialog__header">
@@ -117,4 +116,4 @@
       }
     </section>
   </article>
-</dialog>
+</app-shared-modal>

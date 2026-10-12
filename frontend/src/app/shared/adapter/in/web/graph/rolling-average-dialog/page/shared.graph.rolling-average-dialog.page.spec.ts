@@ -12,7 +12,7 @@ import { SharedGraphPage } from '../../page/shared.graph.page';
 import { SharedGraphRollingAverageDialogPage } from './shared.graph.rolling-average-dialog.page';
 import { NgTemplateOutlet } from '@angular/common';
 import { SharedGraphRollingAverageTooltipPage } from '../../rolling-average-tooltip/page/shared.graph.rolling-average-tooltip.page';
-
+import { SharedModalPage } from '../../../modal/page/shared.modal.page';
 @Component({
   selector: 'app-shared-graph',
   imports: [NgTemplateOutlet],
@@ -159,9 +159,14 @@ describe('SharedGraphRollingAverageDialogPage', () => {
     fixture.componentRef.setInput('view', view);
     fixture.detectChanges();
 
-    const dialog = fixture.nativeElement.querySelector(
-      '[data-testid="shared-graph-rolling-average-dialog"]',
-    ) as HTMLDialogElement;
+    const modalElement = fixture.debugElement.query(By.directive(SharedModalPage));
+
+    expect(modalElement).not.toBeNull();
+    expect(modalElement.nativeElement.getAttribute('data-testid')).toBe(
+      'shared-graph-rolling-average-dialog',
+    );
+
+    const dialog = modalElement.nativeElement.querySelector('dialog') as HTMLDialogElement;
     const title = dialog.querySelector('[data-testid="graph-dialog-title"]');
     const primaryValue = dialog.querySelector('[data-testid="graph-dialog-primary-value"]');
     const rollingAverage = dialog.querySelector('[data-testid="graph-dialog-rolling-average"]');

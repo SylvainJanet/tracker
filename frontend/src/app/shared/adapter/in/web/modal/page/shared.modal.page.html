@@ -1,0 +1,10 @@
+<dialog
+  #dialog
+  class="shared-modal"
+  [attr.aria-labelledby]="labelledBy()"
+  [attr.aria-describedby]="describedBy() ?? null"
+  [attr.closedby]="closedBy()"
+  (close)="onDialogClosed()"
+>
+  <ng-content />
+</dialog>

@@ -68,7 +68,7 @@
 }
 
 .journal-dialog {
-  inline-size: min(32rem, calc(100% - 2 * var(--space-4)));
+  --shared-modal-inline-size: min(32rem, calc(100% - 2 * var(--space-4)));
 }
 
 .journal-dialog .tracker-confirmation-form {

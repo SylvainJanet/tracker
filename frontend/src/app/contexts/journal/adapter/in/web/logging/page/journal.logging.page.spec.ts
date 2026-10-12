@@ -11,6 +11,8 @@ import {
   type JournalLoggingPresenter,
 } from '../presenter/journal.logging.presenter';
 import { JournalLoggingPage } from './journal.logging.page';
+import { SharedModalPage } from '../../../../../../../shared/api/shared.modal';
+import { By } from '@angular/platform-browser';
 type JournalLoggingPresenterFake = Pick<JournalLoggingPresenter, keyof JournalLoggingPresenter>;
 describe('JournalLoggingPage', () => {
   const defaultDate = '2026-09-20';
@@ -123,9 +125,12 @@ describe('JournalLoggingPage', () => {
     fixture = TestBed.createComponent(JournalLoggingPage);
     fixture.detectChanges();
 
-    dialog = fixture.nativeElement.querySelector(
-      '[data-testid="log-weight-dialog"]',
-    ) as HTMLDialogElement;
+    const modalElement = fixture.debugElement.query(By.directive(SharedModalPage));
+
+    expect(modalElement).not.toBeNull();
+    expect(modalElement.nativeElement.getAttribute('data-testid')).toBe('log-weight-dialog');
+
+    dialog = modalElement.nativeElement.querySelector('dialog') as HTMLDialogElement;
 
     const dialogMethods = installDialogMethods(dialog);
     showModal = dialogMethods.showModal;

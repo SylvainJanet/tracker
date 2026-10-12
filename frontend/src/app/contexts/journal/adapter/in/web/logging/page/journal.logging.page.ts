@@ -2,10 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  type ElementRef,
   inject,
   type OnInit,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,13 +16,14 @@ import {
 } from '../presenter/journal.logging.presenter';
 import { SharedSpinnerPage } from '../../../../../../../shared/api/shared.spinner';
 import { concatMap, map, take } from 'rxjs';
+import { SharedModalPage } from '../../../../../../../shared/api/shared.modal';
 
 @Component({
   selector: 'app-journal-logging-page',
   templateUrl: './journal.logging.page.html',
   styleUrl: './journal.logging.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, SharedSpinnerPage],
+  imports: [ReactiveFormsModule, SharedSpinnerPage, SharedModalPage],
   providers: [
     {
       provide: JournalLoggingPresenter,
@@ -39,8 +39,7 @@ export class JournalLoggingPage implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild('logWeightMeasurementDialog', { static: true })
-  private readonly logWeightMeasurementDialog!: ElementRef<HTMLDialogElement>;
+  private readonly logWeightMeasurementDialog = viewChild.required(SharedModalPage);
 
   ngOnInit(): void {
     this.route.queryParamMap
@@ -53,17 +52,11 @@ export class JournalLoggingPage implements OnInit {
   }
 
   openDialog(): void {
-    const dialog = this.logWeightMeasurementDialog.nativeElement;
-    if (!dialog.open) {
-      dialog.returnValue = '';
-      dialog.showModal();
-    }
+    this.logWeightMeasurementDialog().open();
   }
 
-  dialogClosed(): void {
-    const logged = this.logWeightMeasurementDialog.nativeElement.returnValue === 'logged';
-
-    if (logged) {
+  dialogClosed(returnValue: string): void {
+    if (returnValue === 'logged') {
       this.presenter.resetForm();
     } else {
       this.presenter.cancelLog();
@@ -71,7 +64,7 @@ export class JournalLoggingPage implements OnInit {
   }
 
   cancelLog(): void {
-    this.logWeightMeasurementDialog.nativeElement.close('canceled');
+    this.logWeightMeasurementDialog().close('canceled');
   }
 
   submitLog(): void {
@@ -80,7 +73,7 @@ export class JournalLoggingPage implements OnInit {
       .pipe(take(1))
       .subscribe((logged) => {
         if (logged) {
-          this.logWeightMeasurementDialog.nativeElement.close('logged');
+          this.logWeightMeasurementDialog().close('logged');
         }
       });
   }
