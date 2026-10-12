@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { WeightAnalysisResultData } from '../../../../../../application/port/in/get-weight-analysis.use-case';
 import { AnalysisWeightMapper } from './analysis.weight.mapper';
-
+import { AnalysisWeightGraphMapper } from './analysis.weight.graph.mapper';
 describe('AnalysisWeightMapper', () => {
   it('maps weight analysis result data to a presentation view', () => {
     const resultData: WeightAnalysisResultData = {
@@ -80,7 +80,8 @@ describe('AnalysisWeightMapper', () => {
     };
 
     const trendFilter = vi.spyOn(resultData.rollingAverageSeries[0]!.rollingAverages, 'filter');
-    const { graphDialogByDayNumber, ...view } = AnalysisWeightMapper.resultDataToView(resultData);
+    const { graphDialogByDayNumber, graphTooltipByDayNumber, graph, ...view } =
+      AnalysisWeightMapper.resultDataToView(resultData);
 
     expect(trendFilter).not.toHaveBeenCalled();
 
@@ -130,69 +131,17 @@ describe('AnalysisWeightMapper', () => {
           ],
         },
       ],
-      graphTooltipByDayNumber: {
-        1: {
-          heading: '2026-09-20',
-          primaryValue: {
-            seriesLabel: 'Measured weight',
-            color: '--color-action',
-            formattedValue: '82.1 kg',
-          },
-          rollingAverages: [
-            {
-              seriesLabel: '7-day rolling average',
-              color: '--color-analysis-weight-rolling-7',
-              formattedValue: '82.1 kg',
-              coverage: {
-                includedValueCount: 1,
-                windowInDays: 7,
-              },
-            },
-          ],
-        },
-        4: {
-          heading: '2026-09-23',
-          primaryValue: {
-            seriesLabel: 'Measured weight',
-            color: '--color-action',
-            formattedValue: '81.9 kg',
-          },
-          rollingAverages: [
-            {
-              seriesLabel: '7-day rolling average',
-              color: '--color-analysis-weight-rolling-7',
-              formattedValue: '82 kg',
-              coverage: {
-                includedValueCount: 2,
-                windowInDays: 7,
-              },
-            },
-          ],
-        },
-      },
-      graph: {
-        accessibleDescription:
-          'Line graph of 2 measured weights and 1 rolling average from analysis day 1 to analysis day 4.',
-        series: [
-          {
-            label: 'Measured weight',
-            color: '--color-action',
-            points: [
-              { x: 1, y: 82.1 },
-              { x: 4, y: 81.9 },
-            ],
-          },
-          {
-            label: '7-day rolling average',
-            color: '--color-analysis-weight-rolling-7',
-            points: [
-              { x: 1, y: 82.1, intensity: 1 / 7 },
-              { x: 4, y: 82, intensity: 2 / 7 },
-            ],
-          },
-        ],
-      },
     });
+    expect(graphTooltipByDayNumber).toEqual(
+      AnalysisWeightGraphMapper.tooltipByDayNumberFor(
+        view.weightMeasurements,
+        view.rollingAverages,
+      ),
+    );
+    expect(graph).toEqual(
+      AnalysisWeightGraphMapper.graphFor(view.weightMeasurements, view.rollingAverages),
+    );
+
     expect(Object.keys(graphDialogByDayNumber)).toEqual(['1', '4']);
 
     expect(graphDialogByDayNumber[4]).toEqual({

@@ -1,3 +1,5 @@
+import { isRecord } from '../../../../../../../shared/api/shared.type-guards';
+
 export interface WeightAnalysisDateRangeResponse {
   readonly startDate: string;
   readonly endDate: string;
@@ -148,8 +150,4 @@ function isRollingAverageRoundingResponse(
   response: unknown,
 ): response is RollingAverageRoundingResponse {
   return response === 'PRETTY' || response === 'PRECISE';
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
