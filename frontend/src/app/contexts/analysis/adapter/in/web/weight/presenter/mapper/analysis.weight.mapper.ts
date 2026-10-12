@@ -160,31 +160,43 @@ function weightGraphDialogByDayNumberFor(
         ...currentDialog,
         rollingAverages: [
           ...currentDialog.rollingAverages,
-          {
-            seriesLabel: rollingAverageSeriesLabel(rollingAverage.windowSize),
-            color: rollingAverageSeriesColor(rollingAverage.windowSize),
-            formattedValue: formatWeight(prettyApproximationFor(point)),
-            description: `Average measured weight over the trailing ${rollingAverage.windowSize} calendar days.`,
-            coverage: {
-              includedValueCount: point.includedValues.length,
-              windowInDays: rollingAverage.windowSize,
-            },
-            calculation: {
-              exactValue: {
-                numerator: point.rollingAverage.exactValue.numerator,
-                denominator: point.rollingAverage.exactValue.denominator,
-              },
-              prettyApproximation: formatWeight(prettyApproximationFor(point)),
-              preciseApproximation: formatWeight(preciseApproximationFor(point)),
-            },
-            trend: rollingAverageTrendFor(rollingAverage, point),
-          },
+          rollingAverageDialogFor(rollingAverage, point),
         ],
       };
     }
   }
 
   return dialogByDayNumber;
+}
+
+function rollingAverageDialogFor(
+  rollingAverage: RollingAverageResultData,
+  point: RollingAveragePointResultData,
+): SharedRollingAverageGraphDialogView['rollingAverages'][number] {
+  let trend: SharedGraphRollingAverageTrendView | undefined;
+
+  return {
+    seriesLabel: rollingAverageSeriesLabel(rollingAverage.windowSize),
+    color: rollingAverageSeriesColor(rollingAverage.windowSize),
+    formattedValue: formatWeight(prettyApproximationFor(point)),
+    description: `Average measured weight over the trailing ${rollingAverage.windowSize} calendar days.`,
+    coverage: {
+      includedValueCount: point.includedValues.length,
+      windowInDays: rollingAverage.windowSize,
+    },
+    calculation: {
+      exactValue: {
+        numerator: point.rollingAverage.exactValue.numerator,
+        denominator: point.rollingAverage.exactValue.denominator,
+      },
+      prettyApproximation: formatWeight(prettyApproximationFor(point)),
+      preciseApproximation: formatWeight(preciseApproximationFor(point)),
+    },
+    get trend(): SharedGraphRollingAverageTrendView {
+      trend ??= rollingAverageTrendFor(rollingAverage, point);
+      return trend;
+    },
+  };
 }
 
 function rollingAverageTrendFor(
