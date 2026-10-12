@@ -316,7 +316,7 @@ describe('AnalysisWeightMapper', () => {
                   rounding: 'PRETTY' as const,
                 },
                 {
-                  value: 82.1,
+                  value: 82.10123,
                   rounding: 'PRECISE' as const,
                 },
               ],

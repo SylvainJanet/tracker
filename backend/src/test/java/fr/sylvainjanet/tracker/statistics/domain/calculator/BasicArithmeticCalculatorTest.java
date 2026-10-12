@@ -77,7 +77,7 @@ class BasicArithmeticCalculatorTest {
         assertThat(expectedExactAverage.approximate(CalculationRounding.PRETTY).value())
                 .isEqualTo(new BigDecimal("80.79"));
         assertThat(expectedExactAverage.approximate(CalculationRounding.PRECISE).value())
-                .isEqualTo(new BigDecimal("80.78571428571428571429"));
+                .isEqualTo(new BigDecimal("80.78571"));
     }
 
     @Test

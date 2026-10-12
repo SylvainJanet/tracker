@@ -60,7 +60,7 @@ class FractionTest {
 
         Approximation approximation = fraction.approximate(CalculationRounding.PRECISE);
 
-        assertThat(approximation.value()).isEqualTo(new BigDecimal("0.66666666666666666667"));
+        assertThat(approximation.value()).isEqualTo(new BigDecimal("0.66667"));
         assertThat(approximation.rounding()).isEqualTo(CalculationRounding.PRECISE);
     }
 

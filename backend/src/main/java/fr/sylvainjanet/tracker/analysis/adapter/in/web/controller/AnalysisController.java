@@ -88,7 +88,7 @@ public final class AnalysisController {
                                                             "rounding": "PRETTY"
                                                           },
                                                           {
-                                                            "value": 82.10000000000000000000,
+                                                            "value": 82.10000,
                                                             "rounding": "PRECISE"
                                                           }
                                                         ]
@@ -120,7 +120,7 @@ public final class AnalysisController {
                                                             "rounding": "PRETTY"
                                                           },
                                                           {
-                                                            "value": 82.10000000000000000000,
+                                                            "value": 82.10000,
                                                             "rounding": "PRECISE"
                                                           }
                                                         ]
@@ -152,7 +152,7 @@ public final class AnalysisController {
                                                             "rounding": "PRETTY"
                                                           },
                                                           {
-                                                            "value": 82.10000000000000000000,
+                                                            "value": 82.10000,
                                                             "rounding": "PRECISE"
                                                           }
                                                         ]
@@ -184,7 +184,7 @@ public final class AnalysisController {
                                                             "rounding": "PRETTY"
                                                           },
                                                           {
-                                                            "value": 82.10000000000000000000,
+                                                            "value": 82.10000,
                                                             "rounding": "PRECISE"
                                                           }
                                                         ]
@@ -216,7 +216,7 @@ public final class AnalysisController {
                                                             "rounding": "PRETTY"
                                                           },
                                                           {
-                                                            "value": 82.10000000000000000000,
+                                                            "value": 82.10000,
                                                             "rounding": "PRECISE"
                                                           }
                                                         ]
@@ -248,7 +248,7 @@ public final class AnalysisController {
                                                             "rounding": "PRETTY"
                                                           },
                                                           {
-                                                            "value": 82.10000000000000000000,
+                                                            "value": 82.10000,
                                                             "rounding": "PRECISE"
                                                           }
                                                         ]
