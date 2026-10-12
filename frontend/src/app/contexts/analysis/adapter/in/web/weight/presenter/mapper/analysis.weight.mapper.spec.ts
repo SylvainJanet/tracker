@@ -79,7 +79,17 @@ describe('AnalysisWeightMapper', () => {
       ],
     };
 
+    const trendFilter = vi.spyOn(resultData.rollingAverageSeries[0]!.rollingAverages, 'filter');
     const { graphDialogByDayNumber, ...view } = AnalysisWeightMapper.resultDataToView(resultData);
+
+    expect(trendFilter).not.toHaveBeenCalled();
+
+    const trend = graphDialogByDayNumber[4]?.rollingAverages[0]?.trend;
+
+    expect(trend).toBeDefined();
+    expect(trendFilter).toHaveBeenCalledOnce();
+    expect(graphDialogByDayNumber[4]?.rollingAverages[0]?.trend).toBe(trend);
+    expect(trendFilter).toHaveBeenCalledOnce();
 
     expect(view).toEqual({
       timelineStartDate: '2026-09-20',
