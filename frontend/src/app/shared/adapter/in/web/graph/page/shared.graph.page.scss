@@ -52,6 +52,14 @@
   position: fixed;
   inset-block-start: var(--tooltip-viewport-y);
   left: var(--tooltip-viewport-x);
+  inline-size: 18rem;
+}
+
+@media (width < 38rem) {
+  .shared-graph__tooltip--compact {
+    left: 50vw;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .shared-graph--interactive,

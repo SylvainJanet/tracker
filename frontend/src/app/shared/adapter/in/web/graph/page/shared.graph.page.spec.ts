@@ -221,9 +221,9 @@ describe('SharedGraphPage', () => {
       y: 100,
       left: 500,
       top: 100,
-      right: 700,
+      right: 820,
       bottom: 300,
-      width: 200,
+      width: 320,
       height: 200,
       toJSON: () => ({}),
     });
@@ -260,6 +260,7 @@ describe('SharedGraphPage', () => {
     expect(tooltip?.textContent?.trim()).toBe('Hovered day 4');
 
     expect(tooltip?.classList).toContain('shared-graph__tooltip--compact');
+    expect(tooltip?.classList).toContain('shared-graph__tooltip--before');
     expect(tooltip?.style.getPropertyValue('--tooltip-viewport-x')).toBe('620px');
     expect(tooltip?.style.getPropertyValue('--tooltip-viewport-y')).toBe('180px');
 
