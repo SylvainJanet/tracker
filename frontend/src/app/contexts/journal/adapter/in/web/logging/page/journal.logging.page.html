@@ -215,14 +215,13 @@
   }
 </section>
 
-<dialog
-  #logWeightMeasurementDialog
-  class="tracker-confirmation-dialog journal-dialog"
+<app-shared-modal
+  class="journal-dialog"
   data-testid="log-weight-dialog"
-  aria-labelledby="log-weight-title"
-  aria-describedby="log-weight-description"
-  (close)="dialogClosed()"
-  [attr.closedby]="presenter.logLoading ? 'none' : 'any'"
+  labelledBy="log-weight-title"
+  describedBy="log-weight-description"
+  [closedBy]="presenter.logLoading ? 'none' : 'any'"
+  (closed)="dialogClosed($event)"
 >
   <form
     class="tracker-confirmation-form"
@@ -330,4 +329,4 @@
       </button>
     </div>
   </form>
-</dialog>
+</app-shared-modal>

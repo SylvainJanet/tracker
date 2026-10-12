@@ -2,8 +2,8 @@
   --graph-dialog-marker-size: 0.75rem;
 }
 
-.tracker-confirmation-dialog.graph-dialog {
-  inline-size: min(64rem, calc(100% - 2 * var(--space-4)));
+.graph-dialog {
+  --shared-modal-inline-size: min(64rem, calc(100% - 2 * var(--space-4)));
 }
 
 .graph-dialog__content,
@@ -178,9 +178,9 @@
 }
 
 @media (width <= 48rem) {
-  .tracker-confirmation-dialog.graph-dialog {
-    inline-size: calc(100% - 2 * var(--space-2));
-    padding: var(--space-4);
+  .graph-dialog {
+    --shared-modal-inline-size: calc(100% - 2 * var(--space-2));
+    --shared-modal-padding: var(--space-4);
   }
 
   .graph-dialog__window {
