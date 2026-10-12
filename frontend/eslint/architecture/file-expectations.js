@@ -127,6 +127,7 @@ const fileExpectations = {
   },
 
   shared: {
+    typescript: [expectedFile(['<responsibility>'])],
     api: [
       reExportFile(['<scope>.<responsibility>'], {
         statements: 'one-or-more',

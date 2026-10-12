@@ -1,5 +1,5 @@
 import { type AbstractControl, type ValidationErrors, type ValidatorFn } from '@angular/forms';
-import { exhaustiveSwitchCheck } from '../../../../../../../../shared/typescript/switch-exhaustivity-type-checking';
+import { exhaustiveSwitchCheck } from '../../../../../../../../shared/api/shared.type-checking';
 import { Weight } from '../../../../../../domain/weight';
 
 export const validWeight: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
