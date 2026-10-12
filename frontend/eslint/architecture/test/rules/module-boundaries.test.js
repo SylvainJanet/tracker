@@ -176,6 +176,35 @@ describe('module boundaries', () => {
       [],
     );
   });
+  it('allows the shared module to access its TypeScript utilities directly', () => {
+    assert.deepEqual(
+      check(
+        "import '../../../../../typescript/is-record';",
+        'src/app/shared/adapter/in/web/graph/page/shared.graph.page.ts',
+      ),
+      [],
+    );
+  });
+
+  it('requires other modules to access shared TypeScript utilities through the shared API', () => {
+    const violations = check("import '../../../shared/typescript/is-record';", filePath);
+
+    assert.equal(violations.length, 1);
+    assert.deepEqual(
+      {
+        messageId: violations[0]?.messageId,
+        data: violations[0]?.data,
+      },
+      {
+        messageId: 'internalModuleDependency',
+        data: {
+          filePath,
+          dependencyPath: 'src/app/shared/typescript/is-record',
+          targetModule: 'src/app/shared',
+        },
+      },
+    );
+  });
   it('ignores same-context, external, and specification dependencies', () => {
     assert.deepEqual(check("import './ingredient';", filePath), []);
 

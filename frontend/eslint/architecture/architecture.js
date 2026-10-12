@@ -264,7 +264,7 @@ const context = createBoundedModule({
   apiDependencyLayers: CONTEXT_API_DEPENDENCY_LAYERS,
 });
 
-const shared = createBoundedModule({
+const sharedModule = createBoundedModule({
   apiFiles: fileExpectations.shared.api,
   contractFiles: fileExpectations.shared.httpContracts,
   configurationFiles: fileExpectations.shared.configuration,
@@ -275,6 +275,17 @@ const shared = createBoundedModule({
     moduleSegment: true,
   },
 });
+
+/** @type {import('./types').ArchitectureFolder} */
+const shared = {
+  ...sharedModule,
+  folders: {
+    ...sharedModule.folders,
+    typescript: {
+      files: fileExpectations.shared.typescript,
+    },
+  },
+};
 
 const reservedShellModuleNames = [
   ...Object.keys(context.folders ?? {}),

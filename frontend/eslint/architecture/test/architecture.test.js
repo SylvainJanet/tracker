@@ -56,6 +56,7 @@ describe('project architecture', () => {
     'src/app/shared/configuration/shared.configuration.navigation.ts',
     'src/app/shared/configuration/shared.providers.ts',
     'src/app/shared/configuration/shared.routes.ts',
+    'src/app/shared/typescript/is-record.ts',
 
     // Shell modules
     'src/app/shell/app/api/page.ts',
