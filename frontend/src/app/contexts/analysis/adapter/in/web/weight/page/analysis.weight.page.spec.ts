@@ -222,7 +222,6 @@ describe('AnalysisWeightPage', () => {
                   dayNumber: 4,
                   includedMeasurementCount: 2,
                   averageWeightInKgApproximation: 82,
-                  completeCalendarWindow: false,
                 },
               ],
             },
@@ -326,13 +325,13 @@ describe('AnalysisWeightPage', () => {
 
     expect(
       Array.from(rollingTable.querySelectorAll('thead th'), (heading) => normalizedText(heading)),
-    ).toEqual(['Window', 'Day', 'Date', 'Average', 'Coverage', 'Calendar window']);
+    ).toEqual(['Window', 'Day', 'Date', 'Average', 'Coverage']);
 
     expect(
       Array.from(rollingTable.tBodies[0]?.rows ?? [], (row) =>
         Array.from(row.cells, (cell) => normalizedText(cell)),
       ),
-    ).toEqual([['7 days', '4', '2026-09-23', '82 kg', '2 of 7 days', 'Partial']]);
+    ).toEqual([['7 days', '4', '2026-09-23', '82 kg', '2 of 7 days']]);
 
     expect(normalizedText(rollingTable)).not.toContain('164.00');
 

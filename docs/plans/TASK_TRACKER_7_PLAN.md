@@ -131,7 +131,7 @@ dates and clip only the published points to the requested display range.
   - date;
   - measured weight, or an explicit missing indication;
   - every published rolling-average value for that date;
-  - coverage/partial status where applicable.
+  - coverage where applicable.
 - Do not perform a second HTTP request when the loaded response already contains the information.
 - Test click forwarding, date lookup, dialog content, and close behavior.
 
