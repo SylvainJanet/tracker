@@ -189,6 +189,17 @@ describe('AnalysisWeightMapper', () => {
                   ],
                 },
               ],
+              presentation: {
+                title: 'Weight trends',
+                xAxis: {
+                  label: 'Elapsed day number',
+                  formatValue: expect.any(Function),
+                },
+                yAxis: {
+                  label: 'Weight (kg)',
+                  formatValue: expect.any(Function),
+                },
+              },
             },
             tooltipByX: {
               1: {

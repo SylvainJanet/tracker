@@ -15,6 +15,11 @@
   min-block-size: var(--shared-graph-min-block-size, 18rem);
 }
 
+.shared-graph__plot {
+  position: relative;
+  min-inline-size: 0;
+}
+
 .shared-graph__tooltip {
   position: absolute;
   z-index: 1;

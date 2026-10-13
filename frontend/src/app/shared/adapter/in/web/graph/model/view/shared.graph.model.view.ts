@@ -10,10 +10,22 @@ export interface SharedGraphSeriesView {
   readonly points: readonly SharedGraphPointView[];
 }
 
+export interface SharedGraphAxisView {
+  readonly label: string;
+  readonly formatValue: (value: number) => string;
+}
+
+export interface SharedGraphPresentationView {
+  readonly title: string;
+  readonly xAxis: SharedGraphAxisView;
+  readonly yAxis: SharedGraphAxisView;
+}
+
 export class SharedGraphView {
   constructor(
     readonly accessibleDescription: string,
     readonly series: readonly SharedGraphSeriesView[],
+    readonly presentation?: SharedGraphPresentationView,
   ) {}
 }
 

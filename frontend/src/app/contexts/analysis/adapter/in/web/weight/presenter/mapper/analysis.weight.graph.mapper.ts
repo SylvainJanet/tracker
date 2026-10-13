@@ -3,16 +3,32 @@ import type {
   AnalysisWeightRollingAverageView,
 } from '../../model/view/analysis.weight.model.view';
 import {
+  type SharedGraphPresentationView,
   SharedGraphView,
   type SharedRollingAverageGraphTooltipView,
 } from '../../../../../../../../shared/api/shared.graph';
 
 const MEASURED_WEIGHT_SERIES_LABEL = 'Measured weight';
 const MEASURED_WEIGHT_SERIES_COLOR = '--color-action';
+const WEIGHT_GRAPH_PRESENTATION: SharedGraphPresentationView = {
+  title: 'Weight trends',
+  xAxis: {
+    label: 'Elapsed day number',
+    formatValue: String,
+  },
+  yAxis: {
+    label: 'Weight (kg)',
+    formatValue: String,
+  },
+};
 
 export class AnalysisWeightGraphMapper {
   private constructor() {
     /* empty */
+  }
+
+  static presentation(): SharedGraphPresentationView {
+    return WEIGHT_GRAPH_PRESENTATION;
   }
 
   static tooltipByDayNumberFor(
@@ -72,28 +88,32 @@ export class AnalysisWeightGraphMapper {
     measurements: readonly AnalysisWeightMeasurementView[],
     rollingAverages: readonly AnalysisWeightRollingAverageView[],
   ): SharedGraphView {
-    return new SharedGraphView(accessibleDescriptionFor(measurements, rollingAverages), [
-      {
-        label: MEASURED_WEIGHT_SERIES_LABEL,
-        color: MEASURED_WEIGHT_SERIES_COLOR,
-        points: measurements.map((measurement) => ({
-          x: measurement.dayNumber,
-          y: measurement.weightInKg,
+    return new SharedGraphView(
+      accessibleDescriptionFor(measurements, rollingAverages),
+      [
+        {
+          label: MEASURED_WEIGHT_SERIES_LABEL,
+          color: MEASURED_WEIGHT_SERIES_COLOR,
+          points: measurements.map((measurement) => ({
+            x: measurement.dayNumber,
+            y: measurement.weightInKg,
+          })),
+        },
+        ...rollingAverages.map((rollingAverage) => ({
+          label: rollingAverageSeriesLabel(rollingAverage.windowInDays),
+          color: rollingAverageSeriesColor(rollingAverage.windowInDays),
+          points: rollingAverage.points.map((point) => ({
+            x: point.dayNumber,
+            y: point.averageWeightInKgApproximation,
+            intensity: rollingAverageIntensity(
+              point.includedMeasurementCount,
+              rollingAverage.windowInDays,
+            ),
+          })),
         })),
-      },
-      ...rollingAverages.map((rollingAverage) => ({
-        label: rollingAverageSeriesLabel(rollingAverage.windowInDays),
-        color: rollingAverageSeriesColor(rollingAverage.windowInDays),
-        points: rollingAverage.points.map((point) => ({
-          x: point.dayNumber,
-          y: point.averageWeightInKgApproximation,
-          intensity: rollingAverageIntensity(
-            point.includedMeasurementCount,
-            rollingAverage.windowInDays,
-          ),
-        })),
-      })),
-    ]);
+      ],
+      this.presentation(),
+    );
   }
 }
 
