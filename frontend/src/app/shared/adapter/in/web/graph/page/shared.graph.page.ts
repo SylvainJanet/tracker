@@ -31,6 +31,7 @@ import {
   type SharedGraphPresenterFactory,
 } from '../presenter/shared.graph.presenter';
 import { SharedGraphInteractionMapper } from './mapper/shared.graph.interaction.mapper';
+import { SharedGraphHeaderPage } from '../header/page/shared.graph.header.page';
 
 echarts.use([
   LineChart,
@@ -56,7 +57,7 @@ interface SharedGraphNodeDetailsState {
 
 @Component({
   selector: 'app-shared-graph',
-  imports: [NgTemplateOutlet, NgxEchartsDirective],
+  imports: [NgTemplateOutlet, NgxEchartsDirective, SharedGraphHeaderPage],
   templateUrl: './shared.graph.page.html',
   styleUrl: './shared.graph.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -111,6 +112,9 @@ export class SharedGraphPage {
   readonly graph = input.required<SharedGraphView>();
   readonly compact = input(false);
 
+  readonly accessibleDescription = computed(() =>
+    SharedGraphMapper.accessibleDescriptionFor(this.graph()),
+  );
   readonly options = computed(() => {
     const dataState = this.state().dataState;
 

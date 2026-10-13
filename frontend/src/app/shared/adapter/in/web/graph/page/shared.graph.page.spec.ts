@@ -14,6 +14,7 @@ import {
 } from '../presenter/shared.graph.presenter';
 import { SharedGraphMapper } from './mapper/shared.graph.mapper';
 import { SharedGraphPage } from './shared.graph.page';
+import { SharedGraphHeaderPage } from '../header/page/shared.graph.header.page';
 
 @Directive({
   // Test double deliberately mirrors the third-party directive selector.
@@ -48,16 +49,30 @@ class EChartsDirectiveStub {
 })
 class SharedGraphTemplatesTestHost {
   compact = false;
-  readonly graph = new SharedGraphView('Measured weight.', [
+  readonly graph = new SharedGraphView(
+    'Measured weight.',
+    [
+      {
+        label: 'Measured weight',
+        color: '#2563eb',
+        points: [
+          { x: 1, y: 82.1 },
+          { x: 4, y: 81.9 },
+        ],
+      },
+    ],
     {
-      label: 'Measured weight',
-      color: '#2563eb',
-      points: [
-        { x: 1, y: 82.1 },
-        { x: 4, y: 81.9 },
-      ],
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+      },
     },
-  ]);
+  );
 }
 
 describe('SharedGraphPage', () => {
@@ -326,16 +341,31 @@ describe('SharedGraphPage', () => {
   });
 
   it('binds compact graph options when requested', () => {
-    const graph = new SharedGraphView('Compact weight trend.', [
+    const graph = new SharedGraphView(
+      'Compact weight trend.',
+      [
+        {
+          label: 'Measured weight',
+          color: '#2563eb',
+          points: [
+            { x: 1, y: 82.1 },
+            { x: 4, y: 81.9 },
+          ],
+        },
+      ],
       {
-        label: 'Measured weight',
-        color: '#2563eb',
-        points: [
-          { x: 1, y: 82.1 },
-          { x: 4, y: 81.9 },
-        ],
+        title: 'Weight trends',
+        xAxis: {
+          label: 'Elapsed day number',
+          formatValue: String,
+        },
+        yAxis: {
+          label: 'Weight (kg)',
+          formatValue: String,
+        },
       },
-    ]);
+    );
+
     const fixture = TestBed.createComponent(SharedGraphPage);
 
     fixture.componentRef.setInput('graph', graph);
@@ -344,6 +374,10 @@ describe('SharedGraphPage', () => {
 
     const chart = fixture.debugElement.query(By.directive(EChartsDirectiveStub));
     const directive = chart?.injector.get(EChartsDirectiveStub);
+
+    const header = fixture.debugElement.query(By.directive(SharedGraphHeaderPage));
+
+    expect(header).toBeNull();
 
     expect(chart?.nativeElement.classList).toContain('shared-graph--compact');
     expect(chart?.nativeElement.classList).not.toContain('shared-graph--interactive');
@@ -502,5 +536,95 @@ describe('SharedGraphPage', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="custom-graph-node-details"]')?.textContent,
     ).toContain('Selected day 4');
+  });
+
+  it('renders the graph header from non-compact presentation metadata', () => {
+    const graph = new SharedGraphView('Weight measurements.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+      },
+    });
+    const fixture = TestBed.createComponent(SharedGraphPage);
+
+    fixture.componentRef.setInput('graph', graph);
+    fixture.detectChanges();
+
+    const headerElement = fixture.debugElement.query(By.directive(SharedGraphHeaderPage));
+    const headerPage = headerElement?.injector.get(SharedGraphHeaderPage);
+
+    expect(headerElement).not.toBeNull();
+    expect(headerPage?.title()).toBe('Weight trends');
+  });
+
+  it('uses the complete graph description for keyboard interaction', () => {
+    const fixture = TestBed.createComponent(SharedGraphTemplatesTestHost);
+
+    fixture.detectChanges();
+
+    const interaction = fixture.debugElement.query(
+      By.css('[data-testid="shared-graph-interaction"]'),
+    );
+
+    expect(interaction?.nativeElement.getAttribute('aria-label')).toBe(
+      'Weight trends. Measured weight. X-axis: Elapsed day number. Y-axis: Weight (kg). Press Enter or Space to open details for the latest value.',
+    );
+  });
+
+  it('composes the non-compact header separately from the plot', () => {
+    const graph = new SharedGraphView('Weight measurements.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+      },
+    });
+    const fixture = TestBed.createComponent(SharedGraphPage);
+
+    fixture.componentRef.setInput('graph', graph);
+    fixture.detectChanges();
+
+    const header = fixture.debugElement.query(By.directive(SharedGraphHeaderPage));
+    const plot = fixture.debugElement.query(By.css('[data-testid="shared-graph-plot"]'));
+    const interaction = fixture.debugElement.query(
+      By.css('[data-testid="shared-graph-interaction"]'),
+    );
+
+    expect(plot).not.toBeNull();
+    expect(plot?.nativeElement.contains(header?.nativeElement)).toBe(false);
+    expect(plot?.nativeElement.contains(interaction?.nativeElement)).toBe(true);
+  });
+
+  it('renders graph node details outside the plot', () => {
+    const fixture = TestBed.createComponent(SharedGraphTemplatesTestHost);
+
+    fixture.detectChanges();
+
+    const interaction = fixture.debugElement.query(
+      By.css('[data-testid="shared-graph-interaction"]'),
+    );
+
+    interaction?.nativeElement.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+      }),
+    );
+    fixture.detectChanges();
+
+    const plot = fixture.debugElement.query(By.css('[data-testid="shared-graph-plot"]'));
+    const details = fixture.debugElement.query(By.css('[data-testid="custom-graph-node-details"]'));
+
+    expect(details).not.toBeNull();
+    expect(plot?.nativeElement.contains(details?.nativeElement)).toBe(false);
   });
 });

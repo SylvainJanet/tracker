@@ -6,14 +6,25 @@ export class SharedGraphMapper {
     /* empty */
   }
 
+  static accessibleDescriptionFor(model: SharedGraphView): string {
+    const presentation = model.presentation;
+
+    if (presentation === undefined) {
+      return model.accessibleDescription;
+    }
+
+    return `${presentation.title}. ${model.accessibleDescription} X-axis: ${presentation.xAxis.label}. Y-axis: ${presentation.yAxis.label}.`;
+  }
+
   static modelToOptions(
     model: SharedGraphView,
-    presentation: { readonly compact?: boolean } = {},
+    rendering: { readonly compact?: boolean } = {},
   ): EChartsCoreOption {
     const visualMap = model.series
       .map((series, seriesIndex) => intensityVisualMapFor(series, seriesIndex))
       .filter((vm) => vm !== undefined);
-    const compact = presentation.compact === true;
+    const compact = rendering.compact === true;
+    const graphPresentation = model.presentation;
 
     return {
       ...(compact
@@ -29,7 +40,7 @@ export class SharedGraphMapper {
         : {}),
       aria: {
         enabled: true,
-        description: model.accessibleDescription,
+        description: this.accessibleDescriptionFor(model),
       },
       tooltip: {
         trigger: 'axis',
@@ -44,6 +55,15 @@ export class SharedGraphMapper {
         min: 'dataMin',
         max: 'dataMax',
         ...(compact ? { show: false } : {}),
+        ...(graphPresentation === undefined
+          ? {}
+          : {
+              name: graphPresentation.xAxis.label,
+              nameLocation: 'middle',
+              axisLabel: {
+                formatter: graphPresentation.xAxis.formatValue,
+              },
+            }),
       },
 
       yAxis: {
@@ -51,6 +71,15 @@ export class SharedGraphMapper {
         min: 'dataMin',
         max: 'dataMax',
         ...(compact ? { show: false } : {}),
+        ...(graphPresentation === undefined
+          ? {}
+          : {
+              name: graphPresentation.yAxis.label,
+              nameLocation: 'middle',
+              axisLabel: {
+                formatter: graphPresentation.yAxis.formatValue,
+              },
+            }),
       },
       series: model.series.map((series) => {
         const intensityAppliedByVisualMap = hasIntensityVisualMap(series);

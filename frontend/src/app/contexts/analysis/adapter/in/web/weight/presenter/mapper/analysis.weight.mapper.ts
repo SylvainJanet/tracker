@@ -210,6 +210,7 @@ function rollingAverageTrendFor(
           })),
         },
       ],
+      AnalysisWeightGraphMapper.presentation(),
     ),
     tooltipByX,
   };

@@ -223,4 +223,57 @@ describe('SharedGraphMapper', () => {
       },
     });
   });
+  it('maps generic axis labels and value formatters', () => {
+    const formatDayNumber = (value: number): string => `${value}`;
+    const formatWeight = (value: number): string => `${value} kg`;
+    const graph = new SharedGraphView('Weight measurements.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: formatDayNumber,
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: formatWeight,
+      },
+    });
+
+    expect(SharedGraphMapper.modelToOptions(graph)).toMatchObject({
+      xAxis: {
+        name: 'Elapsed day number',
+        nameLocation: 'middle',
+        axisLabel: {
+          formatter: formatDayNumber,
+        },
+      },
+      yAxis: {
+        name: 'Weight (kg)',
+        nameLocation: 'middle',
+        axisLabel: {
+          formatter: formatWeight,
+        },
+      },
+    });
+  });
+  it('includes the title and axis names in the accessible description', () => {
+    const graph = new SharedGraphView('Line graph of 1 measured weight on analysis day 1.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+      },
+    });
+
+    expect(SharedGraphMapper.modelToOptions(graph)).toMatchObject({
+      aria: {
+        enabled: true,
+        description:
+          'Weight trends. Line graph of 1 measured weight on analysis day 1. X-axis: Elapsed day number. Y-axis: Weight (kg).',
+      },
+    });
+  });
 });

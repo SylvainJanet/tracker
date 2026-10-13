@@ -127,6 +127,17 @@ describe('AnalysisWeightPresenter', () => {
           graph: {
             accessibleDescription:
               'Line graph of 2 measured weights from analysis day 1 to analysis day 4.',
+            presentation: {
+              title: 'Weight trends',
+              xAxis: {
+                label: 'Elapsed day number',
+                formatValue: expect.any(Function),
+              },
+              yAxis: {
+                label: 'Weight (kg)',
+                formatValue: expect.any(Function),
+              },
+            },
             series: [
               {
                 label: 'Measured weight',
@@ -275,6 +286,17 @@ describe('AnalysisWeightPresenter', () => {
                 ],
               },
             ],
+            presentation: {
+              title: 'Weight trends',
+              xAxis: {
+                label: 'Elapsed day number',
+                formatValue: expect.any(Function),
+              },
+              yAxis: {
+                label: 'Weight (kg)',
+                formatValue: expect.any(Function),
+              },
+            },
           },
         },
       },

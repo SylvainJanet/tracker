@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  margin-block-end: var(--space-4);
+}
+
+.shared-graph-header {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.shared-graph-header h3 {
+  margin: 0;
+  text-align: center;
+}

@@ -54,7 +54,39 @@ describe('AnalysisWeightGraphMapper', () => {
           ],
         },
       ],
+      presentation: {
+        title: 'Weight trends',
+        xAxis: {
+          label: 'Elapsed day number',
+          formatValue: expect.any(Function),
+        },
+        yAxis: {
+          label: 'Weight (kg)',
+          formatValue: expect.any(Function),
+        },
+      },
     });
+  });
+
+  it('maps weight-specific graph presentation metadata', () => {
+    const graph = AnalysisWeightGraphMapper.graphFor(measurements, rollingAverages);
+
+    expect(graph).toMatchObject({
+      presentation: {
+        title: 'Weight trends',
+        xAxis: {
+          label: 'Elapsed day number',
+          formatValue: expect.any(Function),
+        },
+        yAxis: {
+          label: 'Weight (kg)',
+          formatValue: expect.any(Function),
+        },
+      },
+    });
+
+    expect(graph.presentation?.xAxis.formatValue(4)).toBe('4');
+    expect(graph.presentation?.yAxis.formatValue(81.98765)).toBe('81.98765');
   });
 
   it('maps tooltip data with and without a direct measurement', () => {
