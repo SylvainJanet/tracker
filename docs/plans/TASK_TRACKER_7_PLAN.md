@@ -68,12 +68,16 @@ Feature contexts provide library-independent graph inputs to a shared,
 input-driven graph component in the frontend web adapter. The shared adapter
 owns their conversion to ECharts options.
 
-The implemented baseline supports the measured-weight line plus one rolling-average
+The implemented graph supports the measured-weight line plus one rolling-average
 line for each accepted window. Series meaning, labels, colours, coverage intensity
-and accessible descriptions remain application-owned. The graph is responsive,
-and the Analysis page retains a semantic table as a non-chart representation of
-the measured weights. Later tickets add interactions, visibility controls and
-further descriptions without exposing ECharts types outside the adapter.
+and accessible descriptions remain application-owned. The graph is responsive
+and opens an accessible details dialog from plotting-grid pointer or keyboard
+interaction. The dialog uses the loaded response to show the measured value,
+rolling averages, coverage, exact and approximate calculations, and window
+trends without a second HTTP request. The Analysis page retains semantic tables
+as non-chart representations of the measured weights and rolling averages.
+Later tickets add visibility controls and further series descriptions without
+exposing ECharts types outside the adapter.
 
 Exact dependency versions, module registration, loading configuration and adapter
 structure are owned by executable configuration and production code.
@@ -121,19 +125,6 @@ pre-range input for the largest requested window, restore Statistics indexes to
 dates and clip only the published points to the requested display range.
 
 ## Ticket plan
-
-### TRACKER-17 — Display details when clicking the graph
-
-- Handle clicks anywhere within the graph’s plotting grid.
-- Ignore clicks on axes, labels, margins or outside the plotting grid.
-- Use the graph date nearest to the click’s horizontal position as the dialog identity.
-- Open an accessible dialog showing:
-  - date;
-  - measured weight, or an explicit missing indication;
-  - every published rolling-average value for that date;
-  - coverage where applicable.
-- Do not perform a second HTTP request when the loaded response already contains the information.
-- Test click forwarding, date lookup, dialog content, and close behavior.
 
 ### TRACKER-18 — Display graph title, axis labels, units and values
 
