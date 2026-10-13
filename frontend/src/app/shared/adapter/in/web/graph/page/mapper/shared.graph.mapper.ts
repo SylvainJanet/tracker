@@ -52,15 +52,19 @@ export class SharedGraphMapper {
         max: 'dataMax',
         ...(compact ? { show: false } : {}),
       },
-      series: model.series.map((series) => ({
-        name: series.label,
-        type: 'line',
-        data: series.points.map(pointToData),
-        showSymbol: series.points.length === 1,
-        itemStyle: {
-          color: series.color,
-        },
-      })),
+      series: model.series.map((series) => {
+        const intensityAppliedByVisualMap = hasIntensityVisualMap(series);
+
+        return {
+          name: series.label,
+          type: 'line',
+          data: series.points.map((point) => pointToData(point, intensityAppliedByVisualMap)),
+          showSymbol: series.points.length === 1,
+          itemStyle: {
+            color: series.color,
+          },
+        };
+      }),
       visualMap,
     };
   }
@@ -93,7 +97,10 @@ function hasIntensityVisualMap(series: SharedGraphView['series'][number]): boole
   return series.points.length >= 2 && series.points.some((point) => point.intensity !== undefined);
 }
 
-function pointToData(point: SharedGraphView['series'][number]['points'][number]):
+function pointToData(
+  point: SharedGraphView['series'][number]['points'][number],
+  intensityAppliedByVisualMap: boolean,
+):
   | [number, number]
   | {
       readonly value: [number, number];
@@ -101,7 +108,7 @@ function pointToData(point: SharedGraphView['series'][number]['points'][number])
         readonly opacity: number;
       };
     } {
-  if (point.intensity === undefined) {
+  if (point.intensity === undefined || intensityAppliedByVisualMap) {
     return [point.x, point.y];
   }
 

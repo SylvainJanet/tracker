@@ -71,24 +71,9 @@ describe('SharedGraphMapper', () => {
           name: '7-day rolling average',
           type: 'line',
           data: [
-            {
-              value: [1, 82.1],
-              itemStyle: {
-                opacity: 0.4,
-              },
-            },
-            {
-              value: [4, 82],
-              itemStyle: {
-                opacity: 0.52,
-              },
-            },
-            {
-              value: [7, 81.8],
-              itemStyle: {
-                opacity: 1,
-              },
-            },
+            [1, 82.1],
+            [4, 82],
+            [7, 81.8],
           ],
           showSymbol: false,
           itemStyle: {
@@ -147,22 +132,32 @@ describe('SharedGraphMapper', () => {
 
     try {
       chart.setOption(SharedGraphMapper.modelToOptions(graph));
+      chart.dispatchAction({
+        type: 'highlight',
+        seriesIndex: 0,
+        dataIndex: 0,
+      });
 
       const renderedGraph = chart.renderToSVGString();
+      const firstMarker = new DOMParser()
+        .parseFromString(renderedGraph, 'image/svg+xml')
+        .querySelector('[ecmeta_series_index="0"][ecmeta_data_index="0"]');
+
       expect(renderedGraph).toContain('stop-opacity="0.4"');
       expect(renderedGraph).toContain('stop-opacity="0.52"');
+      expect(firstMarker?.getAttribute('stroke-opacity')).toBe('0.4');
     } finally {
       chart.dispose();
       getCanvasContext.mockRestore();
     }
   });
 
-  it('keeps a single point visible and available to axis hover', () => {
-    const graph = new SharedGraphView('One measured weight.', [
+  it('keeps a single intensity point visible and applies its intensity once', () => {
+    const graph = new SharedGraphView('One rolling-average point.', [
       {
-        label: 'Measured weight',
-        color: '#2563eb',
-        points: [{ x: 1, y: 82.1 }],
+        label: '7-day rolling average',
+        color: '#dc2626',
+        points: [{ x: 1, y: 82.1, intensity: 0.25 }],
       },
     ]);
 
@@ -177,9 +172,18 @@ describe('SharedGraphMapper', () => {
       },
       series: [
         {
+          data: [
+            {
+              value: [1, 82.1],
+              itemStyle: {
+                opacity: 0.4,
+              },
+            },
+          ],
           showSymbol: true,
         },
       ],
+      visualMap: [],
     });
   });
 
