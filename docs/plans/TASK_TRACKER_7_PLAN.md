@@ -79,6 +79,13 @@ as non-chart representations of the measured weights and rolling averages.
 Later tickets add visibility controls and further series descriptions without
 exposing ECharts types outside the adapter.
 
+The shared graph contract accepts optional, library-independent presentation
+metadata for a title, axis labels and display-only value formatters. Non-compact
+graphs render the title as a semantic Angular heading. The shared web adapter
+maps the axis metadata to ECharts and adds the title and axis names to the
+accessible description. Compact graphs reuse the metadata while omitting the
+visible heading and axes.
+
 Exact dependency versions, module registration, loading configuration and adapter
 structure are owned by executable configuration and production code.
 
@@ -125,21 +132,6 @@ pre-range input for the largest requested window, restore Statistics indexes to
 dates and clip only the published points to the requested display range.
 
 ## Ticket plan
-
-### TRACKER-18 — Display graph title, axis labels, units and values
-
-- Decide whether to use ECharts’ built-in title or a semantic Angular heading,
-  considering placement, accessibility, testing, and customization.
-- Render the selected title implementation above the legend, menu bar, and plot.
-- Label the x-axis as elapsed day number.
-- Label the y-axis as weight in kilograms.
-- Format values without changing calculation precision.
-- Ensure title and axis names are also represented in the accessible description.
-
-TRACKER-14 deliberately left graph titles, axis labels, units and value
-formatting to this separately verifiable ticket. Extend the shared graph input
-with the chosen presentation metadata without exposing ECharts types outside
-the shared web adapter.
 
 ### TRACKER-19 — Dynamic graph range and axis labels
 
