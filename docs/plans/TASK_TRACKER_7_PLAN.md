@@ -80,11 +80,21 @@ Later tickets add visibility controls and further series descriptions without
 exposing ECharts types outside the adapter.
 
 The shared graph contract accepts optional, library-independent presentation
-metadata for a title, axis labels and display-only value formatters. Non-compact
-graphs render the title as a semantic Angular heading. The shared web adapter
-maps the axis metadata to ECharts and adds the title and axis names to the
-accessible description. Compact graphs reuse the metadata while omitting the
-visible heading and axes.
+metadata for a title, axis labels, display-only value formatters and generic
+axis policies. A policy declares discrete or continuous semantics, span-based
+interval choices and a fallback target label count. Consumers may provide an
+explicit extent; otherwise the shared adapter derives it from the displayed
+series. The adapter preserves discrete bounds, pads and rounds continuous
+bounds outward, emits exact tick values, and uses plotting width to keep
+long-range fallback labels readable.
+
+Non-compact graphs render the title as a semantic Angular heading, map the axis
+metadata to ECharts and include the title and axis names in the accessible
+description. They expose the policy's configured intervals as local scale
+controls, with automatic selection as the default and reset option. The shared
+graph model accepts only intervals offered by the consumer's policy. Compact
+graphs reuse the metadata while omitting the visible heading, axes and scale
+controls, and always retain automatic scaling.
 
 Exact dependency versions, module registration, loading configuration and adapter
 structure are owned by executable configuration and production code.
@@ -132,32 +142,6 @@ pre-range input for the largest requested window, restore Statistics indexes to
 dates and clip only the published points to the requested display range.
 
 ## Ticket plan
-
-### TRACKER-19 — Dynamic graph range and axis labels
-
-Implement pure, unit-tested axis policies.
-
-X-axis:
-
-- minimum and maximum correspond to the selected dates’ day numbers;
-- short ranges may label every day;
-- medium ranges use approximately 7- or 14-day intervals;
-- longer ranges choose a readable multiple based on span and available width;
-- labels remain day numbers even though point identity remains a date.
-
-Y-axis:
-
-- determine the extent from currently visible series;
-- add padding so equal or nearly equal values remain readable;
-- recommended initial intervals:
-  - span below 0.2 kg: 0.05 kg;
-  - span below 2 kg: 0.1 kg;
-  - span below 5 kg: 0.5 kg;
-  - span below 20 kg: 1 kg;
-  - larger span: a “nice” 1/2/5 × power-of-ten step targeting roughly 6–10 labels;
-- round axis bounds outward to the selected interval.
-
-Recalculate the y-axis when series visibility changes.
 
 ### TRACKER-20 — Display plot legend with toggle on click
 
