@@ -50,10 +50,30 @@ export class AnalysisWeightMapper {
         weightMeasurements,
         rollingAverages,
       ),
-      graph: AnalysisWeightGraphMapper.graphFor(weightMeasurements, rollingAverages),
+      graph: AnalysisWeightGraphMapper.graphFor(
+        weightMeasurements,
+        rollingAverages,
+        graphDayNumberExtentFor(resultData),
+      ),
       graphDialogByDayNumber: weightGraphDialogByDayNumberFor(resultData),
     };
   }
+}
+
+function graphDayNumberExtentFor(resultData: WeightAnalysisResultData): {
+  readonly minimum: number;
+  readonly maximum: number;
+} {
+  return {
+    minimum: dayNumberFor(resultData.timelineStartDate, resultData.range.startDate),
+    maximum: dayNumberFor(resultData.timelineStartDate, resultData.range.endDate),
+  };
+}
+
+function dayNumberFor(timelineStartDate: string, date: string): number {
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+  return (Date.parse(date) - Date.parse(timelineStartDate)) / millisecondsPerDay + 1;
 }
 
 function prettyApproximationFor(

@@ -34,4 +34,36 @@ describe('SharedGraphPresenter', () => {
       },
     });
   });
+  it('changes an axis interval through the presenter', () => {
+    const graph = new SharedGraphView('Adjustable weight graph.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+        policy: {
+          kind: 'continuous',
+          intervals: [{ maximumSpanExclusive: 2, interval: 0.1 }],
+          fallbackTargetLabelCount: 8,
+        },
+      },
+    });
+    const presenter = new SharedGraphPresenter();
+
+    presenter.setData(graph);
+    presenter.setAxisInterval('yAxis', 0.1);
+
+    expect(presenter.state()).toEqual({
+      dataState: {
+        kind: 'data',
+        view: graph,
+        intervalOverrides: {
+          yAxis: 0.1,
+        },
+      },
+    });
+  });
 });

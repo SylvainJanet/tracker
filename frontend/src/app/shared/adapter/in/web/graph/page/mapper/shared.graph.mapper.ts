@@ -1,5 +1,11 @@
 import type { EChartsCoreOption } from 'echarts/core';
-import type { SharedGraphView } from '../../model/view/shared.graph.model.view';
+import type {
+  SharedGraphAxisView,
+  SharedGraphView,
+} from '../../model/view/shared.graph.model.view';
+import { SharedGraphAxisPolicyMapper } from './shared.graph.axis-policy.mapper';
+
+const MINIMUM_X_AXIS_LABEL_SPACING_IN_PIXELS = 80;
 
 export class SharedGraphMapper {
   private constructor() {
@@ -18,13 +24,34 @@ export class SharedGraphMapper {
 
   static modelToOptions(
     model: SharedGraphView,
-    rendering: { readonly compact?: boolean } = {},
+    rendering: {
+      readonly compact?: boolean;
+      readonly plottingWidth?: number;
+      readonly intervalOverrides?: {
+        readonly xAxis?: number;
+        readonly yAxis?: number;
+      };
+    } = {},
   ): EChartsCoreOption {
     const visualMap = model.series
       .map((series, seriesIndex) => intensityVisualMapFor(series, seriesIndex))
       .filter((vm) => vm !== undefined);
     const compact = rendering.compact === true;
+    const intervalOverrides = compact ? undefined : rendering.intervalOverrides;
     const graphPresentation = model.presentation;
+
+    const xAxisMapping = axisMappingFor(
+      graphPresentation?.xAxis,
+      model.series.flatMap((series) => series.points.map((point) => point.x)),
+      targetXAxisLabelCountFor(rendering.plottingWidth),
+      intervalOverrides?.xAxis,
+    );
+    const yAxisMapping = axisMappingFor(
+      graphPresentation?.yAxis,
+      model.series.flatMap((series) => series.points.map((point) => point.y)),
+      undefined,
+      intervalOverrides?.yAxis,
+    );
 
     return {
       ...(compact
@@ -52,8 +79,7 @@ export class SharedGraphMapper {
       },
       xAxis: {
         type: 'value',
-        min: 'dataMin',
-        max: 'dataMax',
+        ...xAxisMapping.rangeOptions,
         ...(compact ? { show: false } : {}),
         ...(graphPresentation === undefined
           ? {}
@@ -62,14 +88,16 @@ export class SharedGraphMapper {
               nameLocation: 'middle',
               axisLabel: {
                 formatter: graphPresentation.xAxis.formatValue,
+                ...(xAxisMapping.labelValues === undefined
+                  ? {}
+                  : { customValues: [...xAxisMapping.labelValues] }),
               },
             }),
       },
 
       yAxis: {
         type: 'value',
-        min: 'dataMin',
-        max: 'dataMax',
+        ...yAxisMapping.rangeOptions,
         ...(compact ? { show: false } : {}),
         ...(graphPresentation === undefined
           ? {}
@@ -78,6 +106,9 @@ export class SharedGraphMapper {
               nameLocation: 'middle',
               axisLabel: {
                 formatter: graphPresentation.yAxis.formatValue,
+                ...(yAxisMapping.labelValues === undefined
+                  ? {}
+                  : { customValues: [...yAxisMapping.labelValues] }),
               },
             }),
       },
@@ -97,6 +128,75 @@ export class SharedGraphMapper {
       visualMap,
     };
   }
+}
+
+function targetXAxisLabelCountFor(plottingWidth: number | undefined): number | undefined {
+  if (plottingWidth === undefined || !Number.isFinite(plottingWidth) || plottingWidth <= 0) {
+    return undefined;
+  }
+
+  return Math.max(2, Math.floor(plottingWidth / MINIMUM_X_AXIS_LABEL_SPACING_IN_PIXELS) + 1);
+}
+
+function axisMappingFor(
+  axis: SharedGraphAxisView | undefined,
+  values: readonly number[],
+  fallbackTargetLabelCount?: number,
+  intervalOverride?: number,
+) {
+  const dataExtent = extentFor(values);
+  const policyExtent = axis?.extent ?? dataExtent;
+  const scale =
+    axis?.policy === undefined || policyExtent === undefined
+      ? undefined
+      : SharedGraphAxisPolicyMapper.scaleFor(
+          policyExtent,
+          {
+            ...axis.policy,
+            ...(fallbackTargetLabelCount === undefined ? {} : { fallbackTargetLabelCount }),
+          },
+          intervalOverride,
+        );
+  const resolvedExtent = scale ?? axis?.extent;
+
+  return {
+    rangeOptions: {
+      min: resolvedExtent?.minimum ?? ('dataMin' as const),
+      max: resolvedExtent?.maximum ?? ('dataMax' as const),
+      ...(scale === undefined
+        ? {}
+        : {
+            interval: scale.interval,
+            axisTick: {
+              customValues: [...scale.labelValues],
+            },
+          }),
+    },
+    labelValues: scale?.labelValues,
+  };
+}
+
+function extentFor(
+  values: readonly number[],
+): { readonly minimum: number; readonly maximum: number } | undefined {
+  const firstValue = values[0];
+
+  if (firstValue === undefined) {
+    return undefined;
+  }
+
+  let minimum = firstValue;
+  let maximum = firstValue;
+
+  for (const value of values.slice(1)) {
+    minimum = Math.min(minimum, value);
+    maximum = Math.max(maximum, value);
+  }
+
+  return {
+    minimum,
+    maximum,
+  };
 }
 
 function intensityVisualMapFor(series: SharedGraphView['series'][number], seriesIndex: number) {

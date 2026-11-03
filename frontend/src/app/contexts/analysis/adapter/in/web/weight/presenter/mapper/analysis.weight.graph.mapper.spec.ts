@@ -59,10 +59,29 @@ describe('AnalysisWeightGraphMapper', () => {
         xAxis: {
           label: 'Elapsed day number',
           formatValue: expect.any(Function),
+          policy: {
+            kind: 'discrete',
+            intervals: [
+              { maximumSpanExclusive: 14, interval: 1 },
+              { maximumSpanExclusive: 84, interval: 7 },
+              { maximumSpanExclusive: 168, interval: 14 },
+            ],
+            fallbackTargetLabelCount: 9,
+          },
         },
         yAxis: {
           label: 'Weight (kg)',
           formatValue: expect.any(Function),
+          policy: {
+            kind: 'continuous',
+            intervals: [
+              { maximumSpanExclusive: 0.2, interval: 0.05 },
+              { maximumSpanExclusive: 2, interval: 0.1 },
+              { maximumSpanExclusive: 5, interval: 0.5 },
+              { maximumSpanExclusive: 20, interval: 1 },
+            ],
+            fallbackTargetLabelCount: 8,
+          },
         },
       },
     });
@@ -86,7 +105,7 @@ describe('AnalysisWeightGraphMapper', () => {
     });
 
     expect(graph.presentation?.xAxis.formatValue(4)).toBe('4');
-    expect(graph.presentation?.yAxis.formatValue(81.98765)).toBe('81.98765');
+    expect(graph.presentation?.yAxis.formatValue(81.98765)).toBe('81.99');
   });
 
   it('maps tooltip data with and without a direct measurement', () => {
@@ -130,5 +149,42 @@ describe('AnalysisWeightGraphMapper', () => {
         ],
       },
     });
+  });
+  it('configures reusable axis policies for the represented weight range', () => {
+    const graph = AnalysisWeightGraphMapper.graphFor(measurements, rollingAverages, {
+      minimum: 3,
+      maximum: 30,
+    });
+
+    expect(graph.presentation?.xAxis).toMatchObject({
+      extent: {
+        minimum: 3,
+        maximum: 30,
+      },
+      policy: {
+        kind: 'discrete',
+        intervals: [
+          { maximumSpanExclusive: 14, interval: 1 },
+          { maximumSpanExclusive: 84, interval: 7 },
+          { maximumSpanExclusive: 168, interval: 14 },
+        ],
+        fallbackTargetLabelCount: 9,
+      },
+    });
+    expect(graph.presentation?.yAxis).toMatchObject({
+      policy: {
+        kind: 'continuous',
+        intervals: [
+          { maximumSpanExclusive: 0.2, interval: 0.05 },
+          { maximumSpanExclusive: 2, interval: 0.1 },
+          { maximumSpanExclusive: 5, interval: 0.5 },
+          { maximumSpanExclusive: 20, interval: 1 },
+        ],
+        fallbackTargetLabelCount: 8,
+      },
+    });
+    expect(graph.presentation?.yAxis.extent).toBeUndefined();
+    expect(graph.presentation?.yAxis.formatValue(81.98765)).toBe('81.99');
+    expect(graph.presentation?.yAxis.formatValue(82)).toBe('82');
   });
 });

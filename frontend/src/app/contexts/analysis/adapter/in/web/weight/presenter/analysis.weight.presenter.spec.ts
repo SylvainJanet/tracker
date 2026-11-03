@@ -132,10 +132,33 @@ describe('AnalysisWeightPresenter', () => {
               xAxis: {
                 label: 'Elapsed day number',
                 formatValue: expect.any(Function),
+                policy: {
+                  kind: 'discrete',
+                  intervals: [
+                    { maximumSpanExclusive: 14, interval: 1 },
+                    { maximumSpanExclusive: 84, interval: 7 },
+                    { maximumSpanExclusive: 168, interval: 14 },
+                  ],
+                  fallbackTargetLabelCount: 9,
+                },
+                extent: {
+                  minimum: 1,
+                  maximum: 6,
+                },
               },
               yAxis: {
                 label: 'Weight (kg)',
                 formatValue: expect.any(Function),
+                policy: {
+                  kind: 'continuous',
+                  intervals: [
+                    { maximumSpanExclusive: 0.2, interval: 0.05 },
+                    { maximumSpanExclusive: 2, interval: 0.1 },
+                    { maximumSpanExclusive: 5, interval: 0.5 },
+                    { maximumSpanExclusive: 20, interval: 1 },
+                  ],
+                  fallbackTargetLabelCount: 8,
+                },
               },
             },
             series: [
@@ -291,10 +314,33 @@ describe('AnalysisWeightPresenter', () => {
               xAxis: {
                 label: 'Elapsed day number',
                 formatValue: expect.any(Function),
+                policy: {
+                  kind: 'discrete',
+                  intervals: [
+                    { maximumSpanExclusive: 14, interval: 1 },
+                    { maximumSpanExclusive: 84, interval: 7 },
+                    { maximumSpanExclusive: 168, interval: 14 },
+                  ],
+                  fallbackTargetLabelCount: 9,
+                },
+                extent: {
+                  minimum: 1,
+                  maximum: 6,
+                },
               },
               yAxis: {
                 label: 'Weight (kg)',
                 formatValue: expect.any(Function),
+                policy: {
+                  kind: 'continuous',
+                  intervals: [
+                    { maximumSpanExclusive: 0.2, interval: 0.05 },
+                    { maximumSpanExclusive: 2, interval: 0.1 },
+                    { maximumSpanExclusive: 5, interval: 0.5 },
+                    { maximumSpanExclusive: 20, interval: 1 },
+                  ],
+                  fallbackTargetLabelCount: 8,
+                },
               },
             },
           },

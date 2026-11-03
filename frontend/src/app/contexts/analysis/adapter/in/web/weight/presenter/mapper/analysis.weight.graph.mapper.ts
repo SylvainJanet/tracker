@@ -6,20 +6,32 @@ import {
   type SharedGraphPresentationView,
   SharedGraphView,
   type SharedRollingAverageGraphTooltipView,
+  type SharedGraphAxisExtentView,
+  type SharedGraphAxisPolicyView,
 } from '../../../../../../../../shared/api/shared.graph';
 
 const MEASURED_WEIGHT_SERIES_LABEL = 'Measured weight';
 const MEASURED_WEIGHT_SERIES_COLOR = '--color-action';
-const WEIGHT_GRAPH_PRESENTATION: SharedGraphPresentationView = {
-  title: 'Weight trends',
-  xAxis: {
-    label: 'Elapsed day number',
-    formatValue: String,
-  },
-  yAxis: {
-    label: 'Weight (kg)',
-    formatValue: String,
-  },
+
+const DAY_NUMBER_AXIS_POLICY: SharedGraphAxisPolicyView = {
+  kind: 'discrete',
+  intervals: [
+    { maximumSpanExclusive: 14, interval: 1 },
+    { maximumSpanExclusive: 84, interval: 7 },
+    { maximumSpanExclusive: 168, interval: 14 },
+  ],
+  fallbackTargetLabelCount: 9,
+};
+
+const WEIGHT_AXIS_POLICY: SharedGraphAxisPolicyView = {
+  kind: 'continuous',
+  intervals: [
+    { maximumSpanExclusive: 0.2, interval: 0.05 },
+    { maximumSpanExclusive: 2, interval: 0.1 },
+    { maximumSpanExclusive: 5, interval: 0.5 },
+    { maximumSpanExclusive: 20, interval: 1 },
+  ],
+  fallbackTargetLabelCount: 8,
 };
 
 export class AnalysisWeightGraphMapper {
@@ -27,8 +39,21 @@ export class AnalysisWeightGraphMapper {
     /* empty */
   }
 
-  static presentation(): SharedGraphPresentationView {
-    return WEIGHT_GRAPH_PRESENTATION;
+  static presentation(dayNumberExtent?: SharedGraphAxisExtentView): SharedGraphPresentationView {
+    return {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+        ...(dayNumberExtent === undefined ? {} : { extent: dayNumberExtent }),
+        policy: DAY_NUMBER_AXIS_POLICY,
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: formatWeightAxisValue,
+        policy: WEIGHT_AXIS_POLICY,
+      },
+    };
   }
 
   static tooltipByDayNumberFor(
@@ -87,6 +112,7 @@ export class AnalysisWeightGraphMapper {
   static graphFor(
     measurements: readonly AnalysisWeightMeasurementView[],
     rollingAverages: readonly AnalysisWeightRollingAverageView[],
+    dayNumberExtent?: SharedGraphAxisExtentView,
   ): SharedGraphView {
     return new SharedGraphView(
       accessibleDescriptionFor(measurements, rollingAverages),
@@ -112,7 +138,7 @@ export class AnalysisWeightGraphMapper {
           })),
         })),
       ],
-      this.presentation(),
+      this.presentation(dayNumberExtent),
     );
   }
 }
@@ -148,6 +174,10 @@ function rollingAverageIntensity(includedValueCount: number, windowInDays: numbe
 
 function formatWeight(weightInKg: number): string {
   return `${weightInKg} kg`;
+}
+
+function formatWeightAxisValue(weightInKg: number): string {
+  return Number(weightInKg.toFixed(2)).toString();
 }
 
 function rollingAverageSeriesLabel(windowInDays: number): string {

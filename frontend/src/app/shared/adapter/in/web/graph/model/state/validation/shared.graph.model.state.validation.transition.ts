@@ -5,4 +5,8 @@ export const validStateTransitions = new Set<SharedGraphStateTransition>([
     kind: 'set-data',
     transitions: [{ from: { dataState: 'initial' }, to: [{ dataState: 'data' }] }],
   },
+  {
+    kind: 'set-axis-interval',
+    transitions: [{ from: { dataState: 'data' }, to: [{ dataState: 'data' }] }],
+  },
 ]);

@@ -23,6 +23,55 @@ export class SharedGraphModel {
       : this;
   }
 
+  @ValidState(validStateKinds)
+  @ValidStateTransition('set-axis-interval', validStateTransitions)
+  public setAxisInterval(axis: 'xAxis' | 'yAxis', interval: number | undefined): SharedGraphModel {
+    if (!canTransition(this.state, 'set-axis-interval', validStateTransitions)) {
+      return this;
+    }
+
+    const dataState = this.state.dataState;
+
+    if (dataState.kind !== 'data') {
+      return this;
+    }
+
+    const availableIntervals = dataState.view.presentation?.[axis].policy?.intervals;
+
+    if (
+      interval !== undefined &&
+      (availableIntervals === undefined ||
+        !availableIntervals.some((candidate) => candidate.interval === interval))
+    ) {
+      return this;
+    }
+
+    const currentOverrides = dataState.intervalOverrides ?? {};
+    const intervalOverrides: {
+      xAxis?: number;
+      yAxis?: number;
+    } = {};
+
+    if (axis !== 'xAxis' && currentOverrides.xAxis !== undefined) {
+      intervalOverrides.xAxis = currentOverrides.xAxis;
+    }
+
+    if (axis !== 'yAxis' && currentOverrides.yAxis !== undefined) {
+      intervalOverrides.yAxis = currentOverrides.yAxis;
+    }
+
+    if (interval !== undefined) {
+      intervalOverrides[axis] = interval;
+    }
+
+    return this.withState({
+      dataState: {
+        ...dataState,
+        intervalOverrides,
+      },
+    });
+  }
+
   private withState(state: SharedGraphState): SharedGraphModel {
     return new SharedGraphModel(state);
   }

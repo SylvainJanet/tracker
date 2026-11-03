@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { type ECharts, type EChartsCoreOption } from 'echarts/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SharedGraphState } from '../model/state/shared.graph.model.state';
 import { SharedGraphView } from '../model/view/shared.graph.model.view';
@@ -77,17 +77,20 @@ class SharedGraphTemplatesTestHost {
 
 describe('SharedGraphPage', () => {
   let presenterState: WritableSignal<SharedGraphState>;
+  let setAxisInterval: ReturnType<typeof vi.fn<SharedGraphPresenter['setAxisInterval']>>;
   let setData: ReturnType<typeof vi.fn<SharedGraphPresenter['setData']>>;
   let presenterFactory: ReturnType<typeof vi.fn<SharedGraphPresenterFactory>>;
 
   beforeEach(async () => {
     presenterState = signal<SharedGraphState>({ dataState: { kind: 'initial' } });
+    setAxisInterval = vi.fn<SharedGraphPresenter['setAxisInterval']>();
     setData = vi.fn<SharedGraphPresenter['setData']>((view) => {
       presenterState.set({ dataState: { kind: 'data', view } });
     });
     const presenter = {
       state: presenterState.asReadonly(),
       setData,
+      setAxisInterval,
     } as unknown as SharedGraphPresenter;
     presenterFactory = vi.fn<SharedGraphPresenterFactory>(() => presenter);
 
@@ -109,6 +112,10 @@ describe('SharedGraphPage', () => {
         },
       })
       .compileComponents();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('forwards its graph input to its presenter and binds the presented graph', () => {
@@ -164,6 +171,65 @@ describe('SharedGraphPage', () => {
     const directive = chart?.injector.get(EChartsDirectiveStub);
 
     expect(directive?.options()).toEqual(SharedGraphMapper.modelToOptions(presentedGraph));
+  });
+
+  it('maps presenter interval overrides into graph options', () => {
+    const graph = new SharedGraphView('Weight measurements.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+        extent: {
+          minimum: 3,
+          maximum: 30,
+        },
+        policy: {
+          kind: 'discrete',
+          intervals: [
+            { maximumSpanExclusive: 14, interval: 1 },
+            { maximumSpanExclusive: 84, interval: 7 },
+            { maximumSpanExclusive: 168, interval: 14 },
+          ],
+          fallbackTargetLabelCount: 9,
+        },
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+      },
+    });
+    const fixture = TestBed.createComponent(SharedGraphPage);
+
+    fixture.componentRef.setInput('graph', graph);
+    fixture.detectChanges();
+
+    presenterState.set({
+      dataState: {
+        kind: 'data',
+        view: graph,
+        intervalOverrides: {
+          xAxis: 14,
+        },
+      },
+    });
+    fixture.detectChanges();
+
+    const chart = fixture.debugElement.query(By.directive(EChartsDirectiveStub));
+    const directive = chart?.injector.get(EChartsDirectiveStub);
+
+    expect(directive?.options()).toEqual(
+      SharedGraphMapper.modelToOptions(graph, {
+        intervalOverrides: {
+          xAxis: 14,
+        },
+      }),
+    );
+
+    const xAxisInterval = fixture.nativeElement.querySelector(
+      '[data-testid="shared-graph-x-axis-interval"]',
+    ) as HTMLSelectElement;
+
+    expect(xAxisInterval.value).toBe('14');
   });
 
   it('resolves every series colour token', () => {
@@ -358,6 +424,15 @@ describe('SharedGraphPage', () => {
         xAxis: {
           label: 'Elapsed day number',
           formatValue: String,
+          policy: {
+            kind: 'discrete',
+            intervals: [
+              { maximumSpanExclusive: 14, interval: 1 },
+              { maximumSpanExclusive: 84, interval: 7 },
+              { maximumSpanExclusive: 168, interval: 14 },
+            ],
+            fallbackTargetLabelCount: 9,
+          },
         },
         yAxis: {
           label: 'Weight (kg)',
@@ -378,6 +453,7 @@ describe('SharedGraphPage', () => {
     const header = fixture.debugElement.query(By.directive(SharedGraphHeaderPage));
 
     expect(header).toBeNull();
+    expect(fixture.nativeElement.querySelector('.shared-graph__scale-controls')).toBeNull();
 
     expect(chart?.nativeElement.classList).toContain('shared-graph--compact');
     expect(chart?.nativeElement.classList).not.toContain('shared-graph--interactive');
@@ -626,5 +702,166 @@ describe('SharedGraphPage', () => {
 
     expect(details).not.toBeNull();
     expect(plot?.nativeElement.contains(details?.nativeElement)).toBe(false);
+  });
+
+  it('recomputes long-range x-axis labels when the plotting width changes', () => {
+    let resizeCallback: ResizeObserverCallback | undefined;
+    let resizeObserver: ResizeObserver | undefined;
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        readonly observe = observe;
+        readonly unobserve = vi.fn();
+        readonly disconnect = disconnect;
+
+        constructor(callback: ResizeObserverCallback) {
+          resizeCallback = callback;
+          resizeObserver = this as unknown as ResizeObserver;
+        }
+      },
+    );
+
+    const graph = new SharedGraphView(
+      'Long weight history.',
+      [
+        {
+          label: 'Measured weight',
+          color: '#2563eb',
+          points: [
+            { x: 3, y: 82.1 },
+            { x: 403, y: 81.9 },
+          ],
+        },
+      ],
+      {
+        title: 'Weight trends',
+        xAxis: {
+          label: 'Elapsed day number',
+          formatValue: String,
+          extent: {
+            minimum: 3,
+            maximum: 403,
+          },
+          policy: {
+            kind: 'discrete',
+            intervals: [
+              { maximumSpanExclusive: 14, interval: 1 },
+              { maximumSpanExclusive: 84, interval: 7 },
+              { maximumSpanExclusive: 168, interval: 14 },
+            ],
+            fallbackTargetLabelCount: 9,
+          },
+        },
+        yAxis: {
+          label: 'Weight (kg)',
+          formatValue: String,
+        },
+      },
+    );
+    const fixture = TestBed.createComponent(SharedGraphPage);
+
+    fixture.componentRef.setInput('graph', graph);
+    fixture.detectChanges();
+
+    expect(observe).toHaveBeenCalledWith(fixture.nativeElement);
+
+    const chart = fixture.debugElement.query(By.directive(EChartsDirectiveStub));
+    const directive = chart?.injector.get(EChartsDirectiveStub);
+
+    resizeCallback?.([{ contentRect: { width: 320 } } as ResizeObserverEntry], resizeObserver!);
+    fixture.detectChanges();
+
+    expect(directive?.options()).toMatchObject({
+      xAxis: {
+        interval: 100,
+        axisLabel: {
+          customValues: [3, 103, 203, 303, 403],
+        },
+      },
+    });
+
+    resizeCallback?.([{ contentRect: { width: 960 } } as ResizeObserverEntry], resizeObserver!);
+    fixture.detectChanges();
+
+    expect(directive?.options()).toMatchObject({
+      xAxis: {
+        interval: 50,
+        axisLabel: {
+          customValues: [3, 53, 103, 153, 203, 253, 303, 353, 403],
+        },
+      },
+    });
+
+    fixture.destroy();
+
+    expect(disconnect).toHaveBeenCalledOnce();
+  });
+
+  it('renders policy intervals and forwards scale selections', () => {
+    const graph = new SharedGraphView('Weight measurements.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+        policy: {
+          kind: 'discrete',
+          intervals: [
+            { maximumSpanExclusive: 14, interval: 1 },
+            { maximumSpanExclusive: 84, interval: 7 },
+            { maximumSpanExclusive: 168, interval: 14 },
+          ],
+          fallbackTargetLabelCount: 9,
+        },
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+        policy: {
+          kind: 'continuous',
+          intervals: [
+            { maximumSpanExclusive: 0.2, interval: 0.05 },
+            { maximumSpanExclusive: 2, interval: 0.1 },
+            { maximumSpanExclusive: 5, interval: 0.5 },
+            { maximumSpanExclusive: 20, interval: 1 },
+          ],
+          fallbackTargetLabelCount: 8,
+        },
+      },
+    });
+    const fixture = TestBed.createComponent(SharedGraphPage);
+
+    fixture.componentRef.setInput('graph', graph);
+    fixture.detectChanges();
+
+    const xAxisInterval = fixture.nativeElement.querySelector(
+      '[data-testid="shared-graph-x-axis-interval"]',
+    ) as HTMLSelectElement;
+    const yAxisInterval = fixture.nativeElement.querySelector(
+      '[data-testid="shared-graph-y-axis-interval"]',
+    ) as HTMLSelectElement;
+
+    expect(xAxisInterval.getAttribute('aria-label')).toBe('Elapsed day number interval');
+    expect(Array.from(xAxisInterval.options, ({ value }) => value)).toEqual(['', '1', '7', '14']);
+    expect(Array.from(yAxisInterval.options, ({ value }) => value)).toEqual([
+      '',
+      '0.05',
+      '0.1',
+      '0.5',
+      '1',
+    ]);
+    expect(xAxisInterval.options[0]?.textContent?.trim()).toBe('Automatic');
+
+    xAxisInterval.value = '14';
+    xAxisInterval.dispatchEvent(new Event('change'));
+
+    expect(setAxisInterval).toHaveBeenLastCalledWith('xAxis', 14);
+
+    xAxisInterval.value = '';
+    xAxisInterval.dispatchEvent(new Event('change'));
+
+    expect(setAxisInterval).toHaveBeenLastCalledWith('xAxis', undefined);
   });
 });

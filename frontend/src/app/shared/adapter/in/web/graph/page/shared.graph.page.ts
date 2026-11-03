@@ -23,7 +23,10 @@ import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
 
-import { type SharedGraphView } from '../model/view/shared.graph.model.view';
+import {
+  type SharedGraphAxisView,
+  type SharedGraphView,
+} from '../model/view/shared.graph.model.view';
 import { SharedGraphMapper } from './mapper/shared.graph.mapper';
 import {
   SHARED_GRAPH_PRESENTER_FACTORY,
@@ -79,6 +82,23 @@ export class SharedGraphPage {
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly plottingWidth = signal<number | undefined>(undefined);
+  private readonly resizeObserver =
+    typeof ResizeObserver === 'undefined'
+      ? undefined
+      : new ResizeObserver((entries) => {
+          const plottingWidth = entries[0]?.contentRect.width;
+
+          if (
+            plottingWidth === undefined ||
+            !Number.isFinite(plottingWidth) ||
+            plottingWidth <= 0
+          ) {
+            return;
+          }
+
+          this.plottingWidth.set(plottingWidth);
+        });
   private chart: echarts.ECharts | undefined;
 
   readonly tooltipTemplate = contentChild<TemplateRef<SharedGraphTooltipContext>>('graphTooltip');
@@ -122,19 +142,57 @@ export class SharedGraphPage {
       return {};
     }
 
+    const plottingWidth = this.plottingWidth();
+
     return SharedGraphMapper.modelToOptions(this.resolveGraphColor(dataState.view), {
       compact: this.compact(),
+      ...(plottingWidth === undefined ? {} : { plottingWidth }),
+      ...(dataState.intervalOverrides === undefined
+        ? {}
+        : { intervalOverrides: dataState.intervalOverrides }),
     });
   });
 
   constructor() {
+    this.resizeObserver?.observe(this.host.nativeElement);
+
     effect(() => {
       this.presenter.setData(this.graph());
     });
 
     this.destroyRef.onDestroy(() => {
+      this.resizeObserver?.disconnect();
       this.disconnectChart();
     });
+  }
+
+  axisIntervalFor(axis: 'xAxis' | 'yAxis'): number | undefined {
+    const dataState = this.state().dataState;
+
+    return dataState.kind === 'data' ? dataState.intervalOverrides?.[axis] : undefined;
+  }
+
+  availableIntervalsFor(axis: SharedGraphAxisView): readonly number[] {
+    return [...new Set(axis.policy?.intervals.map(({ interval }) => interval) ?? [])];
+  }
+
+  onAxisIntervalChange(axis: 'xAxis' | 'yAxis', event: Event): void {
+    const target = event.target;
+
+    if (!(target instanceof HTMLSelectElement)) {
+      return;
+    }
+
+    if (target.value === '') {
+      this.presenter.setAxisInterval(axis, undefined);
+      return;
+    }
+
+    const interval = Number(target.value);
+
+    if (Number.isFinite(interval)) {
+      this.presenter.setAxisInterval(axis, interval);
+    }
   }
 
   onGraphRegionClick(event: MouseEvent): void {
