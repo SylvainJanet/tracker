@@ -137,7 +137,10 @@ describe('AnalysisWeightMapper', () => {
       ),
     );
     expect(graph).toEqual(
-      AnalysisWeightGraphMapper.graphFor(view.weightMeasurements, view.rollingAverages),
+      AnalysisWeightGraphMapper.graphFor(view.weightMeasurements, view.rollingAverages, {
+        minimum: 1,
+        maximum: 6,
+      }),
     );
 
     expect(Object.keys(graphDialogByDayNumber)).toEqual(['1', '4']);
@@ -194,10 +197,29 @@ describe('AnalysisWeightMapper', () => {
                 xAxis: {
                   label: 'Elapsed day number',
                   formatValue: expect.any(Function),
+                  policy: {
+                    kind: 'discrete',
+                    intervals: [
+                      { maximumSpanExclusive: 14, interval: 1 },
+                      { maximumSpanExclusive: 84, interval: 7 },
+                      { maximumSpanExclusive: 168, interval: 14 },
+                    ],
+                    fallbackTargetLabelCount: 9,
+                  },
                 },
                 yAxis: {
                   label: 'Weight (kg)',
                   formatValue: expect.any(Function),
+                  policy: {
+                    kind: 'continuous',
+                    intervals: [
+                      { maximumSpanExclusive: 0.2, interval: 0.05 },
+                      { maximumSpanExclusive: 2, interval: 0.1 },
+                      { maximumSpanExclusive: 5, interval: 0.5 },
+                      { maximumSpanExclusive: 20, interval: 1 },
+                    ],
+                    fallbackTargetLabelCount: 8,
+                  },
                 },
               },
             },
@@ -327,5 +349,29 @@ describe('AnalysisWeightMapper', () => {
         },
       },
     ]);
+  });
+  it('maps the represented date range to stable timeline day numbers', () => {
+    const resultData: WeightAnalysisResultData = {
+      timelineStartDate: '2026-09-20',
+      range: {
+        startDate: '2026-09-23',
+        endDate: '2026-09-25',
+      },
+      weightMeasurements: [
+        {
+          date: '2026-09-23',
+          dayNumber: 4,
+          weightInKg: 81.9,
+        },
+      ],
+      rollingAverageSeries: [],
+    };
+
+    const graph = AnalysisWeightMapper.resultDataToView(resultData).graph;
+
+    expect(graph.presentation?.xAxis.extent).toEqual({
+      minimum: 4,
+      maximum: 6,
+    });
   });
 });

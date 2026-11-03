@@ -79,6 +79,23 @@ export class SharedGraphPage {
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly plottingWidth = signal<number | undefined>(undefined);
+  private readonly resizeObserver =
+    typeof ResizeObserver === 'undefined'
+      ? undefined
+      : new ResizeObserver((entries) => {
+          const plottingWidth = entries[0]?.contentRect.width;
+
+          if (
+            plottingWidth === undefined ||
+            !Number.isFinite(plottingWidth) ||
+            plottingWidth <= 0
+          ) {
+            return;
+          }
+
+          this.plottingWidth.set(plottingWidth);
+        });
   private chart: echarts.ECharts | undefined;
 
   readonly tooltipTemplate = contentChild<TemplateRef<SharedGraphTooltipContext>>('graphTooltip');
@@ -122,17 +139,23 @@ export class SharedGraphPage {
       return {};
     }
 
+    const plottingWidth = this.plottingWidth();
+
     return SharedGraphMapper.modelToOptions(this.resolveGraphColor(dataState.view), {
       compact: this.compact(),
+      ...(plottingWidth === undefined ? {} : { plottingWidth }),
     });
   });
 
   constructor() {
+    this.resizeObserver?.observe(this.host.nativeElement);
+
     effect(() => {
       this.presenter.setData(this.graph());
     });
 
     this.destroyRef.onDestroy(() => {
+      this.resizeObserver?.disconnect();
       this.disconnectChart();
     });
   }

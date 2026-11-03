@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { type ECharts, type EChartsCoreOption } from 'echarts/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SharedGraphState } from '../model/state/shared.graph.model.state';
 import { SharedGraphView } from '../model/view/shared.graph.model.view';
@@ -109,6 +109,10 @@ describe('SharedGraphPage', () => {
         },
       })
       .compileComponents();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('forwards its graph input to its presenter and binds the presented graph', () => {
@@ -626,5 +630,101 @@ describe('SharedGraphPage', () => {
 
     expect(details).not.toBeNull();
     expect(plot?.nativeElement.contains(details?.nativeElement)).toBe(false);
+  });
+
+  it('recomputes long-range x-axis labels when the plotting width changes', () => {
+    let resizeCallback: ResizeObserverCallback | undefined;
+    let resizeObserver: ResizeObserver | undefined;
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        readonly observe = observe;
+        readonly unobserve = vi.fn();
+        readonly disconnect = disconnect;
+
+        constructor(callback: ResizeObserverCallback) {
+          resizeCallback = callback;
+          resizeObserver = this as unknown as ResizeObserver;
+        }
+      },
+    );
+
+    const graph = new SharedGraphView(
+      'Long weight history.',
+      [
+        {
+          label: 'Measured weight',
+          color: '#2563eb',
+          points: [
+            { x: 3, y: 82.1 },
+            { x: 403, y: 81.9 },
+          ],
+        },
+      ],
+      {
+        title: 'Weight trends',
+        xAxis: {
+          label: 'Elapsed day number',
+          formatValue: String,
+          extent: {
+            minimum: 3,
+            maximum: 403,
+          },
+          policy: {
+            kind: 'discrete',
+            intervals: [
+              { maximumSpanExclusive: 14, interval: 1 },
+              { maximumSpanExclusive: 84, interval: 7 },
+              { maximumSpanExclusive: 168, interval: 14 },
+            ],
+            fallbackTargetLabelCount: 9,
+          },
+        },
+        yAxis: {
+          label: 'Weight (kg)',
+          formatValue: String,
+        },
+      },
+    );
+    const fixture = TestBed.createComponent(SharedGraphPage);
+
+    fixture.componentRef.setInput('graph', graph);
+    fixture.detectChanges();
+
+    expect(observe).toHaveBeenCalledWith(fixture.nativeElement);
+
+    const chart = fixture.debugElement.query(By.directive(EChartsDirectiveStub));
+    const directive = chart?.injector.get(EChartsDirectiveStub);
+
+    resizeCallback?.([{ contentRect: { width: 320 } } as ResizeObserverEntry], resizeObserver!);
+    fixture.detectChanges();
+
+    expect(directive?.options()).toMatchObject({
+      xAxis: {
+        interval: 100,
+        axisLabel: {
+          customValues: [3, 103, 203, 303, 403],
+        },
+      },
+    });
+
+    resizeCallback?.([{ contentRect: { width: 960 } } as ResizeObserverEntry], resizeObserver!);
+    fixture.detectChanges();
+
+    expect(directive?.options()).toMatchObject({
+      xAxis: {
+        interval: 50,
+        axisLabel: {
+          customValues: [3, 53, 103, 153, 203, 253, 303, 353, 403],
+        },
+      },
+    });
+
+    fixture.destroy();
+
+    expect(disconnect).toHaveBeenCalledOnce();
   });
 });

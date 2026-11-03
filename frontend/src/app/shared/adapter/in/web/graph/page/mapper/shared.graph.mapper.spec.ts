@@ -255,6 +255,82 @@ describe('SharedGraphMapper', () => {
       },
     });
   });
+  it('maps consumer axis policies using explicit and series-derived extents', () => {
+    const graph = new SharedGraphView(
+      'Weight measurements.',
+      [
+        {
+          label: 'Measured weight',
+          color: '#2563eb',
+          points: [{ x: 10, y: 81.9 }],
+        },
+        {
+          label: '7-day rolling average',
+          color: '#dc2626',
+          points: [{ x: 20, y: 82 }],
+        },
+      ],
+      {
+        title: 'Weight trends',
+        xAxis: {
+          label: 'Elapsed day number',
+          formatValue: String,
+          extent: {
+            minimum: 3,
+            maximum: 30,
+          },
+          policy: {
+            kind: 'discrete',
+            intervals: [
+              { maximumSpanExclusive: 14, interval: 1 },
+              { maximumSpanExclusive: 84, interval: 7 },
+              { maximumSpanExclusive: 168, interval: 14 },
+            ],
+            fallbackTargetLabelCount: 9,
+          },
+        },
+        yAxis: {
+          label: 'Weight (kg)',
+          formatValue: String,
+          policy: {
+            kind: 'continuous',
+            intervals: [
+              { maximumSpanExclusive: 0.2, interval: 0.05 },
+              { maximumSpanExclusive: 2, interval: 0.1 },
+              { maximumSpanExclusive: 5, interval: 0.5 },
+              { maximumSpanExclusive: 20, interval: 1 },
+            ],
+            fallbackTargetLabelCount: 8,
+          },
+        },
+      },
+    );
+
+    expect(SharedGraphMapper.modelToOptions(graph)).toMatchObject({
+      xAxis: {
+        min: 3,
+        max: 30,
+        interval: 7,
+        axisLabel: {
+          customValues: [3, 10, 17, 24],
+        },
+        axisTick: {
+          customValues: [3, 10, 17, 24],
+        },
+      },
+      yAxis: {
+        min: 81.85,
+        max: 82.05,
+        interval: 0.05,
+        axisLabel: {
+          customValues: [81.85, 81.9, 81.95, 82, 82.05],
+        },
+        axisTick: {
+          customValues: [81.85, 81.9, 81.95, 82, 82.05],
+        },
+      },
+    });
+  });
   it('includes the title and axis names in the accessible description', () => {
     const graph = new SharedGraphView('Line graph of 1 measured weight on analysis day 1.', [], {
       title: 'Weight trends',
@@ -274,6 +350,85 @@ describe('SharedGraphMapper', () => {
         description:
           'Weight trends. Line graph of 1 measured weight on analysis day 1. X-axis: Elapsed day number. Y-axis: Weight (kg).',
       },
+    });
+  });
+  it('adjusts long-range x-axis labels to the available plotting width', () => {
+    const graph = new SharedGraphView(
+      'Long weight history.',
+      [
+        {
+          label: 'Measured weight',
+          color: '#2563eb',
+          points: [
+            { x: 3, y: 82.1 },
+            { x: 403, y: 81.9 },
+          ],
+        },
+      ],
+      {
+        title: 'Weight trends',
+        xAxis: {
+          label: 'Elapsed day number',
+          formatValue: String,
+          extent: {
+            minimum: 3,
+            maximum: 403,
+          },
+          policy: {
+            kind: 'discrete',
+            intervals: [
+              { maximumSpanExclusive: 14, interval: 1 },
+              { maximumSpanExclusive: 84, interval: 7 },
+              { maximumSpanExclusive: 168, interval: 14 },
+            ],
+            fallbackTargetLabelCount: 9,
+          },
+        },
+        yAxis: {
+          label: 'Weight (kg)',
+          formatValue: String,
+        },
+      },
+    );
+
+    const narrowOptions = SharedGraphMapper.modelToOptions(graph, {
+      plottingWidth: 320,
+    });
+    const wideOptions = SharedGraphMapper.modelToOptions(graph, {
+      plottingWidth: 960,
+    });
+
+    expect(narrowOptions).toMatchObject({
+      xAxis: {
+        interval: 100,
+        axisLabel: {
+          customValues: [3, 103, 203, 303, 403],
+        },
+      },
+      series: [
+        {
+          data: [
+            [3, 82.1],
+            [403, 81.9],
+          ],
+        },
+      ],
+    });
+    expect(wideOptions).toMatchObject({
+      xAxis: {
+        interval: 50,
+        axisLabel: {
+          customValues: [3, 53, 103, 153, 203, 253, 303, 353, 403],
+        },
+      },
+      series: [
+        {
+          data: [
+            [3, 82.1],
+            [403, 81.9],
+          ],
+        },
+      ],
     });
   });
 });

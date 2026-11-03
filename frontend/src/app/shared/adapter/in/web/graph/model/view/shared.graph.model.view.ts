@@ -10,9 +10,32 @@ export interface SharedGraphSeriesView {
   readonly points: readonly SharedGraphPointView[];
 }
 
+export interface SharedGraphAxisExtentView {
+  readonly minimum: number;
+  readonly maximum: number;
+}
+
+export interface SharedGraphAxisIntervalView {
+  readonly maximumSpanExclusive: number;
+  readonly interval: number;
+}
+
+export interface SharedGraphAxisPolicyView {
+  readonly kind: 'discrete' | 'continuous';
+  readonly intervals: readonly SharedGraphAxisIntervalView[];
+  readonly fallbackTargetLabelCount: number;
+}
+
+export interface SharedGraphAxisScaleView extends SharedGraphAxisExtentView {
+  readonly interval: number;
+  readonly labelValues: readonly number[];
+}
+
 export interface SharedGraphAxisView {
   readonly label: string;
   readonly formatValue: (value: number) => string;
+  readonly extent?: SharedGraphAxisExtentView;
+  readonly policy?: SharedGraphAxisPolicyView;
 }
 
 export interface SharedGraphPresentationView {
