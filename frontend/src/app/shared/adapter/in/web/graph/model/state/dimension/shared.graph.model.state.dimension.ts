@@ -7,6 +7,10 @@ interface SharedGraphDataStatePayloads {
   initial: undefined;
   data: {
     readonly view: SharedGraphView;
+    readonly intervalOverrides?: {
+      readonly xAxis?: number;
+      readonly yAxis?: number;
+    };
   };
 }
 

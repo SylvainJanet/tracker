@@ -27,21 +27,30 @@ export class SharedGraphMapper {
     rendering: {
       readonly compact?: boolean;
       readonly plottingWidth?: number;
+      readonly intervalOverrides?: {
+        readonly xAxis?: number;
+        readonly yAxis?: number;
+      };
     } = {},
   ): EChartsCoreOption {
     const visualMap = model.series
       .map((series, seriesIndex) => intensityVisualMapFor(series, seriesIndex))
       .filter((vm) => vm !== undefined);
     const compact = rendering.compact === true;
+    const intervalOverrides = compact ? undefined : rendering.intervalOverrides;
     const graphPresentation = model.presentation;
+
     const xAxisMapping = axisMappingFor(
       graphPresentation?.xAxis,
       model.series.flatMap((series) => series.points.map((point) => point.x)),
       targetXAxisLabelCountFor(rendering.plottingWidth),
+      intervalOverrides?.xAxis,
     );
     const yAxisMapping = axisMappingFor(
       graphPresentation?.yAxis,
       model.series.flatMap((series) => series.points.map((point) => point.y)),
+      undefined,
+      intervalOverrides?.yAxis,
     );
 
     return {
@@ -133,16 +142,21 @@ function axisMappingFor(
   axis: SharedGraphAxisView | undefined,
   values: readonly number[],
   fallbackTargetLabelCount?: number,
+  intervalOverride?: number,
 ) {
   const dataExtent = extentFor(values);
   const policyExtent = axis?.extent ?? dataExtent;
   const scale =
     axis?.policy === undefined || policyExtent === undefined
       ? undefined
-      : SharedGraphAxisPolicyMapper.scaleFor(policyExtent, {
-          ...axis.policy,
-          ...(fallbackTargetLabelCount === undefined ? {} : { fallbackTargetLabelCount }),
-        });
+      : SharedGraphAxisPolicyMapper.scaleFor(
+          policyExtent,
+          {
+            ...axis.policy,
+            ...(fallbackTargetLabelCount === undefined ? {} : { fallbackTargetLabelCount }),
+          },
+          intervalOverride,
+        );
   const resolvedExtent = scale ?? axis?.extent;
 
   return {

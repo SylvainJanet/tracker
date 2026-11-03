@@ -40,4 +40,51 @@ describe('SharedGraphModel', () => {
       'Invalid model state transition for transition kind: set-data',
     );
   });
+  it('changes, validates and resets an axis interval override', () => {
+    const adjustableGraph = new SharedGraphView('Adjustable weight graph.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+        policy: {
+          kind: 'continuous',
+          intervals: [
+            { maximumSpanExclusive: 0.2, interval: 0.05 },
+            { maximumSpanExclusive: 2, interval: 0.1 },
+            { maximumSpanExclusive: 5, interval: 0.5 },
+            { maximumSpanExclusive: 20, interval: 1 },
+          ],
+          fallbackTargetLabelCount: 8,
+        },
+      },
+    });
+
+    const adjusted = SharedGraphModel.initial()
+      .setData(adjustableGraph)
+      .setAxisInterval('yAxis', 0.1);
+
+    expect(adjusted.state).toEqual({
+      dataState: {
+        kind: 'data',
+        view: adjustableGraph,
+        intervalOverrides: {
+          yAxis: 0.1,
+        },
+      },
+    });
+
+    expect(adjusted.setAxisInterval('yAxis', 0.25)).toBe(adjusted);
+
+    expect(adjusted.setAxisInterval('yAxis', undefined).state).toEqual({
+      dataState: {
+        kind: 'data',
+        view: adjustableGraph,
+        intervalOverrides: {},
+      },
+    });
+  });
 });

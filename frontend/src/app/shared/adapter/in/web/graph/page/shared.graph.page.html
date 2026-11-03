@@ -1,6 +1,50 @@
 @if (!compact()) {
   @if (graph().presentation; as presentation) {
     <app-shared-graph-header [title]="presentation.title" />
+
+    @if (presentation.xAxis.policy || presentation.yAxis.policy) {
+      <div class="shared-graph__scale-controls" aria-label="Graph scale">
+        @if (presentation.xAxis.policy) {
+          <label class="shared-graph__scale-control">
+            <span class="tracker-control-label"> {{ presentation.xAxis.label }} interval </span>
+            <select
+              class="tracker-input"
+              data-testid="shared-graph-x-axis-interval"
+              [attr.aria-label]="presentation.xAxis.label + ' interval'"
+              [value]="axisIntervalFor('xAxis') ?? ''"
+              (change)="onAxisIntervalChange('xAxis', $event)"
+            >
+              <option value="">Automatic</option>
+              @for (interval of availableIntervalsFor(presentation.xAxis); track interval) {
+                <option [value]="interval">
+                  Every {{ presentation.xAxis.formatValue(interval) }}
+                </option>
+              }
+            </select>
+          </label>
+        }
+
+        @if (presentation.yAxis.policy) {
+          <label class="shared-graph__scale-control">
+            <span class="tracker-control-label"> {{ presentation.yAxis.label }} interval </span>
+            <select
+              class="tracker-input"
+              data-testid="shared-graph-y-axis-interval"
+              [attr.aria-label]="presentation.yAxis.label + ' interval'"
+              [value]="axisIntervalFor('yAxis') ?? ''"
+              (change)="onAxisIntervalChange('yAxis', $event)"
+            >
+              <option value="">Automatic</option>
+              @for (interval of availableIntervalsFor(presentation.yAxis); track interval) {
+                <option [value]="interval">
+                  Every {{ presentation.yAxis.formatValue(interval) }}
+                </option>
+              }
+            </select>
+          </label>
+        }
+      </div>
+    }
   }
 }
 

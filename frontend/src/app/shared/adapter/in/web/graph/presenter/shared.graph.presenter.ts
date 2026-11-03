@@ -15,6 +15,10 @@ export class SharedGraphPresenter {
   setData(view: SharedGraphView) {
     this.model.update((model) => model.setData(view));
   }
+
+  setAxisInterval(axis: 'xAxis' | 'yAxis', interval: number | undefined) {
+    this.model.update((model) => model.setAxisInterval(axis, interval));
+  }
 }
 
 export type SharedGraphPresenterFactory = () => SharedGraphPresenter;

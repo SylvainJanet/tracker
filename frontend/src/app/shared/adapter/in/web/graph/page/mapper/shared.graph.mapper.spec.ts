@@ -431,4 +431,50 @@ describe('SharedGraphMapper', () => {
       ],
     });
   });
+  it('maps a user-selected axis interval override', () => {
+    const graph = new SharedGraphView('Weight measurements.', [], {
+      title: 'Weight trends',
+      xAxis: {
+        label: 'Elapsed day number',
+        formatValue: String,
+        extent: {
+          minimum: 3,
+          maximum: 30,
+        },
+        policy: {
+          kind: 'discrete',
+          intervals: [
+            { maximumSpanExclusive: 14, interval: 1 },
+            { maximumSpanExclusive: 84, interval: 7 },
+            { maximumSpanExclusive: 168, interval: 14 },
+          ],
+          fallbackTargetLabelCount: 9,
+        },
+      },
+      yAxis: {
+        label: 'Weight (kg)',
+        formatValue: String,
+      },
+    });
+
+    expect(
+      SharedGraphMapper.modelToOptions(graph, {
+        intervalOverrides: {
+          xAxis: 14,
+        },
+      }),
+    ).toMatchObject({
+      xAxis: {
+        min: 3,
+        max: 30,
+        interval: 14,
+        axisLabel: {
+          customValues: [3, 17],
+        },
+        axisTick: {
+          customValues: [3, 17],
+        },
+      },
+    });
+  });
 });
